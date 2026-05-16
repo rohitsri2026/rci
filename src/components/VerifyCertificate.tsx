@@ -3,47 +3,39 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, CheckCircle2, XCircle, Award, Calendar, User, BookOpen } from "lucide-react";
-
-// Mock Database
-const MOCK_CERTIFICATES: Record<string, { studentName: string, course: string, grade: string, issueDate: string }> = {
-  "RCI-12345": {
-    studentName: "Aman Gupta",
-    course: "Advanced Web Development",
-    grade: "A+",
-    issueDate: "May 15, 2026"
-  },
-  "RCI-67890": {
-    studentName: "Priya Sharma",
-    course: "Master Diploma (DCA)",
-    grade: "A",
-    issueDate: "January 10, 2026"
-  }
-};
+import { createClient } from "@/lib/supabase/client";
 
 export default function VerifyCertificate() {
   const [certId, setCertId] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [result, setResult] = useState<any>(null);
 
-  const handleVerify = (e: React.FormEvent) => {
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!certId.trim()) return;
 
     setStatus("loading");
-    
-    // Simulate network request
-    setTimeout(() => {
-      const normalizedId = certId.trim().toUpperCase();
-      const certData = MOCK_CERTIFICATES[normalizedId];
-      
-      if (certData) {
-        setResult({ id: normalizedId, ...certData });
-        setStatus("success");
-      } else {
-        setResult(null);
-        setStatus("error");
-      }
-    }, 1500);
+    setResult(null);
+
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("certificates")
+      .select("certificate_id, grade, issue_date, students(name), courses(name)")
+      .eq("certificate_id", certId.trim().toUpperCase())
+      .single();
+
+    if (error || !data) {
+      setStatus("error");
+    } else {
+      setResult({
+        id: data.certificate_id,
+        studentName: (data.students as any)?.name,
+        course: (data.courses as any)?.name,
+        grade: data.grade,
+        issueDate: new Date(data.issue_date).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" }),
+      });
+      setStatus("success");
+    }
   };
 
   return (
