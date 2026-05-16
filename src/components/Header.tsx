@@ -27,15 +27,15 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
           ? "bg-white/80 backdrop-blur-md border-b border-slate-200 py-4 shadow-sm"
           : "bg-transparent py-6"
-      }`}
+        }`}
     >
       <div className="container mx-auto px-6 md:px-12 flex items-center justify-between">
-        <a href="/" className="flex items-center gap-2 group py-1">
+        <a href="/" className="flex items-center gap-3 group py-1">
           <Image src="/logo.png" alt="Rohit Computer Institute" width={160} height={60} className="object-contain h-14 w-auto" priority />
+          <span className="text-3xl md:text-2xl font-black text-blue-700 tracking-tight">Rohit Computer Institute (RCI)</span>
         </a>
 
         {/* Desktop Nav */}
