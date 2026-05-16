@@ -17,6 +17,8 @@ export default function Header() {
   }, []);
 
   const navLinks = [
+    { name: "Home", href: "/" },
+    { name: "About", href: "/about" },
     { name: "Courses", href: "/courses" },
     { name: "Verify Certificate", href: "/verify" },
     { name: "Admission", href: "/admission" },
@@ -32,7 +34,7 @@ export default function Header() {
       }`}
     >
       <div className="container mx-auto px-6 md:px-12 flex items-center justify-between">
-        <a href="#" className="flex items-center gap-2 group py-1">
+        <a href="/" className="flex items-center gap-2 group py-1">
           <Image src="/logo.png" alt="Rohit Computer Institute" width={160} height={60} className="object-contain h-14 w-auto" priority />
         </a>
 
