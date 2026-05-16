@@ -1,41 +1,18 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, CheckCircle2, XCircle, Award, Calendar, User, BookOpen } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { motion } from "framer-motion";
+import { Search, Award } from "lucide-react";
 
 export default function VerifyCertificate() {
+  const router = useRouter();
   const [certId, setCertId] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [result, setResult] = useState<any>(null);
 
-  const handleVerify = async (e: React.FormEvent) => {
+  const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
     if (!certId.trim()) return;
-
-    setStatus("loading");
-    setResult(null);
-
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("certificates")
-      .select("certificate_id, grade, issue_date, students(name), courses(name)")
-      .eq("certificate_id", certId.trim().toUpperCase())
-      .single();
-
-    if (error || !data) {
-      setStatus("error");
-    } else {
-      setResult({
-        id: data.certificate_id,
-        studentName: (data.students as any)?.name,
-        course: (data.courses as any)?.name,
-        grade: data.grade,
-        issueDate: new Date(data.issue_date).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" }),
-      });
-      setStatus("success");
-    }
+    router.push(`/verify/${certId.trim().toUpperCase()}`);
   };
 
   return (
@@ -47,15 +24,12 @@ export default function VerifyCertificate() {
               Verify Certificate
             </h2>
             <p className="text-slate-600 text-lg">
-              Employers and institutions can instantly verify the authenticity of an RCI certificate by entering the unique Certificate ID below.
+              Employers and institutions can instantly verify the authenticity of an RCI certificate.
             </p>
           </div>
 
-          <div className="bg-slate-50 p-8 md:p-12 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
-            {/* Decorative background shapes */}
-            <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
-            
-            <form onSubmit={handleVerify} className="relative z-10 max-w-xl mx-auto mb-8">
+          <div className="bg-slate-50 p-8 md:p-12 rounded-3xl border border-slate-200 shadow-sm">
+            <form onSubmit={handleVerify} className="max-w-xl mx-auto">
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -65,88 +39,22 @@ export default function VerifyCertificate() {
                     type="text"
                     value={certId}
                     onChange={(e) => setCertId(e.target.value)}
-                    placeholder="Enter Certificate ID (e.g. RCI-12345)"
+                    placeholder="Enter Certificate ID (e.g. RCI-2026-001)"
                     className="block w-full pl-11 pr-4 py-4 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all font-medium"
                     required
                   />
                 </div>
                 <button
                   type="submit"
-                  disabled={status === "loading" || !certId.trim()}
+                  disabled={!certId.trim()}
                   className="bg-blue-600 text-white px-8 py-4 rounded-xl font-semibold hover:bg-blue-700 transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center min-w-[140px]"
                 >
-                  {status === "loading" ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Search className="w-5 h-5 mr-2" />
-                      Verify
-                    </>
-                  )}
+                  <Search className="w-5 h-5 mr-2" />
+                  Verify
                 </button>
               </div>
+              <p className="text-center text-slate-400 text-sm mt-4">You can also scan the QR code on a certificate for instant verification.</p>
             </form>
-
-            <AnimatePresence mode="wait">
-              {status === "success" && result && (
-                <motion.div
-                  key="success"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="bg-green-50 border border-green-200 rounded-2xl p-6 md:p-8 relative overflow-hidden"
-                >
-                  <div className="absolute top-0 left-0 w-2 h-full bg-green-500" />
-                  <div className="flex items-start gap-4">
-                    <div className="mt-1">
-                      <CheckCircle2 className="w-8 h-8 text-green-500" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-slate-900 mb-1">Authentic Certificate Verified</h3>
-                      <p className="text-green-700 font-medium mb-6">Certificate ID: {result.id}</p>
-                      
-                      <div className="grid sm:grid-cols-2 gap-y-4 gap-x-8">
-                        <div>
-                          <p className="text-sm text-slate-500 flex items-center gap-1.5 mb-1"><User className="w-4 h-4"/> Student Name</p>
-                          <p className="font-semibold text-slate-900">{result.studentName}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-500 flex items-center gap-1.5 mb-1"><BookOpen className="w-4 h-4"/> Course Enrolled</p>
-                          <p className="font-semibold text-slate-900">{result.course}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-500 flex items-center gap-1.5 mb-1"><Award className="w-4 h-4"/> Grade / Score</p>
-                          <p className="font-semibold text-slate-900">{result.grade}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-500 flex items-center gap-1.5 mb-1"><Calendar className="w-4 h-4"/> Issue Date</p>
-                          <p className="font-semibold text-slate-900">{result.issueDate}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {status === "error" && (
-                <motion.div
-                  key="error"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="bg-red-50 border border-red-200 rounded-2xl p-6 md:p-8 flex items-start gap-4"
-                >
-                  <XCircle className="w-8 h-8 text-red-500 shrink-0" />
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-2">Verification Failed</h3>
-                    <p className="text-slate-700">
-                      We could not find a certificate with the ID <span className="font-semibold text-red-600">"{certId}"</span>. 
-                      Please check the ID and try again, or contact the institute administration for assistance.
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
         </div>
       </div>

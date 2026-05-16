@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
   const { data, error } = await supabase
     .from("certificates")
-    .select("certificate_id, issue_date, status, students(full_name), courses(course_name)")
+    .select("certificate_id, student_name, course_name, issue_date, issued_by, status")
     .eq("certificate_id", certificate_id.trim().toUpperCase())
     .single();
 
@@ -19,14 +19,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ valid: false, error: "Certificate not found" }, { status: 404 });
   }
 
-  return NextResponse.json({
-    valid: true,
-    certificate: {
-      id: data.certificate_id,
-      studentName: (data.students as any)?.full_name,
-      course: (data.courses as any)?.course_name,
-      issueDate: data.issue_date,
-      status: data.status,
-    },
-  });
+  return NextResponse.json({ valid: true, certificate: data });
 }
