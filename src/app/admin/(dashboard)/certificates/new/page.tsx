@@ -10,35 +10,28 @@ export default function NewCertificatePage() {
   const router = useRouter();
   const [students, setStudents] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
-  const [form, setForm] = useState({ student_id: "", course_id: "", grade: "", issue_date: "" });
+  const [form, setForm] = useState({ student_id: "", course_id: "", issue_date: "", status: "Valid" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("students").select("id, name").then(({ data }) => setStudents(data ?? []));
-    supabase.from("courses").select("id, name").then(({ data }) => setCourses(data ?? []));
+    supabase.from("students").select("id, full_name").then(({ data }) => setStudents(data ?? []));
+    supabase.from("courses").select("id, course_name").then(({ data }) => setCourses(data ?? []));
   }, []);
-
-  const generateCertId = () => {
-    return `RCI-${Math.floor(10000 + Math.random() * 90000)}`;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const supabase = createClient();
-    const { error } = await supabase.from("certificates").insert([
-      { ...form, certificate_id: generateCertId() }
-    ]);
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
-      router.push("/admin/certificates");
-      router.refresh();
-    }
+    const res = await fetch("/api/certificates", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    const json = await res.json();
+    if (!res.ok) { setError(json.error); setLoading(false); }
+    else { router.push("/admin/certificates"); router.refresh(); }
   };
 
   return (
@@ -47,63 +40,35 @@ export default function NewCertificatePage() {
         <ArrowLeft className="w-4 h-4" /> Back to Certificates
       </Link>
       <h1 className="text-3xl font-bold text-slate-900 font-display mb-8">Issue New Certificate</h1>
-
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-6">{error}</div>
-        )}
+        {error && <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm mb-6">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Student</label>
-            <select
-              value={form.student_id}
-              onChange={(e) => setForm({ ...form, student_id: e.target.value })}
-              required
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+            <select value={form.student_id} onChange={(e) => setForm({ ...form, student_id: e.target.value })} required className="w-full border border-slate-300 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Select a student...</option>
-              {students.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              {students.map((s) => <option key={s.id} value={s.id}>{s.full_name}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Course</label>
-            <select
-              value={form.course_id}
-              onChange={(e) => setForm({ ...form, course_id: e.target.value })}
-              required
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+            <select value={form.course_id} onChange={(e) => setForm({ ...form, course_id: e.target.value })} required className="w-full border border-slate-300 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Select a course...</option>
-              {courses.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Grade</label>
-            <select
-              value={form.grade}
-              onChange={(e) => setForm({ ...form, grade: e.target.value })}
-              required
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select grade...</option>
-              {["A+", "A", "B+", "B", "C", "Pass"].map((g) => <option key={g} value={g}>{g}</option>)}
+              {courses.map((c) => <option key={c.id} value={c.id}>{c.course_name}</option>)}
             </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Issue Date</label>
-            <input
-              type="date"
-              value={form.issue_date}
-              onChange={(e) => setForm({ ...form, issue_date: e.target.value })}
-              required
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <input type="date" value={form.issue_date} onChange={(e) => setForm({ ...form, issue_date: e.target.value })} required className="w-full border border-slate-300 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 disabled:opacity-60 transition-colors"
-          >
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Status</label>
+            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full border border-slate-300 rounded-xl px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="Valid">Valid</option>
+              <option value="Revoked">Revoked</option>
+            </select>
+          </div>
+          <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 disabled:opacity-60 transition-colors">
             <Award className="w-5 h-5" />
             {loading ? "Issuing..." : "Issue Certificate"}
           </button>

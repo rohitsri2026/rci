@@ -4,10 +4,7 @@ import { Plus } from "lucide-react";
 
 export default async function CoursesPage() {
   const supabase = await createClient();
-  const { data: courses } = await supabase
-    .from("courses")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const { data: courses } = await supabase.from("courses").select("*").order("course_name");
 
   return (
     <div>
@@ -16,10 +13,7 @@ export default async function CoursesPage() {
           <h1 className="text-3xl font-bold text-slate-900 font-display">Courses</h1>
           <p className="text-slate-500 mt-1">Manage all courses offered by RCI.</p>
         </div>
-        <Link
-          href="/admin/courses/new"
-          className="flex items-center gap-2 bg-purple-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-colors text-sm"
-        >
+        <Link href="/admin/courses/new" className="flex items-center gap-2 bg-purple-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-colors text-sm">
           <Plus className="w-4 h-4" /> Add Course
         </Link>
       </div>
@@ -28,15 +22,11 @@ export default async function CoursesPage() {
         {courses && courses.length > 0 ? (
           courses.map((course: any) => (
             <div key={course.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="font-bold text-slate-900 text-lg">{course.name}</h3>
-                <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${course.active ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
-                  {course.active ? "Active" : "Inactive"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-sm text-slate-500">
-                <span>Duration: {course.duration}</span>
-                <span className="font-semibold text-slate-800">₹{course.price?.toLocaleString()}</span>
+              <h3 className="font-bold text-slate-900 text-lg mb-2">{course.course_name}</h3>
+              <p className="text-slate-500 text-sm mb-4 line-clamp-2">{course.description || "No description provided."}</p>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-500">Duration: <span className="text-slate-700 font-medium">{course.duration || "—"}</span></span>
+                <span className="font-bold text-slate-900">₹{course.fees?.toLocaleString("en-IN") ?? "—"}</span>
               </div>
             </div>
           ))
