@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import CourseActions from "@/components/admin/CourseActions";
 
 export default async function CoursesPage() {
   const supabase = await createClient();
@@ -21,8 +22,11 @@ export default async function CoursesPage() {
       <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
         {courses && courses.length > 0 ? (
           courses.map((course: any) => (
-            <div key={course.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-              <h3 className="font-bold text-slate-900 text-lg mb-2">{course.course_name}</h3>
+            <div key={course.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col h-full">
+              <div className="flex justify-between items-start gap-4 mb-2">
+                <h3 className="font-bold text-slate-900 text-lg">{course.course_name}</h3>
+                <CourseActions courseId={course.id} />
+              </div>
               <p className="text-slate-500 text-sm mb-4 line-clamp-2">{course.description || "No description provided."}</p>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">Duration: <span className="text-slate-700 font-medium">{course.duration || "—"}</span></span>
