@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   CheckCircle, Clock, BadgeIndianRupee, Star, ChevronDown, ArrowRight,
@@ -12,6 +13,20 @@ import type { Metadata } from "next";
 // Generate slug from course name
 function toSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+// Map course name to a relevant image
+function getCourseImage(courseName: string): string {
+  const name = courseName.toLowerCase();
+  if (name.includes("web") || name.includes("html") || name.includes("react") || name.includes("javascript")) return "/courses/web-dev.jpg";
+  if (name.includes("tally") || name.includes("account") || name.includes("finance")) return "/courses/tally.jpg";
+  if (name.includes("python") || name.includes("programming") || name.includes("c++") || name.includes("java")) return "/courses/python.jpg";
+  if (name.includes("graphic") || name.includes("design") || name.includes("photoshop") || name.includes("dtp")) return "/courses/graphic.jpg";
+  if (name.includes("typing") || name.includes("ms office") || name.includes("word") || name.includes("excel")) return "/courses/typing.jpg";
+  if (name.includes("dca") || name.includes("diploma") || name.includes("computer application")) return "/courses/dca.jpg";
+  const images = ["/courses/web-dev.jpg", "/courses/dca.jpg", "/courses/python.jpg", "/courses/tally.jpg", "/courses/graphic.jpg", "/courses/typing.jpg"];
+  const idx = Math.abs(courseName.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0)) % images.length;
+  return images[idx];
 }
 
 // Generate curriculum based on course name
@@ -94,31 +109,33 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
   const curriculum = getCurriculum(course.course_name);
   const faqs = getFaqs(course.course_name);
   const totalLessons = curriculum.reduce((acc, m) => acc + m.lessons.length, 0);
+  const courseImage = getCourseImage(course.course_name);
 
   return (
     <>
       <Header />
       <main className="bg-slate-50 min-h-screen">
 
-        {/* Hero */}
-        <section className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 pt-36 pb-20 relative overflow-hidden">
+        {/* Hero - Split Layout */}
+        <section className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 pt-28 pb-0 relative overflow-hidden">
           <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, #3b82f6 0%, transparent 50%), radial-gradient(circle at 80% 20%, #8b5cf6 0%, transparent 50%)" }} />
           <div className="container mx-auto px-6 relative z-10">
             <Link href="/courses" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm mb-8 transition-colors">
               ← Back to All Courses
             </Link>
-            <div className="grid lg:grid-cols-3 gap-12 items-start">
-              <div className="lg:col-span-2">
+            <div className="grid lg:grid-cols-2 gap-10 items-end">
+              {/* Left: Course Info */}
+              <div className="pb-12">
                 <span className="inline-block bg-blue-500/20 text-blue-300 text-xs font-semibold px-3 py-1 rounded-full border border-blue-500/30 mb-5">
                   Professional Course
                 </span>
-                <h1 className="text-4xl md:text-5xl font-black text-white mb-6 leading-tight">
+                <h1 className="text-4xl md:text-5xl font-black text-white mb-5 leading-tight">
                   {course.course_name}
                 </h1>
-                <p className="text-blue-100/80 text-lg mb-8 leading-relaxed">
+                <p className="text-blue-100/80 text-base mb-7 leading-relaxed">
                   {course.description || `Master the skills of ${course.course_name} with our industry-focused curriculum, expert faculty, and real-world projects designed to make you job-ready.`}
                 </p>
-                <div className="flex flex-wrap gap-6 mb-8">
+                <div className="flex flex-wrap gap-5 mb-7">
                   {[
                     { icon: Clock, label: course.duration || "Flexible", text: "Duration" },
                     { icon: BookOpen, label: `${curriculum.length} Modules`, text: "Curriculum" },
@@ -137,40 +154,49 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                   ))}
                 </div>
                 <div className="flex items-center gap-2">
-                  {[1,2,3,4,5].map(s => <Star key={s} className="w-5 h-5 fill-yellow-400 text-yellow-400" />)}
+                  {[1, 2, 3, 4, 5].map(s => <Star key={s} className="w-5 h-5 fill-yellow-400 text-yellow-400" />)}
                   <span className="text-white font-semibold ml-1">4.9</span>
                   <span className="text-blue-300/60 text-sm">({reviews.length * 12}+ reviews)</span>
                 </div>
               </div>
 
-              {/* Sticky Enroll Card */}
-              <div className="bg-white rounded-3xl shadow-2xl shadow-blue-900/40 p-8 border border-white/10">
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-4xl font-black text-slate-900">
-                      ₹{course.fees?.toLocaleString("en-IN") ?? "—"}
-                    </span>
-                  </div>
-                  <p className="text-slate-500 text-sm">One-time payment · No hidden fees</p>
+              {/* Right: Fully Visible Course Image */}
+              <div className="relative h-[360px] lg:h-[440px] rounded-t-3xl overflow-hidden shadow-2xl shadow-black/50">
+                <Image
+                  src={courseImage}
+                  alt={course.course_name}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/40 to-transparent" />
+                <div className="absolute top-4 right-4">
+                  <span className="bg-white text-slate-900 text-lg font-black px-4 py-2 rounded-2xl shadow-lg">
+                    ₹{course.fees?.toLocaleString("en-IN") ?? "—"}
+                  </span>
                 </div>
-                <Link href="/admission" className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-2xl font-bold text-base transition-all hover:scale-[1.02] active:scale-[0.98] mb-4 shadow-lg shadow-blue-500/25">
-                  Enroll Now <ArrowRight className="w-5 h-5" />
-                </Link>
-                <a href="tel:+919876543210" className="flex items-center justify-center gap-2 w-full bg-slate-100 hover:bg-slate-200 text-slate-800 py-3.5 rounded-2xl font-semibold text-sm transition-colors mb-6">
-                  Talk to Counsellor
-                </a>
-                <ul className="space-y-3">
-                  {["Certificate of Completion", "Placement Assistance", "Flexible Batch Timings", "Hands-on Projects", "Lifetime Notes Access"].map(f => (
-                    <li key={f} className="flex items-center gap-3 text-slate-600 text-sm">
-                      <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
               </div>
             </div>
           </div>
         </section>
+
+        {/* Enroll Bar */}
+        <div className="bg-white border-b border-slate-200 shadow-sm sticky top-16 z-40">
+          <div className="container mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <p className="font-black text-slate-900 text-xl">₹{course.fees?.toLocaleString("en-IN") ?? "—"}</p>
+              <p className="text-slate-400 text-xs">One-time · No hidden fees</p>
+            </div>
+            <div className="flex gap-3">
+              <Link href="/admission" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md shadow-blue-500/20">
+                Enroll Now <ArrowRight className="w-4 h-4" />
+              </Link>
+              <a href="tel:+919876543210" className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-3 rounded-xl font-semibold text-sm transition-colors">
+                Call Us
+              </a>
+            </div>
+          </div>
+        </div>
 
         <div className="container mx-auto px-6 py-16 max-w-5xl">
 
@@ -239,7 +265,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
               <div>
                 <h2 className="text-3xl font-black text-slate-900 mb-1">Student Reviews</h2>
                 <div className="flex items-center gap-2">
-                  {[1,2,3,4,5].map(s => <Star key={s} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
+                  {[1, 2, 3, 4, 5].map(s => <Star key={s} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
                   <span className="text-slate-600 text-sm font-semibold">4.9 out of 5</span>
                 </div>
               </div>
