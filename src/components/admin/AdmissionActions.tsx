@@ -11,9 +11,15 @@ export default function AdmissionActions({ admissionId }: { admissionId: string 
 
   const updateStatus = async (status: "Approved" | "Rejected") => {
     setLoading(status === "Approved" ? "approve" : "reject");
-    const supabase = createClient();
-    await supabase.from("admissions").update({ status }).eq("id", admissionId);
-    router.refresh();
+    
+    const { updateAdmissionStatus } = await import("./admission-actions-server");
+    const result = await updateAdmissionStatus(admissionId, status);
+    
+    if (!result.success) {
+      alert("Error: " + result.error);
+    }
+    
+    setLoading(null);
   };
 
   return (
