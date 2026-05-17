@@ -55,7 +55,6 @@ export async function updateAdmissionStatus(admissionId: string, status: "Approv
     return { success: false, error: updateError.message };
   }
 
-  revalidatePath("/admin/admissions");
-  revalidatePath("/admin/students");
+  revalidatePath("/admin", "layout");
   return { success: true };
 }

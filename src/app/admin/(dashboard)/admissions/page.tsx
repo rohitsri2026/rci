@@ -6,6 +6,7 @@ export default async function AdmissionsPage() {
   const { data: admissions } = await supabase
     .from("admissions")
     .select("*")
+    .eq("status", "Pending")
     .order("created_at", { ascending: false });
 
   const statusColor: Record<string, string> = {

@@ -5,7 +5,7 @@ async function getStats(supabase: Awaited<ReturnType<typeof createClient>>) {
   const [students, certificates, admissions, courses] = await Promise.all([
     supabase.from("students").select("id", { count: "exact", head: true }),
     supabase.from("certificates").select("id", { count: "exact", head: true }),
-    supabase.from("admissions").select("id", { count: "exact", head: true }),
+    supabase.from("admissions").select("id", { count: "exact", head: true }).eq("status", "Pending"),
     supabase.from("courses").select("id", { count: "exact", head: true }),
   ]);
   return {
