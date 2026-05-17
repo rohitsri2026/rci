@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, PhoneCall } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function CTA() {
   return (
@@ -53,13 +54,13 @@ export default function CTA() {
             viewport={{ once: true }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <a
-              href="#pricing"
+            <Link
+              href="/admission"
               className="flex items-center gap-2 bg-white text-blue-600 px-8 py-4 rounded-full font-bold hover:bg-zinc-100 transition-all hover:scale-105 active:scale-95 w-full sm:w-auto justify-center"
             >
               Enroll Now
               <ArrowRight className="w-5 h-5" />
-            </a>
+            </Link>
             <a
               href="tel:+919876543210"
               className="flex items-center gap-2 bg-black/20 text-white border border-white/20 px-8 py-4 rounded-full font-bold hover:bg-black/30 transition-all w-full sm:w-auto justify-center"

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
 
@@ -115,9 +116,9 @@ export default function CoursesSlider() {
                     </span>
                   </div>
 
-                  <button className="mt-8 w-full bg-violet-600 hover:bg-violet-700 transition py-4 rounded-xl font-semibold text-white">
+                  <Link href="/admission" className="mt-8 block text-center w-full bg-violet-600 hover:bg-violet-700 transition py-4 rounded-xl font-semibold text-white">
                     Enroll Now
-                  </button>
+                  </Link>
                 </div>
 
               </div>

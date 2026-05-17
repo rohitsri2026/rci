@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import Link from "next/link";
 
 const plans = [
   {
@@ -104,15 +105,16 @@ export default function Pricing() {
                 ))}
               </ul>
 
-              <button
-                className={`w-full py-3 rounded-xl font-semibold transition-colors ${
+              <Link
+                href="/admission"
+                className={`block text-center w-full py-3 rounded-xl font-semibold transition-colors ${
                   plan.popular
                     ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md"
                     : "bg-slate-100 text-slate-900 hover:bg-slate-200"
                 }`}
               >
                 Enroll Now
-              </button>
+              </Link>
             </motion.div>
           ))}
         </div>

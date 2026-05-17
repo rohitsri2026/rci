@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -49,12 +50,12 @@ export default function Header() {
               {link.name}
             </a>
           ))}
-          <a
-            href="#pricing"
+          <Link
+            href="/admission"
             className="bg-slate-900 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-slate-800 transition-colors"
           >
             Enroll Now
-          </a>
+          </Link>
         </nav>
 
         {/* Mobile Menu Toggle */}
@@ -79,13 +80,13 @@ export default function Header() {
               {link.name}
             </a>
           ))}
-          <a
-            href="#pricing"
+          <Link
+            href="/admission"
             onClick={() => setMobileMenuOpen(false)}
             className="bg-blue-600 text-white px-5 py-3 rounded-xl text-center font-semibold mt-4"
           >
             Enroll Now
-          </a>
+          </Link>
         </div>
       )}
     </header>
