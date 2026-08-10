@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Outfit, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { Analytics } from '@vercel/analytics/next';
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -32,6 +33,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans selection:bg-blue-500/30">
         {children}
+        <Analytics />
       </body>
     </html>
   );
