@@ -89,27 +89,58 @@ function getFaqs(courseName: string) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const supabase = await createClient();
-  const { data: courses } = await supabase.from("courses").select("course_name, description");
-  const course = courses?.find((c: any) => toSlug(c.course_name) === slug);
+  
+  let { data: course } = await supabase
+    .from("courses")
+    .select("course_name, description, slug, seo_metadata")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  // Backward-compatibility fallback
+  if (!course) {
+    const { data: allCourses } = await supabase.from("courses").select("course_name, description, slug, seo_metadata");
+    course = allCourses?.find((c: any) => toSlug(c.course_name) === slug) || null;
+  }
+
   if (!course) return { title: "Course Not Found | RCI" };
+  
+  const seo = course.seo_metadata as any;
   return {
-    title: `${course.course_name} | Rohit Computer Institute`,
-    description: course.description || `Learn ${course.course_name} at Rohit Computer Institute. Expert faculty, hands-on training, and placement assistance.`,
+    title: seo?.title || `${course.course_name} | Rohit Computer Institute`,
+    description: seo?.description || course.description || `Learn ${course.course_name} at Rohit Computer Institute. Expert faculty, hands-on training, and placement assistance.`,
   };
 }
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const supabase = await createClient();
-  const { data: courses } = await supabase.from("courses").select("*");
-  const course = courses?.find((c: any) => toSlug(c.course_name) === slug);
+
+  let { data: course } = await supabase
+    .from("courses")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  // Backward-compatibility fallback
+  if (!course) {
+    const { data: allCourses } = await supabase.from("courses").select("*");
+    course = allCourses?.find((c: any) => toSlug(c.course_name) === slug) || null;
+  }
 
   if (!course) return notFound();
 
-  const curriculum = getCurriculum(course.course_name);
-  const faqs = getFaqs(course.course_name);
-  const totalLessons = curriculum.reduce((acc, m) => acc + m.lessons.length, 0);
-  const courseImage = getCourseImage(course.course_name);
+  const dbCurriculum = course.curriculum && Array.isArray(course.curriculum) && course.curriculum.length > 0
+    ? (course.curriculum as any[])
+    : null;
+  const curriculum = dbCurriculum || getCurriculum(course.course_name);
+
+  const dbFaqs = course.faqs && Array.isArray(course.faqs) && course.faqs.length > 0
+    ? (course.faqs as any[])
+    : null;
+  const faqs = dbFaqs || getFaqs(course.course_name);
+
+  const totalLessons = curriculum.reduce((acc, m) => acc + (m.lessons?.length || 0), 0);
+  const courseImage = course.thumbnail_url || getCourseImage(course.course_name);
 
   return (
     <>
@@ -188,10 +219,10 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
               <p className="text-slate-400 text-xs">One-time · No hidden fees</p>
             </div>
             <div className="flex gap-3">
-              <Link href="/admission" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md shadow-blue-500/20">
+              <Link href={`/admission?course=${encodeURIComponent(course.course_name)}`} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md shadow-blue-500/20">
                 Enroll Now <ArrowRight className="w-4 h-4" />
               </Link>
-              <a href="tel:+919876543210" className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-3 rounded-xl font-semibold text-sm transition-colors">
+              <a href="tel:+917376893097" className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-3 rounded-xl font-semibold text-sm transition-colors">
                 Call Us
               </a>
             </div>
@@ -220,7 +251,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                     <span className="text-slate-400 text-sm shrink-0">{mod.lessons.length} lessons</span>
                   </div>
                   <div className="border-t border-slate-100 px-6 py-4 grid sm:grid-cols-2 gap-2">
-                    {mod.lessons.map((l, j) => (
+                    {mod.lessons.map((l: string, j: number) => (
                       <div key={j} className="flex items-center gap-2 text-slate-600 text-sm">
                         <CheckCircle className="w-3.5 h-3.5 text-green-500 shrink-0" />
                         {l}
@@ -316,7 +347,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           <section className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-10 text-center">
             <h2 className="text-3xl font-black text-white mb-3">Ready to Get Started?</h2>
             <p className="text-blue-100 mb-8 max-w-lg mx-auto">Join hundreds of students who have already transformed their careers with this course.</p>
-            <Link href="/admission" className="inline-flex items-center gap-2 bg-white text-blue-700 px-8 py-4 rounded-2xl font-bold hover:bg-blue-50 transition-all hover:scale-105 active:scale-95 shadow-lg">
+            <Link href={`/admission?course=${encodeURIComponent(course.course_name)}`} className="inline-flex items-center gap-2 bg-white text-blue-700 px-8 py-4 rounded-2xl font-bold hover:bg-blue-50 transition-all hover:scale-105 active:scale-95 shadow-lg">
               Apply for Admission <ArrowRight className="w-5 h-5" />
             </Link>
           </section>

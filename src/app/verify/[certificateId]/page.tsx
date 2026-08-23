@@ -1,9 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CertificateCard from "@/components/CertificateCard";
 import type { Metadata } from "next";
+import React from "react";
 
 type Props = { params: Promise<{ certificateId: string }> };
 
@@ -19,19 +19,33 @@ export default async function VerifyCertificateIdPage({ params }: Props) {
   const { certificateId } = await params;
   const supabase = await createClient();
 
+  // Query by certificate_number, joining students and courses.
   const { data: cert } = await supabase
     .from("certificates")
-    .select("*")
-    .eq("certificate_id", certificateId.toUpperCase())
-    .single();
-
-  if (!cert) notFound();
+    .select(`
+      *,
+      students:student_id (
+        id,
+        full_name,
+        email,
+        phone,
+        address
+      ),
+      courses:course_id (
+        id,
+        course_name,
+        duration,
+        fees
+      )
+    `)
+    .eq("certificate_number", certificateId.toUpperCase())
+    .maybeSingle();
 
   return (
     <>
       <Header />
       <main className="min-h-screen bg-slate-50 pt-32 pb-20">
-        <div className="container mx-auto px-6 max-w-2xl">
+        <div className="container mx-auto px-6 max-w-4xl">
           <CertificateCard cert={cert} />
         </div>
       </main>

@@ -21,18 +21,40 @@ export default function CertificateActions({
   const handleRevoke = async () => {
     if (!confirm("Revoke this certificate? The public verify page will show it as Revoked.")) return;
     setLoading("revoke");
-    const supabase = createClient();
-    await supabase.from("certificates").update({ status: "Revoked" }).eq("id", certId);
-    router.refresh();
+    try {
+      const res = await fetch(`/api/certificates/${certId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Revoked" }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to revoke certificate.");
+      } else {
+        router.refresh();
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    }
     setLoading(null);
   };
 
   const handleDelete = async () => {
     if (!confirm("Permanently delete this certificate? This cannot be undone.")) return;
     setLoading("delete");
-    const supabase = createClient();
-    await supabase.from("certificates").delete().eq("id", certId);
-    router.refresh();
+    try {
+      const res = await fetch(`/api/certificates/${certId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to delete certificate.");
+      } else {
+        router.refresh();
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    }
     setLoading(null);
   };
 

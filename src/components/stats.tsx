@@ -1,42 +1,62 @@
+import { Users, BookOpen, Award, Calendar } from "lucide-react";
+
 const stats = [
   {
-    number: "1500+",
+    icon: Users,
+    number: "1,500+",
     label: "Students Trained",
+    description: "Enrolled & trained across various IT programs",
   },
   {
+    icon: BookOpen,
     number: "25+",
     label: "Professional Courses",
+    description: "Diplomas, accounting & tech certifications",
   },
   {
-    number: "5+",
-    label: "Years Experience",
+    icon: Award,
+    number: "1,200+",
+    label: "Certificates Issued",
+    description: "Fully verifiable online & QR code enabled",
   },
   {
-    number: "95%",
-    label: "Student Satisfaction",
+    icon: Calendar,
+    number: "5+ Years",
+    label: "Experience",
+    description: "Empowering computer students since establishment",
   },
 ];
 
 export default function Stats() {
   return (
-    <section className="py-24 px-6 bg-white">
-      <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-8">
+    <section className="py-16 sm:py-18 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200">
+      <div className="max-w-6xl mx-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
 
-        {stats.map((item, index) => (
-          <div
-            key={index}
-            className="bg-slate-50 border border-slate-100 rounded-3xl p-8 md:p-10 text-center shadow-sm"
-          >
-            <h2 className="text-4xl md:text-5xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              {item.number}
-            </h2>
+          {stats.map((item, index) => (
+            <div
+              key={index}
+              className="bg-slate-50/80 border border-slate-200/80 rounded-3xl p-6 text-center hover:border-blue-300 hover:bg-blue-50/20 transition-all group"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-blue-100/80 text-blue-600 mx-auto flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <item.icon className="w-5.5 h-5.5" />
+              </div>
 
-            <p className="mt-4 text-slate-600 font-medium">
-              {item.label}
-            </p>
-          </div>
-        ))}
+              <h3 className="text-3xl sm:text-4xl font-black text-slate-900 mb-1 tracking-tight font-display">
+                {item.number}
+              </h3>
 
+              <p className="text-xs sm:text-sm font-extrabold text-slate-800 mb-1">
+                {item.label}
+              </p>
+
+              <p className="text-xs text-slate-500 line-clamp-2">
+                {item.description}
+              </p>
+            </div>
+          ))}
+
+        </div>
       </div>
     </section>
   );

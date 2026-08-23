@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
+import { RCIConfig } from "@/lib/config";
 
 export const metadata = { title: "Contact Us | Rohit Computer Institute", description: "Get in touch with Rohit Computer Institute. Find our address, phone number, and email." };
 
@@ -19,9 +20,9 @@ export default function ContactPage() {
             {/* Contact Info */}
             <div className="space-y-6">
               {[
-                { icon: MapPin, label: "Address", value: "Sanjay Nagar Cantt, Kanpur,\nUttar Pradesh - 208004", color: "text-blue-600", bg: "bg-blue-100" },
-                { icon: Phone, label: "Phone", value: "+91 73768 93097", color: "text-green-600", bg: "bg-green-100" },
-                { icon: Mail, label: "Email", value: "info@rcinstitute.com", color: "text-purple-600", bg: "bg-purple-100" },
+                { icon: MapPin, label: "Address", value: RCIConfig.address, color: "text-blue-600", bg: "bg-blue-100" },
+                { icon: Phone, label: "Phone", value: RCIConfig.phoneFormatted, color: "text-green-600", bg: "bg-green-100" },
+                { icon: Mail, label: "Email", value: RCIConfig.email, color: "text-purple-600", bg: "bg-purple-100" },
                 { icon: Clock, label: "Working Hours", value: "Monday to Saturday\n8:00 AM – 8:00 PM", color: "text-orange-600", bg: "bg-orange-100" },
               ].map((item) => (
                 <div key={item.label} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex gap-5">

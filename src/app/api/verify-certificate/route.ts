@@ -11,8 +11,8 @@ export async function POST(request: Request) {
 
   const { data, error } = await supabase
     .from("certificates")
-    .select("certificate_id, student_name, course_name, issue_date, issued_by, status")
-    .eq("certificate_id", certificate_id.trim().toUpperCase())
+    .select("certificate_number, student_name, course_name, issue_date, status, grade")
+    .eq("certificate_number", certificate_id.trim().toUpperCase())
     .single();
 
   if (error || !data) {

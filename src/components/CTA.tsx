@@ -1,30 +1,31 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, PhoneCall } from "lucide-react";
+import { ArrowRight, MessageCircle, PhoneCall } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { RCIConfig } from "@/lib/config";
 
 export default function CTA() {
-  return (
-    <section className="py-24 relative overflow-hidden">
-      {/* Background Gradient */}
-      <div className="absolute inset-0 bg-blue-600" />
-      <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-l from-purple-600/50 to-transparent" />
-      
-      {/* Decorative circles */}
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-black/10 rounded-full blur-3xl pointer-events-none" />
+  const whatsappUrl = RCIConfig.getWhatsAppUrl("Hello RCI, I am interested in joining a computer course. Please share admission details.");
 
-      <div className="container mx-auto px-6 relative z-10">
+  return (
+    <section className="py-18 relative overflow-hidden bg-slate-900 text-white">
+      {/* Gradient Background Highlights */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 opacity-90" />
+      <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
+          
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.9, opacity: 0 }}
             whileInView={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="mb-10 bg-white p-4 rounded-full shadow-2xl"
+            transition={{ duration: 0.4 }}
+            className="mb-8 bg-white p-3 rounded-full shadow-2xl"
           >
-            <Image src="/badge.png" alt="RCI Badge" width={160} height={160} className="w-32 h-32 object-contain" />
+            <Image src="/badge.png" alt="RCI MSME ISO Badge" width={120} height={120} className="w-24 h-24 object-contain" />
           </motion.div>
 
           <motion.h2 
@@ -32,19 +33,19 @@ export default function CTA() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-bold font-display text-white mb-6 leading-tight"
+            className="text-3xl sm:text-4xl md:text-5xl font-black font-display text-white mb-6 leading-tight"
           >
-            Ready to Accelerate Your Tech Career?
+            Ready to Build Your Digital Skills?
           </motion.h2>
           
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
             viewport={{ once: true }}
-            className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto"
+            className="text-base sm:text-lg text-blue-100 mb-10 max-w-2xl mx-auto leading-relaxed"
           >
-            Join thousands of successful students who have transformed their lives through our premium IT education.
+            Join hundreds of successful students empowering their careers with practical computer applications, accounting software, and software development skills.
           </motion.p>
           
           <motion.div 
@@ -52,23 +53,35 @@ export default function CTA() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             viewport={{ once: true }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md sm:max-w-none"
           >
             <Link
               href="/admission"
-              className="flex items-center gap-2 bg-white text-blue-600 px-8 py-4 rounded-full font-bold hover:bg-zinc-100 transition-all hover:scale-105 active:scale-95 w-full sm:w-auto justify-center"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white text-blue-700 hover:bg-slate-100 px-8 py-4 rounded-2xl font-extrabold text-base transition-all shadow-lg active:scale-98"
             >
-              Enroll Now
+              Apply for Admission
               <ArrowRight className="w-5 h-5" />
             </Link>
+
             <a
-              href="tel:+919876543210"
-              className="flex items-center gap-2 bg-black/20 text-white border border-white/20 px-8 py-4 rounded-full font-bold hover:bg-black/30 transition-all w-full sm:w-auto justify-center"
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto flex items-center justify-center gap-2.5 bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-2xl font-bold text-base transition-all shadow-lg shadow-emerald-600/25 active:scale-98"
             >
-              <PhoneCall className="w-5 h-5" />
-              Contact Admission
+              <MessageCircle className="w-5 h-5" />
+              WhatsApp RCI
+            </a>
+
+            <a
+              href={`tel:${RCIConfig.phoneRaw}`}
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 px-7 py-4 rounded-2xl font-bold text-base transition-all backdrop-blur-xs active:scale-98"
+            >
+              <PhoneCall className="w-5 h-5 text-blue-300" />
+              Call Admissions
             </a>
           </motion.div>
+
         </div>
       </div>
     </section>

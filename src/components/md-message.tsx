@@ -1,56 +1,72 @@
 import Image from "next/image";
+import { Quote, Building2 } from "lucide-react";
+import { RCIConfig } from "@/lib/config";
 
 export default function MDMessage() {
   return (
-    <section className="py-24 px-6 bg-white">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+    <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200">
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
 
-        <div className="relative lg:col-span-5 max-w-[400px] mx-auto w-full">
-          <div className="absolute inset-0 bg-blue-600/10 blur-3xl rounded-full" />
+        {/* Left: MD Photo & Frame */}
+        <div className="relative lg:col-span-5 max-w-sm mx-auto w-full">
+          <div className="absolute inset-0 bg-blue-500/10 blur-3xl rounded-full pointer-events-none" />
 
-          <div className="relative bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xl">
-            <Image
-              src="/md-photo.png"
-              alt="Managing Director"
-              width={400}
-              height={500}
-              className="w-full h-full object-cover"
-            />
+          <div className="relative bg-white border border-slate-200/90 rounded-3xl p-3 shadow-xl">
+            <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100">
+              <Image
+                src="/md-photo.png"
+                alt={`${RCIConfig.directorName} - ${RCIConfig.directorTitle}`}
+                fill
+                sizes="(max-width: 768px) 100vw, 400px"
+                className="object-cover"
+              />
+            </div>
+
+            <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-200 shadow-md flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                <Building2 className="w-4.5 h-4.5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-extrabold text-slate-900">{RCIConfig.directorName}</h4>
+                <p className="text-xs text-blue-600 font-bold">{RCIConfig.directorTitle}</p>
+              </div>
+            </div>
           </div>
         </div>
 
+        {/* Right: MD Content */}
         <div className="lg:col-span-7">
-          <span className="text-blue-600 font-semibold uppercase tracking-widest text-sm">
-            Managing Director Message
+          <span className="text-xs sm:text-sm font-black uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100 px-4 py-1.5 rounded-full inline-flex items-center gap-2 mb-4">
+            Message from the Managing Director
           </span>
 
-          <h2 className="text-3xl md:text-4xl font-black mt-4 leading-tight text-slate-900">
-            Empowering Students Through Technology & Skills
+          <h2 className="text-3xl sm:text-4xl font-black font-display text-slate-900 leading-tight mb-5">
+            Empowering Students Through Practical IT Excellence
           </h2>
 
-          <p className="mt-6 text-slate-600 leading-relaxed text-base">
-            At Rohit Computer Institute, our mission is to provide
-            practical and industry-relevant computer education to
-            every student. We believe that technology education is
-            the key to future success.
+          <p className="text-slate-600 leading-relaxed text-base sm:text-lg mb-5">
+            At Rohit Computer Institute (RCI), our core commitment is to provide practical, hands-on computer training 
+            that empowers every student with real-world digital competence. We bridge the gap between classroom theory and workplace skills.
           </p>
 
-          <p className="mt-4 text-slate-600 leading-relaxed text-base">
-            Our institute focuses on skill development, professional
-            training, and career-oriented learning that helps
-            students become confident and job-ready professionals.
-          </p>
+          <div className="bg-slate-50 border-l-4 border-blue-600 p-5 sm:p-6 rounded-r-2xl border-y border-r border-slate-200/80 shadow-2xs mb-6 relative">
+            <Quote className="w-8 h-8 text-blue-100 absolute top-3 right-4 pointer-events-none" />
+            <p className="text-slate-800 italic text-sm sm:text-base leading-relaxed font-medium relative z-10">
+              &ldquo;Our focus is building genuine confidence in our students. We believe technology education is not just about passing exams, 
+              but mastering practical computer skills that unlock long-term career opportunities.&rdquo;
+            </p>
+          </div>
 
-          <div className="mt-8">
-            <h3 className="text-xl font-bold text-slate-900">
-              Rohit Srivastava
+          <div className="pt-2 border-t border-slate-100">
+            <h3 className="text-lg font-extrabold text-slate-900">
+              {RCIConfig.directorName}
             </h3>
-
-            <p className="text-blue-600 mt-1 font-medium text-sm">
-              Managing Director, RCI
+            <p className="text-blue-600 font-bold text-xs uppercase tracking-wider mt-0.5">
+              {RCIConfig.directorTitle}
             </p>
           </div>
         </div>
+
       </div>
     </section>
   );

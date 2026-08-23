@@ -38,14 +38,28 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/admin/login", request.url));
   }
 
-  // If already logged in, redirect away from login page
+  // If already logged in, redirect away from admin login page
   if (request.nextUrl.pathname === "/admin/login" && user) {
     return NextResponse.redirect(new URL("/admin", request.url));
+  }
+
+  // Protect all /student routes except /student/login
+  if (
+    request.nextUrl.pathname.startsWith("/student") &&
+    !request.nextUrl.pathname.startsWith("/student/login") &&
+    !user
+  ) {
+    return NextResponse.redirect(new URL("/student/login", request.url));
+  }
+
+  // If already logged in, redirect away from student login page
+  if (request.nextUrl.pathname === "/student/login" && user) {
+    return NextResponse.redirect(new URL("/student", request.url));
   }
 
   return supabaseResponse;
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/student/:path*"],
 };

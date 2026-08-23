@@ -22,7 +22,7 @@ export default async function CoursesPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {courses && courses.length > 0 ? courses.map((course: any) => {
-              const slug = course.course_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+              const slug = course.slug || course.course_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
               return (
                 <Link key={course.id} href={`/courses/${slug}`} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 hover:shadow-md hover:border-blue-200 transition-all group">
                   <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors">
