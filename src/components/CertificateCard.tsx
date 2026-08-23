@@ -1,41 +1,110 @@
 "use client";
 
 import React from "react";
-import { User, BookOpen, Calendar, Award, ShieldAlert, CheckCircle2, FileText, ArrowLeft, RefreshCw } from "lucide-react";
+import { 
+  User, BookOpen, Calendar, Award, ShieldAlert, CheckCircle2, FileText, 
+  ArrowLeft, RefreshCw, AlertTriangle, Clock, HelpCircle, MessageCircle, Mail
+} from "lucide-react";
 import Link from "next/link";
 import CertificatePreview from "./certificates/CertificatePreview";
 import VerificationBadge from "./certificates/VerificationBadge";
 import DownloadButton from "./certificates/DownloadButton";
 import PrintButton from "./certificates/PrintButton";
 import CertificateSeal from "./certificates/CertificateSeal";
+import { RCIConfig } from "@/lib/config";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function CertificateCard({ cert }: { cert: any }) {
+export default function CertificateCard({ cert, searchId }: { cert?: any; searchId?: string }) {
+  const whatsappUrl = RCIConfig.getWhatsAppUrl(
+    `Hello RCI, I need assistance verifying certificate ${searchId || cert?.certificate_number || ""}`
+  );
+
+  // ----------------------------------------------------
+  // 1. NOT FOUND STATE
+  // ----------------------------------------------------
   if (!cert) {
     return (
-      <div className="bg-white border border-rose-200 rounded-3xl p-8 sm:p-12 text-center shadow-lg shadow-rose-950/5 max-w-2xl mx-auto animate-in fade-in duration-300">
-        <div className="w-16 h-16 rounded-2xl bg-rose-100/80 text-rose-600 flex items-center justify-center mx-auto mb-4 border border-rose-200">
-          <ShieldAlert className="w-9 h-9 text-rose-600" />
-        </div>
-        <h3 className="font-extrabold text-2xl text-slate-900 font-display">Certificate Not Found</h3>
-        <p className="text-slate-600 text-sm mt-2.5 max-w-md mx-auto leading-relaxed">
-          The certificate number could not be verified against the RCI records. Please make sure you entered the number exactly as printed on your certificate.
-        </p>
-
-        <div className="mt-8 flex justify-center">
+      <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="flex items-center justify-between">
           <Link
             href="/verify"
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 rounded-xl font-extrabold text-sm transition-all shadow-md shadow-blue-500/20 active:scale-98"
+            className="inline-flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-blue-600 transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-2xs"
           >
-            <RefreshCw className="w-4 h-4" />
-            Try Again
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Back to Verification Portal
           </Link>
+        </div>
+
+        <div className="bg-white border border-rose-200/90 rounded-3xl p-6 sm:p-10 text-center shadow-xl shadow-rose-950/5 max-w-2xl mx-auto">
+          <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4 border border-rose-100 shadow-2xs">
+            <ShieldAlert className="w-8 h-8 text-rose-600" />
+          </div>
+
+          <span className="inline-block text-[11px] font-black uppercase tracking-wider text-rose-700 bg-rose-50 border border-rose-100 px-3 py-1 rounded-full mb-2">
+            Record Not Found
+          </span>
+
+          <h3 className="font-black text-2xl sm:text-3xl text-slate-900 font-display">
+            Certificate Not Found
+          </h3>
+
+          {searchId && (
+            <div className="mt-3 inline-block bg-slate-100 border border-slate-200/80 rounded-lg px-3 py-1 font-mono text-xs font-bold text-slate-700">
+              Searched ID: <span className="text-rose-600">{searchId}</span>
+            </div>
+          )}
+
+          <p className="text-slate-600 text-xs sm:text-sm mt-3 max-w-md mx-auto leading-relaxed">
+            The certificate number could not be verified against the official RCI records. Please verify that the number matches exactly as printed on your certificate.
+          </p>
+
+          {/* Verification Tips Box */}
+          <div className="mt-6 bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-left max-w-md mx-auto text-xs space-y-2 text-slate-600">
+            <p className="font-extrabold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-1.5">
+              <HelpCircle className="w-3.5 h-3.5 text-blue-600" />
+              Quick Check Tips:
+            </p>
+            <ul className="space-y-1 list-disc pl-4 text-[11.5px] leading-snug">
+              <li>Check spelling and hyphen format (e.g. <span className="font-mono font-bold">RCI-2026-000001</span>)</li>
+              <li>Scan the QR code printed on the physical certificate directly</li>
+              <li>Ensure the certificate was issued by Rohit Computer Institute</li>
+            </ul>
+          </div>
+
+          {/* Action CTAs */}
+          <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-3">
+            <Link
+              href="/verify"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-md shadow-blue-500/20 active:scale-98"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Try Again
+            </Link>
+
+            <Link
+              href="/contact"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-2xs active:scale-98"
+            >
+              <Mail className="w-4 h-4" />
+              Contact RCI
+            </Link>
+
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-2xs active:scale-98"
+            >
+              <MessageCircle className="w-4 h-4" />
+              WhatsApp Help
+            </a>
+          </div>
         </div>
       </div>
     );
   }
 
-  const certificateNumber = cert.certificate_number || cert.certificate_id;
+  const certificateNumber = cert.certificate_number || cert.certificate_id || searchId || "—";
   const studentName = cert.student_name || cert.students?.full_name || "—";
   const courseName = cert.course_name || cert.courses?.course_name || "—";
   const duration = cert.courses?.duration || "6 Months";
@@ -43,46 +112,185 @@ export default function CertificateCard({ cert }: { cert: any }) {
   const completionDate = cert.completion_date || cert.issue_date;
   const issueDate = cert.issue_date;
   const fatherName = cert.students?.address || undefined;
+  const expiryDate = cert.expiration_date || cert.expiry_date;
 
-  const isRevokedOrExpired = cert.status === "Revoked" || cert.status === "Expired";
-
-  if (isRevokedOrExpired) {
+  // ----------------------------------------------------
+  // 2. REVOKED STATE
+  // ----------------------------------------------------
+  if (cert.status === "Revoked") {
     return (
-      <div className="bg-white border border-amber-200 rounded-3xl p-8 sm:p-12 text-center shadow-lg shadow-amber-950/5 max-w-2xl mx-auto animate-in fade-in duration-300">
-        <div className="w-16 h-16 rounded-2xl bg-amber-100/80 text-amber-600 flex items-center justify-center mx-auto mb-4 border border-amber-200">
-          <ShieldAlert className="w-9 h-9 text-amber-600" />
-        </div>
-        <h3 className="font-extrabold text-2xl text-slate-900 font-display">
-          Certificate {cert.status}
-        </h3>
-        <p className="text-slate-600 text-sm mt-2.5 max-w-md mx-auto leading-relaxed">
-          This certificate is currently not valid. It has been marked as <span className="font-bold text-amber-700">{cert.status}</span> in the official institute registry.
-        </p>
-
-        <div className="mt-6 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-left max-w-md mx-auto text-xs space-y-1.5">
-          <div className="flex justify-between">
-            <span className="text-slate-400">Certificate No:</span>
-            <span className="font-mono font-bold text-slate-800">{certificateNumber}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-slate-400">Student Name:</span>
-            <span className="font-bold text-slate-800">{studentName}</span>
-          </div>
-        </div>
-
-        <div className="mt-8 flex justify-center gap-3">
+      <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="flex items-center justify-between">
           <Link
             href="/verify"
-            className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-extrabold text-sm transition-all shadow-xs active:scale-98"
+            className="inline-flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-blue-600 transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-2xs"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Verification
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Verify Another Certificate
           </Link>
+        </div>
+
+        <div className="bg-white border border-amber-200/90 rounded-3xl p-6 sm:p-10 text-center shadow-xl shadow-amber-950/5 max-w-2xl mx-auto">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-4 border border-amber-200 shadow-2xs">
+            <AlertTriangle className="w-8 h-8 text-amber-600" />
+          </div>
+
+          <span className="inline-block text-[11px] font-black uppercase tracking-wider text-amber-800 bg-amber-100 border border-amber-200 px-3 py-1 rounded-full mb-2">
+            Status: Revoked
+          </span>
+
+          <h3 className="font-black text-2xl sm:text-3xl text-slate-900 font-display">
+            Certificate Revoked
+          </h3>
+
+          <p className="text-slate-600 text-xs sm:text-sm mt-3 max-w-md mx-auto leading-relaxed">
+            This certificate is currently not valid. It has been officially marked as <span className="font-extrabold text-amber-800">Revoked</span> in the institute registry.
+          </p>
+
+          <div className="mt-6 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-left max-w-md mx-auto text-xs space-y-2">
+            <div className="flex justify-between border-b border-slate-200/60 pb-1.5">
+              <span className="text-slate-400 font-medium">Certificate No:</span>
+              <span className="font-mono font-bold text-slate-900">{certificateNumber}</span>
+            </div>
+            <div className="flex justify-between border-b border-slate-200/60 pb-1.5">
+              <span className="text-slate-400 font-medium">Student Name:</span>
+              <span className="font-bold text-slate-900">{studentName}</span>
+            </div>
+            <div className="flex justify-between border-b border-slate-200/60 pb-1.5">
+              <span className="text-slate-400 font-medium">Course Program:</span>
+              <span className="font-bold text-slate-900">{courseName}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400 font-medium">Current Status:</span>
+              <span className="font-extrabold text-amber-700 uppercase">{cert.status}</span>
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-3">
+            <Link
+              href="/verify"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-md shadow-blue-500/20 active:scale-98"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Verify Another Certificate
+            </Link>
+
+            <Link
+              href="/contact"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-2xs active:scale-98"
+            >
+              <Mail className="w-4 h-4" />
+              Contact RCI
+            </Link>
+
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-2xs active:scale-98"
+            >
+              <MessageCircle className="w-4 h-4" />
+              WhatsApp Help
+            </a>
+          </div>
         </div>
       </div>
     );
   }
 
+  // ----------------------------------------------------
+  // 3. EXPIRED STATE
+  // ----------------------------------------------------
+  if (cert.status === "Expired") {
+    return (
+      <div className="space-y-6 animate-in fade-in duration-300">
+        <div className="flex items-center justify-between">
+          <Link
+            href="/verify"
+            className="inline-flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-blue-600 transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-2xs"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Verify Another Certificate
+          </Link>
+        </div>
+
+        <div className="bg-white border border-amber-200/90 rounded-3xl p-6 sm:p-10 text-center shadow-xl shadow-amber-950/5 max-w-2xl mx-auto">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-4 border border-amber-200 shadow-2xs">
+            <Clock className="w-8 h-8 text-amber-600" />
+          </div>
+
+          <span className="inline-block text-[11px] font-black uppercase tracking-wider text-amber-800 bg-amber-100 border border-amber-200 px-3 py-1 rounded-full mb-2">
+            Status: Expired
+          </span>
+
+          <h3 className="font-black text-2xl sm:text-3xl text-slate-900 font-display">
+            Certificate Expired
+          </h3>
+
+          <p className="text-slate-600 text-xs sm:text-sm mt-3 max-w-md mx-auto leading-relaxed">
+            This certificate has expired based on official records and is currently no longer valid.
+          </p>
+
+          <div className="mt-6 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-left max-w-md mx-auto text-xs space-y-2">
+            <div className="flex justify-between border-b border-slate-200/60 pb-1.5">
+              <span className="text-slate-400 font-medium">Certificate No:</span>
+              <span className="font-mono font-bold text-slate-900">{certificateNumber}</span>
+            </div>
+            <div className="flex justify-between border-b border-slate-200/60 pb-1.5">
+              <span className="text-slate-400 font-medium">Student Name:</span>
+              <span className="font-bold text-slate-900">{studentName}</span>
+            </div>
+            <div className="flex justify-between border-b border-slate-200/60 pb-1.5">
+              <span className="text-slate-400 font-medium">Course Program:</span>
+              <span className="font-bold text-slate-900">{courseName}</span>
+            </div>
+            {expiryDate && (
+              <div className="flex justify-between border-b border-slate-200/60 pb-1.5">
+                <span className="text-slate-400 font-medium">Expiration Date:</span>
+                <span className="font-bold text-amber-700">{new Date(expiryDate).toLocaleDateString("en-IN")}</span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span className="text-slate-400 font-medium">Current Status:</span>
+              <span className="font-extrabold text-amber-700 uppercase">{cert.status}</span>
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-3">
+            <Link
+              href="/verify"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-md shadow-blue-500/20 active:scale-98"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Verify Another Certificate
+            </Link>
+
+            <Link
+              href="/contact"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-2xs active:scale-98"
+            >
+              <Mail className="w-4 h-4" />
+              Contact RCI
+            </Link>
+
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3 rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-2xs active:scale-98"
+            >
+              <MessageCircle className="w-4 h-4" />
+              WhatsApp Help
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ----------------------------------------------------
+  // 4. VALID STATE
+  // ----------------------------------------------------
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Back button link */}
@@ -99,7 +307,7 @@ export default function CertificateCard({ cert }: { cert: any }) {
       {/* 1. Official Verification Report Card */}
       <div className="bg-white rounded-3xl border border-blue-100 shadow-xl shadow-blue-950/5 overflow-hidden">
         {/* Success Header Banner */}
-        <div className="p-6 bg-emerald-50/80 border-b border-emerald-100 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+        <div className="p-5 sm:p-6 bg-emerald-50/80 border-b border-emerald-100 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
               <CheckCircle2 className="w-6 h-6" />
@@ -164,21 +372,26 @@ export default function CertificateCard({ cert }: { cert: any }) {
 
       {/* 2. Full Live A4 Landscape Certificate Display */}
       <div className="space-y-4 pt-2">
-        <h3 className="font-extrabold text-slate-900 text-sm px-1 flex items-center gap-2">
-          <Award className="w-4 h-4 text-amber-500" />
-          <span>Certificate Preview (A4 Landscape)</span>
-        </h3>
+        <div className="flex items-center justify-between px-1">
+          <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+            <Award className="w-4 h-4 text-amber-500" />
+            <span>Official Certificate Preview (A4 Landscape)</span>
+          </h3>
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Original Format</span>
+        </div>
         
-        <CertificatePreview
-          certificateNumber={certificateNumber}
-          studentName={studentName}
-          courseName={courseName}
-          duration={duration}
-          grade={grade}
-          completionDate={completionDate}
-          issueDate={issueDate}
-          fatherName={fatherName}
-        />
+        <div className="rounded-3xl border border-slate-200/90 bg-white p-2 shadow-lg shadow-slate-900/5">
+          <CertificatePreview
+            certificateNumber={certificateNumber}
+            studentName={studentName}
+            courseName={courseName}
+            duration={duration}
+            grade={grade}
+            completionDate={completionDate}
+            issueDate={issueDate}
+            fatherName={fatherName}
+          />
+        </div>
       </div>
     </div>
   );
