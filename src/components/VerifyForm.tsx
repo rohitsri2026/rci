@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { RCIConfig } from "@/lib/config";
+import WhatsAppCounsellingBanner from "@/components/whatsapp-counselling-banner";
 
 export default function VerifyForm() {
   const router = useRouter();
@@ -205,37 +206,14 @@ export default function VerifyForm() {
         </div>
 
         {/* 5. Help / Contact Section */}
-        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 max-w-3xl mx-auto shadow-2xs text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="space-y-1">
-            <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-extrabold text-blue-600">
-              <HelpCircle className="w-4 h-4" />
-              <span>Need Assistance?</span>
-            </div>
-            <h4 className="text-lg font-extrabold text-slate-900">Having trouble verifying your certificate?</h4>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Make sure you have entered the certificate number exactly as printed on your certificate.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-2.5 shrink-0 w-full sm:w-auto">
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-extrabold text-xs transition-all shadow-2xs active:scale-98"
-            >
-              Contact RCI
-            </Link>
-
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl font-extrabold text-xs transition-all shadow-xs active:scale-98"
-            >
-              <MessageCircle className="w-3.5 h-3.5" />
-              WhatsApp RCI
-            </a>
-          </div>
-        </div>
+        <WhatsAppCounsellingBanner
+          badge="Verification Support"
+          title="Having trouble verifying your certificate?"
+          description="Make sure you have entered the certificate number exactly as printed on your certificate, or chat with RCI support."
+          buttonText="WhatsApp RCI Support"
+          customMessage="Hello RCI, I am having trouble verifying my certificate online. Please assist me."
+          maxWidthClass="max-w-3xl"
+        />
 
       </div>
     </main>

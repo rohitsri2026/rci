@@ -14,6 +14,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { submitAdmission } from "@/components/admin/admission-actions-server";
+import WhatsAppCounsellingBanner from "@/components/whatsapp-counselling-banner";
 
 function AdmissionFormContent() {
   const searchParams = useSearchParams();
@@ -511,28 +512,16 @@ export default function AdmissionPage() {
                 </ul>
               </div>
 
-              {/* WhatsApp Help Card (Secondary CTA) */}
-              <div className="bg-emerald-950/90 text-white border border-emerald-800/80 rounded-3xl p-6 shadow-xs relative overflow-hidden">
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-900 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-800">
-                    <HelpCircle className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-base font-extrabold text-white">Need help choosing a course?</h4>
-                    <p className="text-xs text-emerald-200/90 mt-0.5">Chat directly with an RCI admissions counsellor.</p>
-                  </div>
-                </div>
-
-                <a
-                  href={counselingWhatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full mt-2 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-3 rounded-xl font-extrabold text-xs tracking-wide transition-all shadow-xs active:scale-98"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  Chat with RCI on WhatsApp
-                </a>
-              </div>
+              {/* WhatsApp Help Banner (Secondary CTA) */}
+              <WhatsAppCounsellingBanner
+                badge="Admission Counseling"
+                title="Need help choosing a course?"
+                description="Chat directly with an RCI admissions counselor about courses, fees and batch timings."
+                buttonText="Chat with RCI on WhatsApp"
+                customMessage="Hello RCI, I am interested in admission and would like to talk to a counselor."
+                maxWidthClass="w-full"
+                className="!p-6"
+              />
 
             </div>
 
