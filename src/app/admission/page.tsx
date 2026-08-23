@@ -519,6 +519,7 @@ export default function AdmissionPage() {
                 description="Chat directly with an RCI admissions counselor about courses, fees and batch timings."
                 buttonText="Chat with RCI on WhatsApp"
                 customMessage="Hello RCI, I am interested in admission and would like to talk to a counselor."
+                variant="compact"
                 maxWidthClass="w-full"
                 className="!p-6"
               />

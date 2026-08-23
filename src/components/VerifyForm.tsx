@@ -207,11 +207,12 @@ export default function VerifyForm() {
 
         {/* 5. Help / Contact Section */}
         <WhatsAppCounsellingBanner
-          badge="Verification Support"
+          badge="VERIFICATION SUPPORT"
           title="Having trouble verifying your certificate?"
           description="Make sure you have entered the certificate number exactly as printed on your certificate, or chat with RCI support."
           buttonText="WhatsApp RCI Support"
           customMessage="Hello RCI, I am having trouble verifying my certificate online. Please assist me."
+          variant="horizontal"
           maxWidthClass="max-w-3xl"
         />
 

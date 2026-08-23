@@ -12,6 +12,7 @@ export interface WhatsAppCounsellingBannerProps {
   customMessage?: string;
   className?: string;
   maxWidthClass?: string;
+  variant?: "auto" | "horizontal" | "compact";
 }
 
 export default function WhatsAppCounsellingBanner({
@@ -22,25 +23,34 @@ export default function WhatsAppCounsellingBanner({
   customMessage = "Hello RCI, I would like to get guidance regarding course selection, fees, and batch timings.",
   className = "",
   maxWidthClass = "max-w-4xl",
+  variant = "auto",
 }: WhatsAppCounsellingBannerProps) {
   const whatsappUrl = RCIConfig.getWhatsAppUrl(customMessage);
+  const isCompact = variant === "compact";
 
   return (
     <div
-      className={`bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 text-white rounded-3xl p-7 sm:p-9 shadow-xl border border-emerald-800/40 relative overflow-hidden ${maxWidthClass} mx-auto ${className}`}
+      className={`bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-emerald-800/40 relative overflow-hidden ${maxWidthClass} mx-auto ${className}`}
     >
       {/* Ambient Background Glow */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
-        <div className="space-y-2 max-w-xl">
+      <div
+        className={`relative z-10 flex ${
+          isCompact
+            ? "flex-col items-start gap-5 text-left"
+            : "flex-col md:flex-row items-center justify-between gap-6 text-center sm:text-left"
+        }`}
+      >
+        {/* Content Box */}
+        <div className={`space-y-2 ${isCompact ? "w-full" : "max-w-xl min-w-0"}`}>
           {badge && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-black uppercase tracking-wider border border-emerald-500/30">
               <HelpCircle className="w-3.5 h-3.5" />
               {badge}
             </span>
           )}
-          <h3 className="text-xl sm:text-2xl font-black font-display tracking-tight text-white">
+          <h3 className="text-xl sm:text-2xl font-black font-display tracking-tight text-white leading-snug">
             {title}
           </h3>
           <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
@@ -48,15 +58,18 @@ export default function WhatsAppCounsellingBanner({
           </p>
         </div>
 
-        <div className="shrink-0 w-full sm:w-auto">
+        {/* CTA Button Box */}
+        <div className={isCompact ? "w-full" : "shrink-0 w-full md:w-auto"}>
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-6 py-3.5 rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-md shadow-emerald-500/25 active:scale-98"
+            className={`inline-flex items-center justify-center gap-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-6 min-h-[48px] rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-md shadow-emerald-500/25 active:scale-98 ${
+              isCompact ? "w-full" : "w-full md:w-auto"
+            }`}
           >
-            <MessageCircle className="w-4.5 h-4.5 fill-slate-950 stroke-none" />
-            {buttonText}
+            <MessageCircle className="w-4.5 h-4.5 fill-slate-950 stroke-none shrink-0" />
+            <span className="truncate">{buttonText}</span>
           </a>
         </div>
       </div>

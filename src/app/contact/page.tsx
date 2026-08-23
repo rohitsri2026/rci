@@ -228,6 +228,7 @@ export default function ContactPage() {
             description="Talk directly with an RCI admissions counselor about courses, fees and batch timings."
             buttonText="Chat with RCI on WhatsApp"
             customMessage="Hello RCI, I would like to get guidance regarding course selection, fees, and batch timings."
+            variant="horizontal"
           />
 
         </div>
