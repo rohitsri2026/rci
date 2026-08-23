@@ -50,7 +50,11 @@ export default function WhatsAppCounsellingBanner({
               {badge}
             </span>
           )}
-          <h3 className="text-xl sm:text-2xl font-black font-display tracking-tight text-white leading-snug">
+          <h3
+            className={`${
+              isCompact ? "text-lg sm:text-xl" : "text-xl sm:text-2xl"
+            } font-black font-display tracking-tight text-white leading-snug`}
+          >
             {title}
           </h3>
           <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
