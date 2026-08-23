@@ -97,7 +97,6 @@ function AdmissionFormContent() {
         email: form.email.trim(),
         phone: form.phone.trim(),
         selected_course: form.selected_course.trim(),
-        qualification: "N/A"
       });
 
       if (!res.success) {

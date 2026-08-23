@@ -94,13 +94,20 @@ export async function submitAdmission(form: {
   email: string;
   phone: string;
   selected_course: string;
-  qualification: string;
 }) {
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("admissions")
-    .insert([{ ...form, status: "Pending" }])
+    .insert([
+      {
+        student_name: form.student_name,
+        email: form.email,
+        phone: form.phone,
+        selected_course: form.selected_course,
+        status: "Pending",
+      },
+    ])
     .select()
     .single();
 

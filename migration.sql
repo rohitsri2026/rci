@@ -208,9 +208,10 @@ CREATE POLICY "Allow authenticated users delete access to students" ON public.st
   FOR DELETE TO authenticated USING (true);
 
 -- Admissions policies
+GRANT ALL ON public.admissions TO anon, authenticated;
 DROP POLICY IF EXISTS "Allow public to insert admissions" ON public.admissions;
 CREATE POLICY "Allow public to insert admissions" ON public.admissions
-  FOR INSERT WITH CHECK (true);
+  FOR INSERT TO anon, authenticated WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Allow authenticated users select access to admissions" ON public.admissions;
 CREATE POLICY "Allow authenticated users select access to admissions" ON public.admissions
