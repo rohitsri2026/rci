@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import CertificatePreview from "./certificates/CertificatePreview";
-import VerificationBadge from "./certificates/VerificationBadge";
 import DownloadButton from "./certificates/DownloadButton";
 import PrintButton from "./certificates/PrintButton";
 import CertificateSeal from "./certificates/CertificateSeal";
@@ -25,40 +24,42 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
   if (!cert) {
     return (
       <div className="space-y-6 animate-in fade-in duration-300">
+        {/* Back Link */}
         <div className="flex items-center justify-between">
           <Link
             href="/verify"
             className="inline-flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-blue-600 transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-2xs"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Back to Verification Portal
+            Verify Another Certificate
           </Link>
         </div>
 
+        {/* Not Found Status Card */}
         <div className="bg-white border border-rose-200/90 rounded-3xl p-6 sm:p-10 text-center shadow-xl shadow-rose-950/5 max-w-2xl mx-auto">
           <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-4 border border-rose-100 shadow-2xs">
             <ShieldAlert className="w-8 h-8 text-rose-600" />
           </div>
 
           <span className="inline-block text-[11px] font-black uppercase tracking-wider text-rose-700 bg-rose-50 border border-rose-100 px-3 py-1 rounded-full mb-2">
-            Record Not Found
+            RECORD NOT FOUND
           </span>
 
           <h3 className="font-black text-2xl sm:text-3xl text-slate-900 font-display">
             Certificate Not Found
           </h3>
 
-          {searchId && (
-            <div className="mt-3 inline-block bg-slate-100 border border-slate-200/80 rounded-lg px-3 py-1 font-mono text-xs font-bold text-slate-700">
-              Searched ID: <span className="text-rose-600">{searchId}</span>
-            </div>
-          )}
+          {/* Compact Searched ID Metadata Block */}
+          <div className="my-4 p-3 bg-slate-50 border border-slate-200/80 rounded-xl max-w-xs mx-auto text-center">
+            <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Searched Certificate ID</p>
+            <p className="font-mono text-base font-bold text-rose-600 mt-0.5">{searchId || "—"}</p>
+          </div>
 
-          <p className="text-slate-600 text-xs sm:text-sm mt-3 max-w-md mx-auto leading-relaxed">
+          <p className="text-slate-600 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
             The certificate number could not be verified against the official RCI records. Please verify that the number matches exactly as printed on your certificate.
           </p>
 
-          {/* Verification Tips Box */}
+          {/* Quick Check Tips Box */}
           <div className="mt-6 bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-left max-w-md mx-auto text-xs space-y-2 text-slate-600">
             <p className="font-extrabold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-1.5">
               <HelpCircle className="w-3.5 h-3.5 text-blue-600" />
@@ -71,7 +72,7 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
             </ul>
           </div>
 
-          {/* Action CTAs */}
+          {/* Action CTAs (Primary Blue CTA + Secondary CTAs) */}
           <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-3">
             <Link
               href="/verify"
@@ -120,6 +121,7 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
   if (cert.status === "Revoked") {
     return (
       <div className="space-y-6 animate-in fade-in duration-300">
+        {/* Back Link */}
         <div className="flex items-center justify-between">
           <Link
             href="/verify"
@@ -130,13 +132,14 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
           </Link>
         </div>
 
+        {/* Revoked Status Card */}
         <div className="bg-white border border-amber-200/90 rounded-3xl p-6 sm:p-10 text-center shadow-xl shadow-amber-950/5 max-w-2xl mx-auto">
           <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-4 border border-amber-200 shadow-2xs">
             <AlertTriangle className="w-8 h-8 text-amber-600" />
           </div>
 
           <span className="inline-block text-[11px] font-black uppercase tracking-wider text-amber-800 bg-amber-100 border border-amber-200 px-3 py-1 rounded-full mb-2">
-            Status: Revoked
+            STATUS: REVOKED
           </span>
 
           <h3 className="font-black text-2xl sm:text-3xl text-slate-900 font-display">
@@ -166,6 +169,7 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
             </div>
           </div>
 
+          {/* Action CTAs: Primary Blue "Verify Another Certificate" + Secondary CTAs */}
           <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-3">
             <Link
               href="/verify"
@@ -204,6 +208,7 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
   if (cert.status === "Expired") {
     return (
       <div className="space-y-6 animate-in fade-in duration-300">
+        {/* Back Link */}
         <div className="flex items-center justify-between">
           <Link
             href="/verify"
@@ -214,13 +219,14 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
           </Link>
         </div>
 
+        {/* Expired Status Card */}
         <div className="bg-white border border-amber-200/90 rounded-3xl p-6 sm:p-10 text-center shadow-xl shadow-amber-950/5 max-w-2xl mx-auto">
           <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-4 border border-amber-200 shadow-2xs">
             <Clock className="w-8 h-8 text-amber-600" />
           </div>
 
           <span className="inline-block text-[11px] font-black uppercase tracking-wider text-amber-800 bg-amber-100 border border-amber-200 px-3 py-1 rounded-full mb-2">
-            Status: Expired
+            STATUS: EXPIRED
           </span>
 
           <h3 className="font-black text-2xl sm:text-3xl text-slate-900 font-display">
@@ -256,6 +262,7 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
             </div>
           </div>
 
+          {/* Action CTAs: Primary Blue "Verify Another Certificate" + Secondary CTAs */}
           <div className="mt-8 flex flex-col sm:flex-row justify-center items-center gap-3">
             <Link
               href="/verify"
@@ -293,7 +300,7 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
   // ----------------------------------------------------
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Back button link */}
+      {/* Back Link */}
       <div className="flex items-center justify-between">
         <Link
           href="/verify"
@@ -307,7 +314,7 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
       {/* 1. Official Verification Report Card */}
       <div className="bg-white rounded-3xl border border-blue-100 shadow-xl shadow-blue-950/5 overflow-hidden">
         {/* Success Header Banner */}
-        <div className="p-5 sm:p-6 bg-emerald-50/80 border-b border-emerald-100 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+        <div className="p-5 sm:p-6 bg-emerald-50/80 border-b border-emerald-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
               <CheckCircle2 className="w-6 h-6" />
@@ -319,7 +326,6 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
               <h2 className="font-extrabold text-slate-900 text-base sm:text-lg">Certificate Successfully Verified</h2>
             </div>
           </div>
-          <VerificationBadge status={cert.status} size="md" />
         </div>
 
         {/* Report Content Grid */}
@@ -361,7 +367,7 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
           </div>
         </div>
 
-        {/* Action Button Bar */}
+        {/* Action Button Bar: Primary Download PDF, Secondary Print Certificate */}
         {cert.status === "Valid" && (
           <div className="p-5 bg-slate-50 border-t border-slate-100 flex flex-wrap gap-3 justify-center md:justify-end">
             <DownloadButton certificateNumber={certificateNumber} studentName={studentName} />
@@ -375,9 +381,11 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
         <div className="flex items-center justify-between px-1">
           <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
             <Award className="w-4 h-4 text-amber-500" />
-            <span>Official Certificate Preview (A4 Landscape)</span>
+            <span>Official Certificate Preview</span>
           </h3>
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Original Format</span>
+          <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/60">
+            A4 LANDSCAPE
+          </span>
         </div>
         
         <div className="rounded-3xl border border-slate-200/90 bg-white p-2 shadow-lg shadow-slate-900/5">
