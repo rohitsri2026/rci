@@ -37,14 +37,23 @@ interface AdmissionListClientProps {
   initialAdmissions: Admission[];
   existingStudents: Student[];
   courses: Course[];
+  userRole?: string;
 }
 
 export default function AdmissionListClient({
   initialAdmissions,
   existingStudents,
   courses,
+  userRole = "Admin",
 }: AdmissionListClientProps) {
   const router = useRouter();
+
+  // Local Admissions List state for instant optimistic updates
+  const [admissions, setAdmissions] = useState<Admission[]>(initialAdmissions);
+
+  useEffect(() => {
+    setAdmissions(initialAdmissions);
+  }, [initialAdmissions]);
 
   // Search & Filter State
   const [search, setSearch] = useState("");
@@ -63,19 +72,35 @@ export default function AdmissionListClient({
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [actionError, setActionError] = useState("");
+  const [successToast, setSuccessToast] = useState("");
+
+  const isAdmin = userRole === "Admin";
 
   // Global Escape key handler with event listener cleanup
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setActiveMenuId(null);
+        if (!isProcessing) {
+          setApprovingAdmission(null);
+          setRejectingAdmission(null);
+          setDeletingAdmissionObj(null);
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [isProcessing]);
 
-  // Normalized Map of existing student records for duplicate detection (keyed by email & last 10 digits of phone)
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (successToast) {
+      const timer = setTimeout(() => setSuccessToast(""), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [successToast]);
+
+  // Normalized Map of existing student records for duplicate detection
   const studentMap = useMemo(() => {
     const map = new Map<string, string>();
     existingStudents.forEach((s) => {
@@ -110,16 +135,16 @@ export default function AdmissionListClient({
 
   // Real-data metrics computation
   const metrics = useMemo(() => {
-    const total = initialAdmissions.length;
-    const pending = initialAdmissions.filter((a) => a.status === "Pending").length;
-    const approved = initialAdmissions.filter((a) => a.status === "Approved").length;
-    const rejected = initialAdmissions.filter((a) => a.status === "Rejected").length;
+    const total = admissions.length;
+    const pending = admissions.filter((a) => a.status === "Pending").length;
+    const approved = admissions.filter((a) => a.status === "Approved").length;
+    const rejected = admissions.filter((a) => a.status === "Rejected").length;
     return { total, pending, approved, rejected };
-  }, [initialAdmissions]);
+  }, [admissions]);
 
   // Filtered & Sorted Admissions
   const filteredAdmissions = useMemo(() => {
-    return initialAdmissions
+    return admissions
       .filter((a) => {
         const query = search.toLowerCase().trim();
         const matchesName = a.student_name?.toLowerCase().includes(query);
@@ -144,7 +169,7 @@ export default function AdmissionListClient({
         }
         return 0;
       });
-  }, [initialAdmissions, search, selectedCourse, selectedStatus, sortOrder]);
+  }, [admissions, search, selectedCourse, selectedStatus, sortOrder]);
 
   // Handle Approve Action
   const handleApproveConfirm = async () => {
@@ -157,6 +182,7 @@ export default function AdmissionListClient({
 
     if (res.success) {
       setApprovingAdmission(null);
+      setSuccessToast(`Application for ${approvingAdmission.student_name} approved successfully.`);
       router.refresh();
     } else {
       setActionError(res.error || "Unable to approve this application. Please try again.");
@@ -173,6 +199,7 @@ export default function AdmissionListClient({
     setIsProcessing(false);
 
     if (res.success) {
+      setSuccessToast(`Student record for ${adm.student_name} created successfully.`);
       router.refresh();
     } else {
       alert(res.error || "Unable to create student record. Please try again.");
@@ -190,23 +217,30 @@ export default function AdmissionListClient({
 
     if (res.success) {
       setRejectingAdmission(null);
+      setSuccessToast(`Application for ${rejectingAdmission.student_name} rejected.`);
       router.refresh();
     } else {
       setActionError(res.error || "Unable to reject this application. Please try again.");
     }
   };
 
-  // Handle Delete Action
+  // Handle Delete Action with Double-Click Protection
   const handleDeleteConfirm = async () => {
     if (!deletingAdmissionObj || isProcessing) return;
     setIsProcessing(true);
     setActionError("");
 
-    const res = await deleteAdmission(deletingAdmissionObj.id);
+    const targetId = deletingAdmissionObj.id;
+    const targetName = deletingAdmissionObj.student_name;
+
+    const res = await deleteAdmission(targetId);
     setIsProcessing(false);
 
     if (res.success) {
+      // Optimistically remove from local state immediately
+      setAdmissions((prev) => prev.filter((a) => a.id !== targetId));
       setDeletingAdmissionObj(null);
+      setSuccessToast(`Application for ${targetName} deleted successfully.`);
       router.refresh();
     } else {
       setActionError(res.error || "Unable to delete this application. Please try again.");
@@ -250,6 +284,14 @@ export default function AdmissionListClient({
 
   return (
     <div className="space-y-6">
+      {/* Toast Notification */}
+      {successToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl border border-slate-800 flex items-center gap-3 text-xs sm:text-sm font-bold animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{successToast}</span>
+        </div>
+      )}
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -301,34 +343,43 @@ export default function AdmissionListClient({
             <XCircle className="w-4 h-4 text-red-500" />
           </div>
           <p className="text-2xl sm:text-3xl font-black text-red-600 tracking-tight">{metrics.rejected}</p>
-          <p className="text-[11px] text-slate-500 font-medium truncate">Applications not approved</p>
+          <p className="text-[11px] text-slate-500 font-medium truncate">Declined applications</p>
         </div>
       </div>
 
-      {/* Search & Filter Toolbar */}
+      {/* Toolbar: Search, Filters, & Sorting */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between sm:gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
-          {/* Search Input */}
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name, email or phone..."
-              className="w-full h-10 pl-10 pr-4 border border-slate-200/90 rounded-xl text-slate-900 placeholder-slate-400 text-xs sm:text-sm font-medium bg-slate-50/40 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all"
-            />
-          </div>
+        {/* Search Bar */}
+        <div className="relative flex-1 max-w-md">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search by student name, email, or phone..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-all"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+            >
+              Clear
+            </button>
+          )}
+        </div>
 
-          {/* Course Filter Dropdown */}
-          <div className="relative min-w-[150px]">
-            <Filter className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+        {/* Filter Controls */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          {/* Course Filter */}
+          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+            <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             <select
               value={selectedCourse}
               onChange={(e) => setSelectedCourse(e.target.value)}
-              className="w-full h-10 pl-9 pr-8 border border-slate-200/90 rounded-xl text-slate-800 text-xs font-bold bg-slate-50/40 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all appearance-none cursor-pointer"
+              className="bg-transparent text-xs font-bold text-slate-700 focus:outline-none cursor-pointer"
             >
-              <option value="all">All Courses</option>
+              <option value="all">All Courses ({courses.length})</option>
               {courses.map((c) => (
                 <option key={c.id} value={c.course_name}>
                   {c.course_name}
@@ -337,58 +388,52 @@ export default function AdmissionListClient({
             </select>
           </div>
 
-          {/* Status Filter Dropdown */}
-          <div className="relative min-w-[140px]">
-            <Filter className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          {/* Status Filter */}
+          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full h-10 pl-9 pr-8 border border-slate-200/90 rounded-xl text-slate-800 text-xs font-bold bg-slate-50/40 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all appearance-none cursor-pointer"
+              className="bg-transparent text-xs font-bold text-slate-700 focus:outline-none cursor-pointer"
             >
               <option value="all">All Statuses</option>
-              <option value="Pending">Pending</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
+              <option value="Pending">Pending Review ({metrics.pending})</option>
+              <option value="Approved">Approved ({metrics.approved})</option>
+              <option value="Rejected">Rejected ({metrics.rejected})</option>
             </select>
           </div>
 
-          {/* Sort Dropdown */}
-          <div className="relative min-w-[140px]">
-            <ArrowUpDown className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          {/* Sort Order */}
+          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
+            <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             <select
               value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value as "newest" | "oldest" | "name")}
-              className="w-full h-10 pl-9 pr-8 border border-slate-200/90 rounded-xl text-slate-800 text-xs font-bold bg-slate-50/40 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all appearance-none cursor-pointer"
+              onChange={(e) => setSortOrder(e.target.value as any)}
+              className="bg-transparent text-xs font-bold text-slate-700 focus:outline-none cursor-pointer"
             >
-              <option value="newest">Sort: Newest</option>
-              <option value="oldest">Sort: Oldest</option>
-              <option value="name">Sort: Name A-Z</option>
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="name">Sort by Name</option>
             </select>
           </div>
-        </div>
-
-        {/* Counter Pill */}
-        <div className="text-xs font-extrabold text-slate-600 bg-slate-100 border border-slate-200/80 px-3 py-1.5 rounded-full text-center shrink-0">
-          {filteredAdmissions.length} {filteredAdmissions.length === 1 ? "application" : "applications"} found
         </div>
       </div>
 
-      {/* DESKTOP ADMISSIONS TABLE */}
+      {/* DESKTOP ADMISSIONS TABLE (>= 768px) */}
       <div className="hidden md:block bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/80 text-slate-500 font-bold uppercase tracking-wider text-[10.5px] border-b border-slate-200/90">
-              <tr>
-                <th className="px-6 py-4">Applicant</th>
-                <th className="px-6 py-4">Email</th>
-                <th className="px-6 py-4">Phone</th>
-                <th className="px-6 py-4">Course</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Applied On</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+        <div className="overflow-x-auto min-h-[360px]">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3.5">Applicant Name</th>
+                <th className="px-6 py-3.5">Email</th>
+                <th className="px-6 py-3.5">Phone</th>
+                <th className="px-6 py-3.5">Course Program</th>
+                <th className="px-6 py-3.5">Status</th>
+                <th className="px-6 py-3.5">Applied On</th>
+                <th className="px-6 py-3.5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 text-xs">
               {filteredAdmissions.length > 0 ? (
                 filteredAdmissions.map((adm) => {
                   const initials = getInitials(adm.student_name);
@@ -536,23 +581,23 @@ export default function AdmissionListClient({
                                 )}
 
                                 {/* CASE 4: REJECTED */}
-                                {adm.status === "Rejected" && (
+                                {adm.status === "Rejected" && whatsappUrl && (
+                                  <a
+                                    href={whatsappUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                                    onClick={() => setActiveMenuId(null)}
+                                  >
+                                    <MessageSquare className="w-3.5 h-3.5 text-slate-500" />
+                                    <span>Contact Applicant</span>
+                                  </a>
+                                )}
+
+                                {/* DELETE APPLICATION (VISIBLE FOR ALL 4 STATES TO ADMINS) */}
+                                {isAdmin && (
                                   <>
-                                    {whatsappUrl && (
-                                      <a
-                                        href={whatsappUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-                                        onClick={() => setActiveMenuId(null)}
-                                      >
-                                        <MessageSquare className="w-3.5 h-3.5 text-slate-500" />
-                                        <span>Contact Applicant</span>
-                                      </a>
-                                    )}
-
                                     <div className="border-t border-slate-100 my-1" />
-
                                     <button
                                       onClick={() => {
                                         setDeletingAdmissionObj(adm);
@@ -706,23 +751,23 @@ export default function AdmissionListClient({
                           </>
                         )}
 
-                        {adm.status === "Rejected" && (
+                        {adm.status === "Rejected" && whatsappUrl && (
+                          <a
+                            href={whatsappUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
+                            onClick={() => setActiveMenuId(null)}
+                          >
+                            <MessageSquare className="w-4 h-4 text-slate-500" />
+                            <span>Contact Applicant</span>
+                          </a>
+                        )}
+
+                        {/* DELETE APPLICATION (MOBILE - ALL 4 STATES) */}
+                        {isAdmin && (
                           <>
-                            {whatsappUrl && (
-                              <a
-                                href={whatsappUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
-                                onClick={() => setActiveMenuId(null)}
-                              >
-                                <MessageSquare className="w-4 h-4 text-slate-500" />
-                                <span>Contact Applicant</span>
-                              </a>
-                            )}
-
                             <div className="border-t border-slate-100 my-1" />
-
                             <button
                               onClick={() => {
                                 setDeletingAdmissionObj(adm);
@@ -784,15 +829,23 @@ export default function AdmissionListClient({
 
       {/* APPROVE APPLICATION CONFIRMATION MODAL */}
       {approvingAdmission && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs"
+          onClick={() => !isProcessing && setApprovingAdmission(null)}
+        >
+          <div 
+            className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-lg font-extrabold text-slate-950 tracking-tight">Approve Application?</h3>
-                <p className="text-xs text-slate-500">Student profile creation & notification trigger.</p>
+                <p className="text-xs text-slate-500">Student profile creation &amp; notification trigger.</p>
               </div>
             </div>
 
@@ -813,14 +866,14 @@ export default function AdmissionListClient({
                   setActionError("");
                 }}
                 disabled={isProcessing}
-                className="h-11 px-5 rounded-xl border border-slate-200 text-slate-700 font-extrabold text-xs sm:text-sm hover:bg-slate-100 transition-colors disabled:opacity-50"
+                className="h-11 px-5 rounded-xl border border-slate-200 text-slate-700 font-extrabold text-xs sm:text-sm hover:bg-slate-100 transition-colors disabled:opacity-50 min-h-[44px]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleApproveConfirm}
                 disabled={isProcessing}
-                className="h-11 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm transition-colors flex items-center gap-2 shadow-md shadow-emerald-500/20 disabled:opacity-60"
+                className="h-11 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm transition-colors flex items-center gap-2 shadow-md shadow-emerald-500/20 disabled:opacity-60 min-h-[44px]"
               >
                 {isProcessing ? (
                   <>
@@ -841,8 +894,16 @@ export default function AdmissionListClient({
 
       {/* REJECT APPLICATION CONFIRMATION MODAL */}
       {rejectingAdmission && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs"
+          onClick={() => !isProcessing && setRejectingAdmission(null)}
+        >
+          <div 
+            className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-red-50 border border-red-100 text-red-600 flex items-center justify-center shrink-0">
                 <XCircle className="w-5 h-5" />
@@ -870,14 +931,14 @@ export default function AdmissionListClient({
                   setActionError("");
                 }}
                 disabled={isProcessing}
-                className="h-11 px-5 rounded-xl border border-slate-200 text-slate-700 font-extrabold text-xs sm:text-sm hover:bg-slate-100 transition-colors disabled:opacity-50"
+                className="h-11 px-5 rounded-xl border border-slate-200 text-slate-700 font-extrabold text-xs sm:text-sm hover:bg-slate-100 transition-colors disabled:opacity-50 min-h-[44px]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleRejectConfirm}
                 disabled={isProcessing}
-                className="h-11 px-5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs sm:text-sm transition-colors flex items-center gap-2 shadow-md shadow-red-500/20 disabled:opacity-60"
+                className="h-11 px-5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs sm:text-sm transition-colors flex items-center gap-2 shadow-md shadow-red-500/20 disabled:opacity-60 min-h-[44px]"
               >
                 {isProcessing ? (
                   <>
@@ -898,15 +959,26 @@ export default function AdmissionListClient({
 
       {/* DELETE APPLICATION CONFIRMATION MODAL */}
       {deletingAdmissionObj && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs"
+          onClick={() => !isProcessing && setDeletingAdmissionObj(null)}
+        >
+          <div 
+            className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-dialog-title"
+          >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-red-50 border border-red-100 text-red-600 flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-extrabold text-slate-950 tracking-tight">Delete Application?</h3>
-                <p className="text-xs text-slate-500">This action cannot be undone.</p>
+                <h3 id="delete-dialog-title" className="text-lg font-extrabold text-slate-950 tracking-tight">
+                  Delete Application?
+                </h3>
+                <p className="text-xs font-bold text-red-600">This action cannot be undone.</p>
               </div>
             </div>
 
@@ -917,8 +989,34 @@ export default function AdmissionListClient({
             )}
 
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Are you sure you want to delete the application for <strong className="text-slate-900 font-bold">{deletingAdmissionObj.student_name}</strong>? This will permanently remove the application record from the database.
+              Are you sure you want to permanently delete this admission application?
             </p>
+
+            {/* Applicant Details Summary Box */}
+            <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-4 space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 font-extrabold uppercase text-[10px]">Applicant Name</span>
+                <span className="font-extrabold text-slate-900">{deletingAdmissionObj.student_name}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 font-extrabold uppercase text-[10px]">Course Program</span>
+                <span className="font-bold text-slate-800">{deletingAdmissionObj.selected_course || "—"}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 font-extrabold uppercase text-[10px]">Mobile Phone</span>
+                <span className="font-mono text-slate-700">{deletingAdmissionObj.phone || "—"}</span>
+              </div>
+              {deletingAdmissionObj.email && (
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 font-extrabold uppercase text-[10px]">Email Address</span>
+                  <span className="font-medium text-slate-700 truncate max-w-[200px]">{deletingAdmissionObj.email}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
+                <span className="text-slate-400 font-extrabold uppercase text-[10px]">Current Status</span>
+                {getStatusPill(deletingAdmissionObj.status)}
+              </div>
+            </div>
 
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
               <button
@@ -927,14 +1025,14 @@ export default function AdmissionListClient({
                   setActionError("");
                 }}
                 disabled={isProcessing}
-                className="h-11 px-5 rounded-xl border border-slate-200 text-slate-700 font-extrabold text-xs sm:text-sm hover:bg-slate-100 transition-colors disabled:opacity-50"
+                className="h-11 px-5 rounded-xl border border-slate-200 text-slate-700 font-extrabold text-xs sm:text-sm hover:bg-slate-100 transition-colors disabled:opacity-50 min-h-[44px]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteConfirm}
                 disabled={isProcessing}
-                className="h-11 px-5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs sm:text-sm transition-colors flex items-center gap-2 shadow-md shadow-red-500/20 disabled:opacity-60"
+                className="h-11 px-5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs sm:text-sm transition-colors flex items-center gap-2 shadow-md shadow-red-500/20 disabled:opacity-60 min-h-[44px]"
               >
                 {isProcessing ? (
                   <>

@@ -261,7 +261,6 @@ export default function AdmissionProfileDrawer({
           {admission.status === "Approved" && (
             <div className="space-y-2">
               {matchingStudentId ? (
-                // CASE 2: APPROVED + STUDENT EXISTS
                 <Link
                   href={`/admin/students/${matchingStudentId}/edit`}
                   className="w-full h-11 inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-extrabold text-xs transition-all"
@@ -271,7 +270,6 @@ export default function AdmissionProfileDrawer({
                   <span>View Student Record</span>
                 </Link>
               ) : (
-                // CASE 3: APPROVED + STUDENT MISSING (Recovery Action)
                 <button
                   onClick={() => {
                     if (onConvert) {
@@ -303,32 +301,29 @@ export default function AdmissionProfileDrawer({
           )}
 
           {/* CASE 4: REJECTED */}
-          {admission.status === "Rejected" && (
-            <div className="space-y-2">
-              {whatsappUrl && (
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full h-11 inline-flex items-center justify-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/90 rounded-xl font-extrabold text-xs transition-all"
-                >
-                  <MessageSquare className="w-4 h-4 text-slate-500" />
-                  <span>Contact Applicant</span>
-                </a>
-              )}
-
-              <button
-                onClick={() => {
-                  onDelete(admission);
-                  onClose();
-                }}
-                className="w-full h-11 inline-flex items-center justify-center gap-2 bg-red-50 text-red-700 hover:bg-red-100 border border-red-200/90 rounded-xl font-extrabold text-xs transition-all"
-              >
-                <Trash2 className="w-4 h-4 text-red-600" />
-                <span>Delete Application</span>
-              </button>
-            </div>
+          {admission.status === "Rejected" && whatsappUrl && (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full h-11 inline-flex items-center justify-center gap-2 bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/90 rounded-xl font-extrabold text-xs transition-all"
+            >
+              <MessageSquare className="w-4 h-4 text-slate-500" />
+              <span>Contact Applicant</span>
+            </a>
           )}
+
+          {/* Delete Action available in Drawer */}
+          <button
+            onClick={() => {
+              onDelete(admission);
+              onClose();
+            }}
+            className="w-full h-11 inline-flex items-center justify-center gap-2 bg-red-50 text-red-700 hover:bg-red-100 border border-red-200/90 rounded-xl font-extrabold text-xs transition-all"
+          >
+            <Trash2 className="w-4 h-4 text-red-600" />
+            <span>Delete Application</span>
+          </button>
         </div>
       </div>
     </div>

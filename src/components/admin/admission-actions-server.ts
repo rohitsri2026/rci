@@ -100,60 +100,37 @@ export async function updateAdmissionStatus(admissionId: string, status: "Approv
     // 4. Trigger notifications safely (failures logged silently)
     try {
       const { NotificationService } = await import("@/lib/notifications/service");
-      
       if (cleanEmail) {
         await NotificationService.send("Email", {
           to: cleanEmail,
-          title: "Admission Approved - Rohit Computer Institute",
-          message: `Dear ${admission.student_name},\n\nCongratulations! Your application for the ${admission.selected_course || "chosen"} course has been approved.\n\nWe have created your student registration profile. Our institute coordinator will contact you shortly.\n\nBest regards,\nRohit Computer Institute`,
-        });
-      }
-
-      if (admission.phone) {
-        await NotificationService.send("WhatsApp", {
-          to: admission.phone,
-          title: "Admission Approved",
-          message: `Congratulations ${admission.student_name}! Your admission for the ${admission.selected_course || "chosen"} course at RCI has been approved. Welcome!`,
+          title: "RCI Admission Approved!",
+          message: `Dear ${admission.student_name},\n\nWe are pleased to inform you that your admission application for ${admission.selected_course || "the selected course"} has been APPROVED by Rohit Computer Institute.\n\nPlease visit the institute desk or log in to complete your enrollment procedures.\n\nBest regards,\nRohit Computer Institute`,
+          metadata: { admission_id: admissionId },
         });
       }
     } catch (notifErr: any) {
-      console.error("Admission approval notification warning:", notifErr.message);
+      console.error("Failed to send approval notification:", notifErr?.message || notifErr);
     }
-  } else if (status === "Rejected") {
-    // Update admission status to Rejected
+  } else {
+    // Rejection handling
     const { error: updateError } = await supabase
       .from("admissions")
       .update({ status: "Rejected" })
       .eq("id", admissionId);
 
     if (updateError) {
-      return { success: false, error: "Unable to reject this application. Please try again." };
-    }
-
-    // Trigger rejection notification safely
-    try {
-      const cleanEmail = admission.email?.trim().toLowerCase();
-      if (cleanEmail) {
-        const { NotificationService } = await import("@/lib/notifications/service");
-        await NotificationService.send("Email", {
-          to: cleanEmail,
-          title: "Admission Application Status - RCI",
-          message: `Dear ${admission.student_name},\n\nThank you for your interest in Rohit Computer Institute.\n\nWe regret to inform you that your application for the ${admission.selected_course || "chosen"} course could not be approved at this time.\n\nIf you have any questions, please feel free to reach out to us.\n\nBest regards,\nRohit Computer Institute`,
-        });
-      }
-    } catch (notifErr: any) {
-      console.error("Admission rejection notification warning:", notifErr.message);
+      return { success: false, error: "Failed to update admission status." };
     }
   }
 
-  revalidatePath("/admin", "layout");
-  return { success: true };
+  revalidatePath("/admin/admissions");
+  revalidatePath("/admin");
+  return { success: true, message: `Application ${status.toLowerCase()} successfully.` };
 }
 
 export async function convertAdmissionToStudent(admissionId: string) {
   const supabase = await createClient();
 
-  // Server-side authorization check
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
   if (authCheck.error) {
     return { success: false, error: authCheck.error };
@@ -166,17 +143,15 @@ export async function convertAdmissionToStudent(admissionId: string) {
     .single();
 
   if (fetchError || !admission) {
-    return { success: false, error: "Unable to find admission application." };
+    return { success: false, error: "Admission application not found." };
   }
 
   const cleanEmail = admission.email?.trim().toLowerCase() || null;
   const rawDigits = admission.phone ? admission.phone.replace(/[^0-9]/g, "") : "";
   const cleanPhone = rawDigits.length >= 7 ? rawDigits : null;
 
-  let existingStudentId: string | null = null;
-
   if (cleanEmail || cleanPhone) {
-    let query = supabase.from("students").select("id, email, phone");
+    let query = supabase.from("students").select("id");
     if (cleanEmail && cleanPhone) {
       query = query.or(`email.ilike.${cleanEmail},phone.ilike.%${cleanPhone.slice(-10)}%`);
     } else if (cleanEmail) {
@@ -185,15 +160,10 @@ export async function convertAdmissionToStudent(admissionId: string) {
       query = query.ilike("phone", `%${cleanPhone.slice(-10)}%`);
     }
 
-    const { data: matchedStudents } = await query;
-    if (matchedStudents && matchedStudents.length > 0) {
-      existingStudentId = matchedStudents[0].id;
+    const { data: matched } = await query;
+    if (matched && matched.length > 0) {
+      return { success: true, message: "Matching student record already exists.", studentId: matched[0].id };
     }
-  }
-
-  if (existingStudentId) {
-    revalidatePath("/admin", "layout");
-    return { success: true, studentId: existingStudentId, message: "Student record already exists." };
   }
 
   let courseId = null;
@@ -209,48 +179,100 @@ export async function convertAdmissionToStudent(admissionId: string) {
     }
   }
 
-  const { data: newStudent, error: insertError } = await supabase.from("students").insert([{
-    full_name: admission.student_name,
-    email: cleanEmail || admission.email,
-    phone: admission.phone,
-    course_id: courseId,
-  }]).select("id").single();
+  const { data: newStudent, error: insertError } = await supabase
+    .from("students")
+    .insert([{
+      full_name: admission.student_name,
+      email: cleanEmail || admission.email,
+      phone: admission.phone,
+      course_id: courseId,
+    }])
+    .select()
+    .single();
 
   if (insertError) {
-    return { success: false, error: "Unable to create student record. Please try again." };
+    return { success: false, error: "Unable to create student profile from application." };
   }
 
-  revalidatePath("/admin", "layout");
-  return { success: true, studentId: newStudent.id, message: "Student record created successfully." };
+  revalidatePath("/admin/students");
+  revalidatePath("/admin/admissions");
+  return { success: true, studentId: newStudent.id };
 }
 
 export async function deleteAdmission(admissionId: string) {
   const supabase = await createClient();
 
-  // Server-side authorization check
+  // 1. Enforce strict Admin role check
   const authCheck = await verifyRole(supabase, ["Admin"]);
   if (authCheck.error) {
-    return { success: false, error: authCheck.error };
+    return { 
+      success: false, 
+      error: authCheck.error === "Forbidden" 
+        ? "Only Administrators are authorized to delete admission applications." 
+        : "Unauthorized session. Please log in again." 
+    };
   }
 
-  const { error } = await supabase.from("admissions").delete().eq("id", admissionId);
-  if (error) {
-    return { success: false, error: "Unable to delete application. Please try again." };
+  // 2. Validate admissionId format
+  const cleanId = admissionId?.trim();
+  if (!cleanId) {
+    return { success: false, error: "Invalid application ID." };
   }
 
-  revalidatePath("/admin", "layout");
-  return { success: true };
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(cleanId)) {
+    return { success: false, error: "Invalid application ID format." };
+  }
+
+  // 3. Fetch target admission record to verify existence before deletion
+  const { data: admission, error: fetchError } = await supabase
+    .from("admissions")
+    .select("id, student_name")
+    .eq("id", cleanId)
+    .maybeSingle();
+
+  if (fetchError || !admission) {
+    return { success: false, error: "Application not found." };
+  }
+
+  // 4. Delete strictly target admission row without affecting linked student/certificate/historical tables
+  const { error: deleteError } = await supabase
+    .from("admissions")
+    .delete()
+    .eq("id", cleanId);
+
+  if (deleteError) {
+    console.error("[deleteAdmission Error Diagnostics]", {
+      code: deleteError.code,
+      message: deleteError.message,
+      details: deleteError.details,
+      hint: deleteError.hint,
+    });
+
+    if (deleteError.code === "23503") {
+      return {
+        success: false,
+        error: "This application cannot be deleted because it is linked to another record.",
+      };
+    }
+
+    return { success: false, error: "Unable to delete this application. Please try again." };
+  }
+
+  // 5. Revalidate admissions & admin dashboard caches
+  revalidatePath("/admin/admissions");
+  revalidatePath("/admin");
+  return { success: true, message: "Application deleted successfully." };
 }
 
 export async function submitAdmission(form: {
   student_name: string;
-  email: string;
   phone: string;
+  email?: string;
   selected_course: string;
 }) {
   const supabase = await createClient();
 
-  // 1. Input sanitization & validation
   const name = form.student_name ? form.student_name.trim() : "";
   if (!name) {
     return { success: false, error: "Full Name is required." };
@@ -261,7 +283,6 @@ export async function submitAdmission(form: {
 
   const rawPhone = form.phone ? form.phone.trim() : "";
   const phoneDigits = rawPhone.replace(/\D/g, "");
-  // If phone starts with 91 and has 12 digits, extract last 10 digits
   const cleanPhone = (phoneDigits.length === 12 && phoneDigits.startsWith("91"))
     ? phoneDigits.slice(2)
     : phoneDigits;
@@ -288,7 +309,6 @@ export async function submitAdmission(form: {
     return { success: false, error: "Course name must be 150 characters or less." };
   }
 
-  // 2. Generate server-side UUID to prevent needing .select() which triggers RLS SELECT policy block for anonymous users
   const admissionId = crypto.randomUUID();
 
   const { error } = await supabase
@@ -317,7 +337,6 @@ export async function submitAdmission(form: {
     };
   }
 
-  // 3. Trigger EV-001: Admission Submitted Notifications
   try {
     const { NotificationService } = await import("@/lib/notifications/service");
     
@@ -343,4 +362,3 @@ export async function submitAdmission(form: {
   revalidatePath("/admin", "layout");
   return { success: true, admissionId };
 }
-
