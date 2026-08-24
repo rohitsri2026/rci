@@ -3,9 +3,9 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import { 
-  BookOpen, Clock, BadgeIndianRupee, Sparkles, ArrowRight, 
+  BookOpen, Clock, BadgeIndianRupee, ArrowRight, ArrowUpRight,
   GraduationCap, Code2, Calculator, Keyboard, CheckCircle2,
-  FileSpreadsheet, ShieldCheck, Layers
+  Layers
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { RCIConfig } from "@/lib/config";
@@ -103,12 +103,12 @@ export default async function CoursesPage() {
           
           {/* 1. HERO SECTION */}
           <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
-            <span className="text-xs font-black uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100 px-3.5 py-1.5 rounded-full inline-flex items-center gap-1.5 mb-3.5">
+            <span className="text-xs font-bold uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100 px-3.5 py-1.5 rounded-full inline-flex items-center gap-1.5 mb-3.5 shadow-2xs">
               <BookOpen className="w-4 h-4 text-blue-600" />
               COURSES &amp; PROGRAMS
             </span>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black font-display text-slate-900 mb-3.5 leading-tight tracking-tight">
+            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-[-0.035em] leading-[1.08] text-slate-950 mb-3.5">
               Choose the Right Course for Your Career
             </h1>
             
@@ -117,16 +117,16 @@ export default async function CoursesPage() {
             </p>
 
             {/* Dynamic Info Pills */}
-            <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 mt-6">
-              <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-slate-700 bg-white border border-slate-200/90 px-3 py-1.5 rounded-xl shadow-2xs">
+            <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5 mt-6">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200/90 px-3.5 py-1.5 rounded-full shadow-2xs">
                 <Layers className="w-3.5 h-3.5 text-blue-600" />
                 {coursesList.length} Programs
               </span>
-              <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-slate-700 bg-white border border-slate-200/90 px-3 py-1.5 rounded-xl shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200/90 px-3.5 py-1.5 rounded-full shadow-2xs">
                 <Clock className="w-3.5 h-3.5 text-emerald-600" />
                 Flexible Course Durations
               </span>
-              <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-slate-700 bg-white border border-slate-200/90 px-3 py-1.5 rounded-xl shadow-2xs">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200/90 px-3.5 py-1.5 rounded-full shadow-2xs">
                 <CheckCircle2 className="w-3.5 h-3.5 text-purple-600" />
                 Practical Learning
               </span>
@@ -136,20 +136,20 @@ export default async function CoursesPage() {
           {/* 2. SECTION HEADER */}
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 mb-8 pb-4 border-b border-slate-200/80">
             <div>
-              <h2 className="text-2xl font-black font-display text-slate-900 tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-extrabold tracking-[-0.02em] text-slate-900">
                 Explore Our Programs
               </h2>
               <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
                 Choose a course that matches your current learning and career goals.
               </p>
             </div>
-            <span className="text-xs font-extrabold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 shrink-0">
+            <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 shrink-0">
               {coursesList.length} Programs Available
             </span>
           </div>
 
           {/* 3. COURSE GRID */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7 mb-10 sm:mb-12">
             {coursesList.map((course: any) => {
               const slug = course.slug || toSlug(course.course_name);
               const CourseIcon = getCourseIcon(course.course_name);
@@ -159,54 +159,54 @@ export default async function CoursesPage() {
               return (
                 <div
                   key={course.id || slug}
-                  className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-blue-200 transition-all duration-200 flex flex-col justify-between group"
+                  className="relative bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-7 shadow-xs hover:shadow-xl hover:-translate-y-[3px] hover:border-blue-300/80 transition-all duration-300 ease-out flex flex-col justify-between group overflow-hidden before:absolute before:inset-x-6 before:top-0 before:h-0.5 before:bg-blue-100 group-hover:before:bg-blue-600 before:transition-colors before:duration-300"
                 >
                   {/* Card Content Top */}
                   <div>
-                    {/* Icon & Eyebrow */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-200">
-                        <CourseIcon className="w-5.5 h-5.5" />
+                    {/* Icon & Eyebrow Badge */}
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100/80 text-blue-600 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white group-hover:scale-[1.03] transition-all duration-300 shadow-2xs">
+                        <CourseIcon className="w-6 h-6" />
                       </div>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.08em] bg-slate-50 border border-slate-200 text-slate-500 rounded-full px-3 py-1 group-hover:text-blue-600 group-hover:border-blue-100 group-hover:bg-blue-50 transition-colors duration-300">
                         PROGRAM
                       </span>
                     </div>
 
                     {/* Course Title */}
-                    <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mb-2.5 leading-snug group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-[17px] sm:text-[19px] font-extrabold tracking-[-0.02em] leading-[1.25] text-slate-950 group-hover:text-blue-600 transition-colors duration-300 mb-2.5">
                       {course.course_name}
                     </h3>
 
                     {/* Course Short Description */}
-                    <p className="text-slate-600 text-xs sm:text-sm leading-relaxed mb-6 line-clamp-3">
+                    <p className="text-[13px] sm:text-[13.5px] leading-[1.65] text-slate-500 mb-6 line-clamp-3">
                       {displayDesc}
                     </p>
                   </div>
 
                   {/* Card Bottom: Metadata & Actions */}
-                  <div>
+                  <div className="mt-auto">
                     {/* Divider */}
-                    <div className="border-t border-slate-100 pt-4 mb-5">
-                      <div className="grid grid-cols-2 gap-3">
+                    <div className="border-t border-slate-100 pt-4.5 mb-5">
+                      <div className="grid grid-cols-2 gap-3 items-center">
                         {/* Duration */}
                         <div>
-                          <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mb-0.5">
-                            Duration
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">
+                            DURATION
                           </span>
-                          <span className="text-slate-900 font-extrabold text-xs sm:text-sm inline-flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5 text-blue-600" />
+                          <span className="text-slate-900 font-extrabold text-xs sm:text-sm inline-flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                             {course.duration || "Flexible"}
                           </span>
                         </div>
 
                         {/* Fee */}
                         <div className="text-right">
-                          <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block mb-0.5">
-                            Course Fee
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-1">
+                            COURSE FEE
                           </span>
-                          <span className="text-slate-900 font-black text-sm sm:text-base inline-flex items-center gap-0.5 justify-end">
-                            <BadgeIndianRupee className="w-4 h-4 text-emerald-600" />
+                          <span className="text-slate-950 font-black text-sm sm:text-base inline-flex items-center gap-0.5 justify-end">
+                            <BadgeIndianRupee className="w-4 h-4 text-emerald-600 shrink-0" />
                             {course.fees ? course.fees.toLocaleString("en-IN") : "Contact us"}
                           </span>
                         </div>
@@ -214,20 +214,21 @@ export default async function CoursesPage() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row items-center gap-2.5">
+                    <div className="flex flex-col sm:flex-row items-center gap-3">
                       <Link
                         href={`/courses/${slug}`}
-                        className="w-full sm:flex-1 h-11 inline-flex items-center justify-center gap-1.5 bg-slate-100 hover:bg-blue-50 text-slate-800 hover:text-blue-600 rounded-xl font-extrabold text-xs transition-all active:scale-98 group/btn"
+                        className="w-full sm:flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 text-slate-700 hover:text-blue-700 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 active:scale-98 group/btn"
                       >
-                        View Course
-                        <ArrowRight className="w-3.5 h-3.5 text-blue-600 group-hover/btn:translate-x-0.5 transition-transform" />
+                        <span>View Course</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover/btn:text-blue-600 group-hover/btn:translate-x-0.5 transition-all duration-200" />
                       </Link>
 
                       <Link
                         href={admissionUrl}
-                        className="w-full sm:flex-1 h-11 inline-flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-extrabold text-xs transition-all shadow-md shadow-blue-500/20 active:scale-98"
+                        className="w-full sm:flex-1 min-h-[44px] inline-flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 shadow-sm hover:shadow-md active:scale-98"
                       >
-                        Apply Now
+                        <span>Apply Now</span>
+                        <ArrowUpRight className="w-3.5 h-3.5 opacity-90" />
                       </Link>
                     </div>
                   </div>
@@ -238,14 +239,16 @@ export default async function CoursesPage() {
           </div>
 
           {/* 4. REUSABLE WHATSAPP COUNSELLING BANNER */}
-          <WhatsAppCounsellingBanner
-            badge="COURSE COUNSELLING"
-            title="Not sure which course to choose?"
-            description="Talk directly with an RCI counsellor and get help choosing the right course for your learning goals."
-            buttonText="Chat with RCI on WhatsApp"
-            customMessage="Hello RCI, I am trying to choose a computer course and would like course counselling."
-            variant="horizontal"
-          />
+          <div className="mt-8 sm:mt-10 mb-16">
+            <WhatsAppCounsellingBanner
+              badge="COURSE COUNSELLING"
+              title="Not sure which course to choose?"
+              description="Talk directly with an RCI counsellor and get help choosing the right course for your learning goals."
+              buttonText="Chat with RCI on WhatsApp"
+              customMessage="Hello RCI, I am trying to choose a computer course and would like course counselling."
+              variant="horizontal"
+            />
+          </div>
 
         </div>
       </main>
