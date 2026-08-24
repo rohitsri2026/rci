@@ -1,45 +1,60 @@
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
-import { Plus } from "lucide-react";
-import CourseActions from "@/components/admin/CourseActions";
+import CourseListClient from "@/components/admin/courses/CourseListClient";
+import { Course } from "@/types/course";
+
+export const dynamic = "force-dynamic";
 
 export default async function CoursesPage() {
   const supabase = await createClient();
-  const { data: courses } = await supabase.from("courses").select("*").order("course_name");
 
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 font-display">Courses</h1>
-          <p className="text-slate-500 mt-1">Manage all courses offered by RCI.</p>
-        </div>
-        <Link href="/admin/courses/new" className="flex items-center gap-2 bg-purple-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-colors text-sm">
-          <Plus className="w-4 h-4" /> Add Course
-        </Link>
-      </div>
+  // 1. Fetch courses
+  const { data: coursesData } = await supabase
+    .from("courses")
+    .select("*")
+    .order("course_name", { ascending: true });
 
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {courses && courses.length > 0 ? (
-          courses.map((course: any) => (
-            <div key={course.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col h-full">
-              <div className="flex justify-between items-start gap-4 mb-2">
-                <h3 className="font-bold text-slate-900 text-lg">{course.course_name}</h3>
-                <CourseActions courseId={course.id} />
-              </div>
-              <p className="text-slate-500 text-sm mb-4 line-clamp-2">{course.description || "No description provided."}</p>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-slate-500">Duration: <span className="text-slate-700 font-medium">{course.duration || "—"}</span></span>
-                <span className="font-bold text-slate-900">₹{course.fees?.toLocaleString("en-IN") ?? "—"}</span>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="col-span-3 bg-white rounded-2xl border border-slate-200 py-16 text-center text-slate-400">
-            No courses found. Add your first course.
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  const rawCourses = (coursesData || []) as Course[];
+
+  // 2. Fetch stats: student counts, admissions counts, certificate counts
+  const [studentsRes, admissionsRes, certificatesRes] = await Promise.all([
+    supabase.from("students").select("course_id"),
+    supabase.from("admissions").select("selected_course"),
+    supabase.from("certificates").select("course_id"),
+  ]);
+
+  const studentCountMap: Record<string, number> = {};
+  if (studentsRes.data) {
+    studentsRes.data.forEach((s) => {
+      if (s.course_id) {
+        studentCountMap[s.course_id] = (studentCountMap[s.course_id] || 0) + 1;
+      }
+    });
+  }
+
+  const admissionCountMap: Record<string, number> = {};
+  if (admissionsRes.data) {
+    admissionsRes.data.forEach((a) => {
+      if (a.selected_course) {
+        admissionCountMap[a.selected_course] = (admissionCountMap[a.selected_course] || 0) + 1;
+      }
+    });
+  }
+
+  const certCountMap: Record<string, number> = {};
+  if (certificatesRes.data) {
+    certificatesRes.data.forEach((c) => {
+      if (c.course_id) {
+        certCountMap[c.course_id] = (certCountMap[c.course_id] || 0) + 1;
+      }
+    });
+  }
+
+  const courses: Course[] = rawCourses.map((c) => ({
+    ...c,
+    student_count: studentCountMap[c.id] || 0,
+    admission_count: admissionCountMap[c.course_name] || 0,
+    certificate_count: certCountMap[c.id] || 0,
+  }));
+
+  return <CourseListClient initialCourses={courses} />;
 }

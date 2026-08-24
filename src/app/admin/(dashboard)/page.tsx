@@ -21,7 +21,7 @@ async function getDashboardData() {
     supabase.from("students").select("id", { count: "exact", head: true }),
     supabase.from("certificates").select("id", { count: "exact", head: true }),
     supabase.from("admissions").select("id", { count: "exact", head: true }).eq("status", "Pending"),
-    supabase.from("courses").select("id", { count: "exact", head: true }),
+    supabase.from("courses").select("id", { count: "exact", head: true }).or("status.eq.Active,status.is.null"),
     supabase.from("admissions").select("*").order("created_at", { ascending: false }).limit(5),
     supabase.from("students").select("*, courses(course_name)").order("created_at", { ascending: false }).limit(5),
     supabase.from("certificates").select("*").order("created_at", { ascending: false }).limit(5),

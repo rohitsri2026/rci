@@ -91,7 +91,11 @@ function cleanDescription(desc?: string, fallbackDesc?: string): string {
 
 export default async function CoursesPage() {
   const supabase = await createClient();
-  const { data: dbCourses } = await supabase.from("courses").select("*").order("course_name");
+  const { data: dbCourses } = await supabase
+    .from("courses")
+    .select("*")
+    .or("status.eq.Active,status.is.null")
+    .order("course_name");
 
   const coursesList = (dbCourses && dbCourses.length > 0) ? dbCourses : fallbackCourses;
 

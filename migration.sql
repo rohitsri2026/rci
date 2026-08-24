@@ -235,7 +235,8 @@ ALTER TABLE public.courses
   ADD COLUMN IF NOT EXISTS requirements TEXT[],
   ADD COLUMN IF NOT EXISTS eligibility TEXT,
   ADD COLUMN IF NOT EXISTS faqs JSONB DEFAULT '[]'::jsonb,
-  ADD COLUMN IF NOT EXISTS seo_metadata JSONB DEFAULT '{}'::jsonb;
+  ADD COLUMN IF NOT EXISTS seo_metadata JSONB DEFAULT '{}'::jsonb,
+  ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'Active';
 
 -- Ensure course slug is unique
 ALTER TABLE public.courses DROP CONSTRAINT IF EXISTS courses_slug_key;

@@ -32,7 +32,12 @@ export default function Header() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("courses").select("id, course_name, slug").order("course_name").then(({ data }) => {
+    supabase
+      .from("courses")
+      .select("id, course_name, slug")
+      .or("status.eq.Active,status.is.null")
+      .order("course_name")
+      .then(({ data }) => {
       if (data && data.length > 0) {
         setCourses(data);
       } else {

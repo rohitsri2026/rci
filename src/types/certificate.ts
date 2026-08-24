@@ -18,6 +18,7 @@ export interface CourseInfo {
   description: string | null;
   duration: string | null;
   fees: number | null;
+  status?: string | null;
   created_at: string;
 }
 

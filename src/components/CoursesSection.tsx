@@ -112,7 +112,11 @@ export default function CoursesSection() {
     async function fetchCourses() {
       try {
         const supabase = createClient();
-        const { data } = await supabase.from("courses").select("*").order("course_name");
+        const { data } = await supabase
+          .from("courses")
+          .select("*")
+          .or("status.eq.Active,status.is.null")
+          .order("course_name");
 
         if (data && data.length > 0) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

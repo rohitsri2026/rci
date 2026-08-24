@@ -30,30 +30,28 @@ function AdmissionFormContent() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("courses").select("id, course_name").then(({ data }) => {
-      const loadedCourses = data ?? [
-        { id: "1", course_name: "Diploma in Computer Application (DCA)" },
-        { id: "2", course_name: "Tally Prime & GST Accounting" },
-        { id: "3", course_name: "Advanced Web Development" },
-        { id: "4", course_name: "Python Programming" },
-        { id: "5", course_name: "English & Hindi Typing" },
-        { id: "6", course_name: "Graphic Designing & DTP" },
-      ];
-      setCourses(loadedCourses);
+    supabase
+      .from("courses")
+      .select("id, course_name")
+      .or("status.eq.Active,status.is.null")
+      .order("course_name", { ascending: true })
+      .then(({ data }) => {
+        const loadedCourses = data || [];
+        setCourses(loadedCourses);
 
-      if (courseParam) {
-        // Find matching course by parameter substring or exact match
-        const match = loadedCourses.find((c) => 
-          c.course_name.toLowerCase().includes(courseParam.toLowerCase()) || 
-          courseParam.toLowerCase().includes(c.course_name.toLowerCase())
-        );
-        if (match) {
-          setForm((prev) => ({ ...prev, selected_course: match.course_name }));
-        } else {
-          setForm((prev) => ({ ...prev, selected_course: courseParam }));
+        if (courseParam) {
+          // Find matching course by parameter substring or exact match
+          const match = loadedCourses.find((c) => 
+            c.course_name.toLowerCase().includes(courseParam.toLowerCase()) || 
+            courseParam.toLowerCase().includes(c.course_name.toLowerCase())
+          );
+          if (match) {
+            setForm((prev) => ({ ...prev, selected_course: match.course_name }));
+          } else {
+            setForm((prev) => ({ ...prev, selected_course: courseParam }));
+          }
         }
-      }
-    });
+      });
   }, [courseParam]);
 
   const validateForm = () => {
@@ -348,7 +346,9 @@ function AdmissionFormContent() {
                         : "border-slate-200/90 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15"
                     }`}
                   >
-                    <option value="">Select a course program...</option>
+                    <option value="">
+                      {courses.length === 0 ? "No courses are currently available" : "Select a course program..."}
+                    </option>
                     {courses.map((c) => (
                       <option key={c.id} value={c.course_name}>
                         {c.course_name}

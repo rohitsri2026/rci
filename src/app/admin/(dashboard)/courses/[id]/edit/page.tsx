@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 import CourseForm from "@/components/admin/CourseForm";
@@ -36,24 +36,28 @@ export default function EditCoursePage() {
   if (initialLoading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   if (error || !course) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm max-w-2xl">
-        {error || "Course not found."}
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold max-w-2xl">
+        {error || "Course record not found."}
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-slate-900 font-display">Edit Course Settings</h1>
-        <p className="text-slate-500 mt-1">Configure metadata, curriculum tracks, or fee discount variables for "{course.course_name}".</p>
+    <div className="max-w-4xl space-y-6">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight font-display">
+          Edit Course Information
+        </h1>
+        <p className="text-slate-500 text-xs sm:text-sm mt-1">
+          Update fee structure, availability status, or curriculum details for "{course.course_name}".
+        </p>
       </div>
 
       <CourseForm initialData={course} />

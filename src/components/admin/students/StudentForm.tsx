@@ -62,7 +62,7 @@ export default function StudentForm({ mode, studentId, initialData }: StudentFor
     const supabase = createClient();
     supabase
       .from("courses")
-      .select("id, course_name")
+      .select("id, course_name, status")
       .order("course_name", { ascending: true })
       .then(({ data }) => setCourses(data ?? []));
   }, []);
@@ -244,11 +244,17 @@ export default function StudentForm({ mode, studentId, initialData }: StudentFor
               className="w-full h-12 px-4 border border-slate-200/90 rounded-xl text-slate-900 text-sm font-medium bg-slate-50/40 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all"
             >
               <option value="">Select a course program...</option>
-              {courses.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.course_name}
-                </option>
-              ))}
+              {courses.map((c) => {
+                const isInactive = (c as any).status === "Inactive";
+                if (isInactive && c.id !== initialData?.course_id) {
+                  return null;
+                }
+                return (
+                  <option key={c.id} value={c.id}>
+                    {c.course_name} {isInactive ? "(Inactive)" : ""}
+                  </option>
+                );
+              })}
             </select>
           </div>
         </div>
