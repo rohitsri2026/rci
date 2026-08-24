@@ -32,16 +32,32 @@ export async function updateAdmissionStatus(admissionId: string, status: "Approv
       }
     }
 
-    // Insert into students table
-    const { error: insertError } = await supabase.from("students").insert([{
-      full_name: admission.student_name,
-      email: admission.email,
-      phone: admission.phone,
-      course_id: courseId,
-    }]);
+    // Check if student already exists by email or phone to prevent duplicate creation
+    if (admission.email || admission.phone) {
+      let query = supabase.from("students").select("id");
+      if (admission.email && admission.phone) {
+        query = query.or(`email.eq.${admission.email},phone.eq.${admission.phone}`);
+      } else if (admission.email) {
+        query = query.eq("email", admission.email);
+      } else if (admission.phone) {
+        query = query.eq("phone", admission.phone);
+      }
+      
+      const { data: existingStudent } = await query.maybeSingle();
 
-    if (insertError) {
-      return { success: false, error: "Failed to create student record: " + insertError.message };
+      if (!existingStudent) {
+        // Insert into students table only if not already existing
+        const { error: insertError } = await supabase.from("students").insert([{
+          full_name: admission.student_name,
+          email: admission.email,
+          phone: admission.phone,
+          course_id: courseId,
+        }]);
+
+        if (insertError) {
+          console.error("Warning: Student insert failed during approval:", insertError.message);
+        }
+      }
     }
 
     // Trigger EV-002 (Admission Approved) and EV-004 (Student welcome)
@@ -85,6 +101,16 @@ export async function updateAdmissionStatus(admissionId: string, status: "Approv
     return { success: false, error: updateError.message };
   }
 
+  revalidatePath("/admin", "layout");
+  return { success: true };
+}
+
+export async function deleteAdmission(admissionId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("admissions").delete().eq("id", admissionId);
+  if (error) {
+    return { success: false, error: error.message };
+  }
   revalidatePath("/admin", "layout");
   return { success: true };
 }
