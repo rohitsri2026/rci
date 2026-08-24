@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { 
   GraduationCap, Lock, Mail, AlertCircle, Eye, EyeOff, 
-  ArrowRight, ShieldCheck, CheckCircle2, ArrowLeft, Loader2
+  ArrowRight, ShieldCheck, ArrowLeft, Loader2, BookOpen,
+  FileText, Award
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -118,24 +119,29 @@ export default function StudentLoginPage() {
               </p>
             </div>
 
-            {/* Trust Checklist Points */}
-            <div className="bg-white/90 border border-slate-200/90 rounded-2xl p-4.5 sm:p-5 shadow-2xs max-w-md mx-auto lg:mx-0">
+            {/* Premium Student Portal Features Grid */}
+            <div className="bg-white/90 border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs max-w-md mx-auto lg:mx-0">
               <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-3 text-left">
                 Student Portal Features
               </h2>
               
-              <div className="grid sm:grid-cols-2 gap-2.5 text-left">
+              <div className="grid grid-cols-2 gap-3 text-left">
                 {[
-                  "Course Info & Modules",
-                  "Fee Ledgers & Receipts",
-                  "Exam Results & Marks",
-                  "Verifiable Certificates",
-                ].map((feature, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
-                    <span className="text-xs font-bold text-slate-800 leading-snug">{feature}</span>
-                  </div>
-                ))}
+                  { title: "Course Info & Modules", icon: BookOpen },
+                  { title: "Fee Ledgers & Receipts", icon: FileText },
+                  { title: "Exam Results & Marks", icon: Award },
+                  { title: "Verifiable Certificates", icon: ShieldCheck },
+                ].map((feature, idx) => {
+                  const Icon = feature.icon;
+                  return (
+                    <div key={idx} className="flex items-center gap-2.5 bg-slate-50/70 border border-slate-100 p-2.5 rounded-xl">
+                      <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                        <Icon className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-xs font-bold text-slate-800 leading-snug">{feature.title}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -201,7 +207,7 @@ export default function StudentLoginPage() {
 
                   {/* Password Field */}
                   <div>
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5 mb-1.5">
                       <label htmlFor="password" className="block text-xs sm:text-sm font-extrabold text-slate-800">
                         Password <span className="text-red-500">*</span>
                       </label>
@@ -210,9 +216,9 @@ export default function StudentLoginPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Contact RCI support on WhatsApp to reset your password"
-                        className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
+                        className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-md transition-colors"
                       >
-                        Forgot Password? Get Help
+                        Forgot Password?
                       </a>
                     </div>
                     
