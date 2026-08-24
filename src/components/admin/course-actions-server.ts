@@ -204,20 +204,18 @@ export async function toggleCourseStatus(courseId: string, currentStatus: string
     .eq("id", courseId);
 
   if (error) {
-    console.error("[toggleCourseStatus Error Diagnostics]", {
+    console.error("[Course Status Update Diagnostic]", {
       code: error.code,
       message: error.message,
       details: error.details,
       hint: error.hint,
+      courseId,
     });
 
-    if (isStatusColumnMissingError(error)) {
-      return { 
-        success: false, 
-        error: "Database schema is pending 'status' column migration. Please run migration.sql in your Supabase SQL Editor." 
-      };
-    }
-    return { success: false, error: "Failed to update course status." };
+    return { 
+      success: false, 
+      error: "Unable to update course status. Please try again." 
+    };
   }
 
   revalidatePublicCoursePages(course?.slug);

@@ -32,6 +32,16 @@ export default function CourseListClient({ initialCourses }: CourseListClientPro
   const [isDeleting, setIsDeleting] = useState(false);
   const [isTogglingId, setIsTogglingId] = useState<string | null>(null);
 
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 4500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
   // Close active dropdown menu on global Escape key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -81,9 +91,16 @@ export default function CourseListClient({ initialCourses }: CourseListClientPro
       if (viewingCourse && viewingCourse.id === courseId) {
         setViewingCourse((prev) => prev ? { ...prev, status: res.newStatus || "Active" } : null);
       }
+      setToast({
+        message: `Course status updated to ${res.newStatus || "Active"}.`,
+        type: "success",
+      });
       router.refresh();
     } else {
-      alert(res.error || "Failed to update course status.");
+      setToast({
+        message: res.error || "Unable to update course status. Please try again.",
+        type: "error",
+      });
     }
   };
 
@@ -126,6 +143,18 @@ export default function CourseListClient({ initialCourses }: CourseListClientPro
 
   return (
     <div className="space-y-6">
+      {/* Toast Banner */}
+      {toast && (
+        <div className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl border flex items-center gap-3 text-xs sm:text-sm font-bold animate-in fade-in slide-in-from-bottom-4 duration-200 ${
+          toast.type === "success" 
+            ? "bg-slate-900 text-white border-slate-800" 
+            : "bg-red-950 text-red-100 border-red-800"
+        }`}>
+          <div className={`w-2 h-2 rounded-full ${toast.type === "success" ? "bg-emerald-400" : "bg-red-400"}`} />
+          <span>{toast.message}</span>
+        </div>
+      )}
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
