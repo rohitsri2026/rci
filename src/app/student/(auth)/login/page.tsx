@@ -59,71 +59,72 @@ export default function StudentLoginPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between p-4 sm:p-6 lg:p-8 relative overflow-hidden">
-      {/* Subtle Background Glows */}
+      {/* Subtle Blue Background Ambient Glow */}
       <div className="absolute top-[10%] left-[15%] w-[450px] h-[450px] bg-blue-500/8 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[10%] right-[15%] w-[400px] h-[400px] bg-indigo-500/8 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-[10%] right-[15%] w-[400px] h-[400px] bg-blue-600/5 rounded-full blur-[140px] pointer-events-none" />
 
-      {/* Top Header Navigation */}
-      <header className="max-w-6xl mx-auto w-full flex items-center justify-between py-2 relative z-10">
+      {/* Top Utility Header Row */}
+      <header className="max-w-5xl mx-auto w-full flex items-center justify-between py-3 border-b border-slate-200/80 relative z-10">
         <Link 
           href="/" 
           className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 px-2 py-1"
         >
           <ArrowLeft className="w-4 h-4 text-blue-600" />
-          Back to RCI Website
+          <span>Back to RCI Website</span>
         </Link>
 
-        <span className="text-xs font-bold text-slate-400 hidden sm:inline-block">
+        <span className="text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full">
           Official Student Portal
         </span>
       </header>
 
       {/* Main Authentication Grid Container */}
-      <main className="max-w-5xl mx-auto w-full my-auto py-6 sm:py-10 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <main className="max-w-5xl mx-auto w-full my-auto py-5 sm:py-8 relative z-10">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
           
-          {/* LEFT COLUMN: RCI Student Portal Introduction (Desktop / Compact Mobile Top) */}
-          <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
+          {/* LEFT COLUMN: RCI Student Portal Introduction */}
+          <div className="lg:col-span-6 space-y-4 sm:space-y-5 text-center lg:text-left">
             <div>
-              {/* RCI Logo */}
-              <Link href="/" className="inline-block focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-xl p-1 mb-4">
-                <Image
-                  src="/logo.png"
-                  alt={`${RCIConfig.instituteName} Logo`}
-                  width={160}
-                  height={60}
-                  className="h-12 sm:h-14 w-auto object-contain mx-auto lg:mx-0"
-                  priority
-                />
-              </Link>
+              {/* Tightly Grouped Official RCI Logo & Eyebrow Badge */}
+              <div className="flex flex-col items-center lg:items-start gap-3 mb-3">
+                <Link href="/" className="inline-block focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-xl p-1">
+                  <Image
+                    src="/logo.png"
+                    alt={`${RCIConfig.instituteName} Logo`}
+                    width={180}
+                    height={65}
+                    className="h-14 sm:h-16 w-auto object-contain mx-auto lg:mx-0"
+                    priority
+                  />
+                </Link>
 
-              {/* Eyebrow Pill */}
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-100/80 text-blue-700 text-xs font-bold uppercase tracking-wider mb-4 shadow-2xs">
-                <GraduationCap className="w-4 h-4 text-blue-600" />
-                RCI STUDENT PORTAL
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-100/80 text-blue-700 text-[11px] font-extrabold uppercase tracking-wider shadow-2xs">
+                  <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
+                  RCI STUDENT PORTAL
+                </div>
               </div>
 
               {/* Display Heading */}
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-[ -0.035em] text-slate-950 leading-[1.12]">
+              <h1 className="text-3xl sm:text-[38px] font-extrabold tracking-[-0.035em] text-slate-950 leading-[1.12] mb-2.5">
                 Your Learning Journey, <br className="hidden sm:block" />
-                <span className="bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-600 bg-clip-text text-transparent">
+                <span className="text-blue-600">
                   All in One Place.
                 </span>
               </h1>
 
               {/* Supporting Text */}
-              <p className="mt-3.5 text-slate-600 text-sm sm:text-base leading-relaxed max-w-md mx-auto lg:mx-0">
+              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed max-w-md mx-auto lg:mx-0">
                 Access your courses, fees, results, certificates and academic records from one secure portal.
               </p>
             </div>
 
             {/* Trust Checklist Points */}
-            <div className="bg-white/80 border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-2xs max-w-md mx-auto lg:mx-0">
-              <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-3.5 text-left">
+            <div className="bg-white/90 border border-slate-200/90 rounded-2xl p-4.5 sm:p-5 shadow-2xs max-w-md mx-auto lg:mx-0">
+              <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-3 text-left">
                 Student Portal Features
               </h2>
               
-              <div className="grid sm:grid-cols-2 gap-3 text-left">
+              <div className="grid sm:grid-cols-2 gap-2.5 text-left">
                 {[
                   "Course Info & Modules",
                   "Fee Ledgers & Receipts",
@@ -132,7 +133,7 @@ export default function StudentLoginPage() {
                 ].map((feature, idx) => (
                   <div key={idx} className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
-                    <span className="text-xs font-extrabold text-slate-800 leading-snug">{feature}</span>
+                    <span className="text-xs font-bold text-slate-800 leading-snug">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -143,16 +144,16 @@ export default function StudentLoginPage() {
           <div className="lg:col-span-6 max-w-md mx-auto w-full">
             <div className="relative group">
               {/* Subtle Ambient Card Glow */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/15 via-indigo-600/15 to-blue-500/15 rounded-[2rem] blur-xl opacity-75 transition-all duration-500 pointer-events-none" />
+              <div className="absolute -inset-1 bg-blue-600/10 rounded-[2rem] blur-xl opacity-75 transition-all duration-500 pointer-events-none" />
 
               {/* Main White Card Surface */}
-              <div className="relative bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-950/5 p-6 sm:p-9 overflow-hidden">
-                {/* Top Accent Line */}
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500" />
+              <div className="relative bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-950/5 p-6 sm:p-8 overflow-hidden">
+                {/* RCI Blue Top Accent Bar */}
+                <div className="absolute top-0 left-0 right-0 h-1.5 bg-blue-600" />
 
                 {/* Card Header */}
-                <div className="border-b border-slate-100 pb-5 mb-6">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-[11px] font-black uppercase tracking-wider mb-2">
+                <div className="border-b border-slate-100 pb-4 mb-5">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-[10.5px] font-extrabold uppercase tracking-wider mb-2">
                     <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
                     SECURE STUDENT LOGIN
                   </div>
@@ -173,7 +174,7 @@ export default function StudentLoginPage() {
                 )}
 
                 {/* Form */}
-                <form onSubmit={handleLogin} noValidate className="space-y-5">
+                <form onSubmit={handleLogin} noValidate className="space-y-4.5">
                   {/* Email Field */}
                   <div>
                     <label htmlFor="email" className="block text-xs sm:text-sm font-extrabold text-slate-800 mb-1.5">
@@ -208,9 +209,10 @@ export default function StudentLoginPage() {
                         href={forgotPasswordWhatsappUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        title="Contact RCI support on WhatsApp to reset your password"
                         className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
                       >
-                        Forgot Password?
+                        Forgot Password? Get Help
                       </a>
                     </div>
                     
@@ -240,7 +242,7 @@ export default function StudentLoginPage() {
                     </div>
                   </div>
 
-                  {/* Submit Primary CTA */}
+                  {/* Primary CTA Submit Button */}
                   <button
                     type="submit"
                     disabled={loading}
@@ -259,9 +261,10 @@ export default function StudentLoginPage() {
                     )}
                   </button>
 
-                  {/* Security Trust Badge */}
-                  <div className="pt-2 text-center text-[11.5px] font-semibold text-slate-400 flex items-center justify-center gap-1.5">
-                    <span>🔒 Your academic information is securely protected.</span>
+                  {/* Security Trust Signal */}
+                  <div className="pt-2 text-center text-[11.5px] font-semibold text-slate-500 flex items-center justify-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <span>Your academic information is securely protected.</span>
                   </div>
                 </form>
               </div>
@@ -272,7 +275,7 @@ export default function StudentLoginPage() {
       </main>
 
       {/* Footer Copyright */}
-      <footer className="max-w-5xl mx-auto w-full text-center py-4 relative z-10 border-t border-slate-200/60">
+      <footer className="max-w-5xl mx-auto w-full text-center py-3 relative z-10 border-t border-slate-200/60">
         <p className="text-xs text-slate-500">
           &copy; {new Date().getFullYear()} {RCIConfig.instituteName}. All rights reserved.
         </p>
