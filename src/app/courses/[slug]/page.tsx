@@ -9,6 +9,7 @@ import {
   BookOpen, Users, Award, PlayCircle
 } from "lucide-react";
 import type { Metadata } from "next";
+import WhatsAppCounsellingBanner from "@/components/whatsapp-counselling-banner";
 
 // Generate slug from course name
 function toSlug(name: string) {
@@ -344,13 +345,23 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           </section>
 
           {/* CTA */}
-          <section className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-10 text-center">
+          <section className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-8 sm:p-10 text-center mb-12">
             <h2 className="text-3xl font-black text-white mb-3">Ready to Get Started?</h2>
-            <p className="text-blue-100 mb-8 max-w-lg mx-auto">Join hundreds of students who have already transformed their careers with this course.</p>
+            <p className="text-blue-100 mb-8 max-w-lg mx-auto text-sm sm:text-base leading-relaxed">Join hundreds of students who have already transformed their careers with this course.</p>
             <Link href={`/admission?course=${encodeURIComponent(course.course_name)}`} className="inline-flex items-center gap-2 bg-white text-blue-700 px-8 py-4 rounded-2xl font-bold hover:bg-blue-50 transition-all hover:scale-105 active:scale-95 shadow-lg">
               Apply for Admission <ArrowRight className="w-5 h-5" />
             </Link>
           </section>
+
+          {/* Reusable WhatsApp Counselling Banner */}
+          <WhatsAppCounsellingBanner
+            badge="COURSE COUNSELLING"
+            title={`Have questions about ${course.course_name}?`}
+            description="Talk directly with an RCI admissions counsellor about batch timings, fees, and syllabus details."
+            buttonText="Chat with RCI on WhatsApp"
+            customMessage={`Hello RCI, I have questions about the ${course.course_name} course.`}
+            variant="horizontal"
+          />
 
         </div>
       </main>
