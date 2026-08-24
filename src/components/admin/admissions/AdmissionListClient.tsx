@@ -8,7 +8,7 @@ import {
   Clock, FileText, Trash2, MessageSquare, UserCheck, AlertTriangle, Loader2, Eye, Inbox
 } from "lucide-react";
 import AdmissionProfileDrawer from "./AdmissionProfileDrawer";
-import { updateAdmissionStatus, deleteAdmission } from "../admission-actions-server";
+import { updateAdmissionStatus, convertAdmissionToStudent, deleteAdmission } from "../admission-actions-server";
 
 interface Admission {
   id: string;
@@ -160,6 +160,22 @@ export default function AdmissionListClient({
       router.refresh();
     } else {
       setActionError(res.error || "Unable to approve this application. Please try again.");
+    }
+  };
+
+  // Handle Explicit Student Conversion Recovery Action
+  const handleConvertAction = async (adm: Admission) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    setActionError("");
+
+    const res = await convertAdmissionToStudent(adm.id);
+    setIsProcessing(false);
+
+    if (res.success) {
+      router.refresh();
+    } else {
+      alert(res.error || "Unable to create student record. Please try again.");
     }
   };
 
@@ -481,6 +497,7 @@ export default function AdmissionListClient({
                                 {adm.status === "Approved" && (
                                   <>
                                     {matchingStudentId ? (
+                                      // CASE 2: Approved + Student Exists
                                       <Link
                                         href={`/admin/students/${matchingStudentId}/edit`}
                                         className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
@@ -490,9 +507,10 @@ export default function AdmissionListClient({
                                         <span>View Student Record</span>
                                       </Link>
                                     ) : (
+                                      // CASE 3: Approved + Student Missing (Recovery Action)
                                       <button
                                         onClick={() => {
-                                          setApprovingAdmission(adm);
+                                          handleConvertAction(adm);
                                           setActiveMenuId(null);
                                         }}
                                         className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -663,7 +681,7 @@ export default function AdmissionListClient({
                             ) : (
                               <button
                                 onClick={() => {
-                                  setApprovingAdmission(adm);
+                                  handleConvertAction(adm);
                                   setActiveMenuId(null);
                                 }}
                                 className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-blue-600 hover:bg-blue-50 rounded-lg"
@@ -761,6 +779,7 @@ export default function AdmissionListClient({
         onApprove={(adm) => setApprovingAdmission(adm)}
         onReject={(adm) => setRejectingAdmission(adm)}
         onDelete={(adm) => setDeletingAdmissionObj(adm)}
+        onConvert={(adm) => handleConvertAction(adm)}
       />
 
       {/* APPROVE APPLICATION CONFIRMATION MODAL */}

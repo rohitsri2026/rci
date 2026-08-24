@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { 
   X, Mail, Phone, BookOpen, Calendar, CheckCircle2, XCircle, 
-  Clock, MessageSquare, UserCheck, Trash2, FileText 
+  Clock, MessageSquare, UserCheck, Trash2, FileText, AlertCircle 
 } from "lucide-react";
 
 interface Admission {
@@ -25,6 +25,7 @@ interface AdmissionProfileDrawerProps {
   onApprove: (admission: Admission) => void;
   onReject: (admission: Admission) => void;
   onDelete: (admission: Admission) => void;
+  onConvert?: (admission: Admission) => void;
 }
 
 export default function AdmissionProfileDrawer({
@@ -34,8 +35,9 @@ export default function AdmissionProfileDrawer({
   onApprove,
   onReject,
   onDelete,
+  onConvert,
 }: AdmissionProfileDrawerProps) {
-  // Close drawer on Escape key press with proper cleanup
+  // Close drawer on Escape key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -63,21 +65,21 @@ export default function AdmissionProfileDrawer({
       case "Approved":
         return (
           <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200/90 px-2.5 py-1 rounded-full text-[11px] font-extrabold">
-            <CheckCircle2 className="w-3.5 h-3.5" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
             <span>Approved</span>
           </span>
         );
       case "Rejected":
         return (
           <span className="inline-flex items-center gap-1 bg-red-50 text-red-700 border border-red-200/90 px-2.5 py-1 rounded-full text-[11px] font-extrabold">
-            <XCircle className="w-3.5 h-3.5" />
+            <XCircle className="w-3.5 h-3.5 text-red-600" />
             <span>Rejected</span>
           </span>
         );
       default:
         return (
           <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200/90 px-2.5 py-1 rounded-full text-[11px] font-extrabold">
-            <Clock className="w-3.5 h-3.5" />
+            <Clock className="w-3.5 h-3.5 text-amber-600" />
             <span>Pending Review</span>
           </span>
         );
@@ -142,6 +144,19 @@ export default function AdmissionProfileDrawer({
               {getStatusBadge(admission.status)}
             </div>
           </div>
+
+          {/* Recovery Informational Notice for CASE 3 */}
+          {admission.status === "Approved" && !matchingStudentId && (
+            <div className="flex items-start gap-3 bg-amber-50/90 border border-amber-200/80 text-amber-800 p-3.5 rounded-2xl text-xs font-medium">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <p className="font-extrabold text-amber-900">Student Record Pending Creation</p>
+                <p className="text-[11.5px] leading-relaxed text-amber-800/90">
+                  Admission approved. Click &quot;Convert to Student&quot; below to finalize their student profile.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Section 1: APPLICANT INFORMATION */}
           <div className="space-y-3">
@@ -215,6 +230,7 @@ export default function AdmissionProfileDrawer({
 
         {/* Action Controls at Bottom */}
         <div className="p-5 border-t border-slate-100 bg-white sticky bottom-0 z-10 space-y-2">
+          {/* CASE 1: PENDING */}
           {admission.status === "Pending" && (
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -241,9 +257,11 @@ export default function AdmissionProfileDrawer({
             </div>
           )}
 
+          {/* CASE 2 & 3: APPROVED */}
           {admission.status === "Approved" && (
             <div className="space-y-2">
               {matchingStudentId ? (
+                // CASE 2: APPROVED + STUDENT EXISTS
                 <Link
                   href={`/admin/students/${matchingStudentId}/edit`}
                   className="w-full h-11 inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-extrabold text-xs transition-all"
@@ -253,12 +271,17 @@ export default function AdmissionProfileDrawer({
                   <span>View Student Record</span>
                 </Link>
               ) : (
+                // CASE 3: APPROVED + STUDENT MISSING (Recovery Action)
                 <button
                   onClick={() => {
-                    onApprove(admission);
+                    if (onConvert) {
+                      onConvert(admission);
+                    } else {
+                      onApprove(admission);
+                    }
                     onClose();
                   }}
-                  className="w-full h-11 inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-extrabold text-xs transition-all shadow-md shadow-blue-500/20"
+                  className="w-full h-11 inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-extrabold text-xs transition-all shadow-md shadow-blue-500/20 active:scale-98"
                 >
                   <UserCheck className="w-4 h-4" />
                   <span>Convert to Student</span>
@@ -279,6 +302,7 @@ export default function AdmissionProfileDrawer({
             </div>
           )}
 
+          {/* CASE 4: REJECTED */}
           {admission.status === "Rejected" && (
             <div className="space-y-2">
               {whatsappUrl && (

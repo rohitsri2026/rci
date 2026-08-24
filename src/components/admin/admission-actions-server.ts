@@ -30,17 +30,7 @@ export async function updateAdmissionStatus(admissionId: string, status: "Approv
   }
 
   if (status === "Approved") {
-    // 1. Update admission status to Approved first
-    const { error: updateError } = await supabase
-      .from("admissions")
-      .update({ status: "Approved" })
-      .eq("id", admissionId);
-
-    if (updateError) {
-      return { success: false, error: "Unable to approve this application. Please try again." };
-    }
-
-    // 2. Normalize contact identifiers for student duplicate lookup
+    // 1. Normalize contact identifiers for student duplicate lookup
     const cleanEmail = admission.email?.trim().toLowerCase() || null;
     const rawDigits = admission.phone ? admission.phone.replace(/[^0-9]/g, "") : "";
     const cleanPhone = rawDigits.length >= 7 ? rawDigits : null;
@@ -48,7 +38,6 @@ export async function updateAdmissionStatus(admissionId: string, status: "Approv
     let existingStudentId: string | null = null;
 
     if (cleanEmail || cleanPhone) {
-      // Query students safely without matching empty strings
       let query = supabase.from("students").select("id, email, phone");
 
       if (cleanEmail && cleanPhone) {
@@ -65,7 +54,7 @@ export async function updateAdmissionStatus(admissionId: string, status: "Approv
       }
     }
 
-    // 3. Create student record ONLY if no student match was found
+    // 2. Create student record FIRST if no student match was found
     if (!existingStudentId) {
       let courseId = null;
       if (admission.selected_course) {
@@ -88,8 +77,24 @@ export async function updateAdmissionStatus(admissionId: string, status: "Approv
       }]);
 
       if (insertError) {
-        console.error("Non-fatal warning: Student record creation failed during approval:", insertError.message);
+        return {
+          success: false,
+          error: "Unable to create student record. Admission approval cancelled. Please try again.",
+        };
       }
+    }
+
+    // 3. Update admission status to Approved ONLY after student creation/verification succeeds
+    const { error: updateError } = await supabase
+      .from("admissions")
+      .update({ status: "Approved" })
+      .eq("id", admissionId);
+
+    if (updateError) {
+      return {
+        success: false,
+        error: "Student record created, but admission status update failed. Please click 'Convert to Student' to finalize.",
+      };
     }
 
     // 4. Trigger notifications safely (failures logged silently)
@@ -143,6 +148,80 @@ export async function updateAdmissionStatus(admissionId: string, status: "Approv
 
   revalidatePath("/admin", "layout");
   return { success: true };
+}
+
+export async function convertAdmissionToStudent(admissionId: string) {
+  const supabase = await createClient();
+
+  // Server-side authorization check
+  const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
+  if (authCheck.error) {
+    return { success: false, error: authCheck.error };
+  }
+
+  const { data: admission, error: fetchError } = await supabase
+    .from("admissions")
+    .select("*")
+    .eq("id", admissionId)
+    .single();
+
+  if (fetchError || !admission) {
+    return { success: false, error: "Unable to find admission application." };
+  }
+
+  const cleanEmail = admission.email?.trim().toLowerCase() || null;
+  const rawDigits = admission.phone ? admission.phone.replace(/[^0-9]/g, "") : "";
+  const cleanPhone = rawDigits.length >= 7 ? rawDigits : null;
+
+  let existingStudentId: string | null = null;
+
+  if (cleanEmail || cleanPhone) {
+    let query = supabase.from("students").select("id, email, phone");
+    if (cleanEmail && cleanPhone) {
+      query = query.or(`email.ilike.${cleanEmail},phone.ilike.%${cleanPhone.slice(-10)}%`);
+    } else if (cleanEmail) {
+      query = query.ilike("email", cleanEmail);
+    } else if (cleanPhone) {
+      query = query.ilike("phone", `%${cleanPhone.slice(-10)}%`);
+    }
+
+    const { data: matchedStudents } = await query;
+    if (matchedStudents && matchedStudents.length > 0) {
+      existingStudentId = matchedStudents[0].id;
+    }
+  }
+
+  if (existingStudentId) {
+    revalidatePath("/admin", "layout");
+    return { success: true, studentId: existingStudentId, message: "Student record already exists." };
+  }
+
+  let courseId = null;
+  if (admission.selected_course) {
+    const { data: course } = await supabase
+      .from("courses")
+      .select("id")
+      .eq("course_name", admission.selected_course)
+      .maybeSingle();
+
+    if (course) {
+      courseId = course.id;
+    }
+  }
+
+  const { data: newStudent, error: insertError } = await supabase.from("students").insert([{
+    full_name: admission.student_name,
+    email: cleanEmail || admission.email,
+    phone: admission.phone,
+    course_id: courseId,
+  }]).select("id").single();
+
+  if (insertError) {
+    return { success: false, error: "Unable to create student record. Please try again." };
+  }
+
+  revalidatePath("/admin", "layout");
+  return { success: true, studentId: newStudent.id, message: "Student record created successfully." };
 }
 
 export async function deleteAdmission(admissionId: string) {
