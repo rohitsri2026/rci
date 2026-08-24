@@ -230,23 +230,24 @@ export default function CourseListClient({ initialCourses }: CourseListClientPro
       {filteredCourses.length > 0 ? (
         <>
           {/* Desktop Table View (Hidden on mobile) */}
-          <div className="hidden lg:block bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+          <div className="hidden lg:block bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50/70 border-b border-slate-200/80 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
-                  <th className="py-3.5 px-5">COURSE</th>
+                <tr className="bg-slate-50/70 border-b border-slate-200/80 text-[11px] font-extrabold uppercase tracking-wider text-slate-500 rounded-t-2xl">
+                  <th className="py-3.5 px-5 rounded-tl-2xl">COURSE</th>
                   <th className="py-3.5 px-5">DESCRIPTION</th>
                   <th className="py-3.5 px-5">DURATION</th>
                   <th className="py-3.5 px-5">FEE</th>
                   <th className="py-3.5 px-5">STUDENTS</th>
                   <th className="py-3.5 px-5">STATUS</th>
-                  <th className="py-3.5 px-5 text-right">ACTIONS</th>
+                  <th className="py-3.5 px-5 text-right rounded-tr-2xl">ACTIONS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs font-medium text-slate-700">
-                {filteredCourses.map((course) => {
+                {filteredCourses.map((course, index) => {
                   const isActive = (course.status || "Active") === "Active";
                   const isMenuOpen = activeMenuId === course.id;
+                  const isNearBottom = index >= Math.max(1, filteredCourses.length - 2) && filteredCourses.length > 1;
 
                   return (
                     <tr 
@@ -327,9 +328,13 @@ export default function CourseListClient({ initialCourses }: CourseListClientPro
                             <MoreVertical className="w-4 h-4" />
                           </button>
 
-                          {/* Dropdown Menu */}
+                          {/* Dropdown Menu - Opens upward for bottom rows */}
                           {isMenuOpen && (
-                            <div className="origin-top-right absolute right-0 mt-1 w-48 rounded-2xl shadow-xl bg-white border border-slate-200 z-30 p-1.5 animate-in fade-in zoom-in-95 duration-150">
+                            <div className={`absolute right-0 w-48 rounded-2xl shadow-xl bg-white border border-slate-200 z-50 p-1.5 animate-in fade-in zoom-in-95 duration-150 ${
+                              isNearBottom 
+                                ? "bottom-full mb-1 origin-bottom-right" 
+                                : "top-full mt-1 origin-top-right"
+                            }`}>
                               <button
                                 onClick={() => {
                                   setActiveMenuId(null);
