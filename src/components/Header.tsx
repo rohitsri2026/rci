@@ -38,20 +38,8 @@ export default function Header() {
       .or("status.eq.Active,status.is.null")
       .order("course_name")
       .then(({ data }) => {
-      if (data && data.length > 0) {
-        setCourses(data);
-      } else {
-        // Fallback default courses if database table is empty or loading
-        setCourses([
-          { id: "1", course_name: "Diploma in Computer Application (DCA)" },
-          { id: "2", course_name: "Tally Prime & GST Accounting" },
-          { id: "3", course_name: "Web Development" },
-          { id: "4", course_name: "Python Programming" },
-          { id: "5", course_name: "English & Hindi Typing" },
-          { id: "6", course_name: "Graphic Designing" },
-        ]);
-      }
-    });
+        setCourses(data || []);
+      });
   }, []);
 
   // Handle outside click & Escape key for Courses dropdown accessibility

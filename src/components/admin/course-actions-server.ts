@@ -27,8 +27,18 @@ function isStatusColumnMissingError(error: any): boolean {
     msg.includes("'status' column") || 
     msg.includes("column \"status\"") || 
     msg.includes("status of 'courses'") ||
-    msg.includes("schema cache") && msg.includes("status")
+    (msg.includes("schema cache") && msg.includes("status"))
   );
+}
+
+function revalidatePublicCoursePages(slug?: string | null) {
+  revalidatePath("/admin/courses");
+  revalidatePath("/");
+  revalidatePath("/courses");
+  revalidatePath("/admission");
+  if (slug) {
+    revalidatePath(`/courses/${slug}`, "page");
+  }
 }
 
 export async function createCourse(payload: CoursePayload) {
@@ -76,8 +86,7 @@ export async function createCourse(payload: CoursePayload) {
     const { status, ...fallbackPayload } = cleanPayload;
     const retry = await supabase.from("courses").insert([fallbackPayload]).select().single();
     if (!retry.error) {
-      revalidatePath("/admin/courses");
-      revalidatePath("/admission");
+      revalidatePublicCoursePages(retry.data?.slug);
       return { success: true, data: retry.data };
     }
     error = retry.error;
@@ -97,8 +106,7 @@ export async function createCourse(payload: CoursePayload) {
     return { success: false, error: "Unable to create course. Please check inputs and try again." };
   }
 
-  revalidatePath("/admin/courses");
-  revalidatePath("/admission");
+  revalidatePublicCoursePages(data?.slug);
   return { success: true, data };
 }
 
@@ -148,14 +156,13 @@ export async function updateCourse(courseId: string, payload: Partial<CoursePayl
     if (Object.keys(fallbackPayload).length > 0) {
       const retry = await supabase.from("courses").update(fallbackPayload).eq("id", courseId);
       if (!retry.error) {
-        revalidatePath("/admin/courses");
         revalidatePath(`/admin/courses/${courseId}/edit`);
-        revalidatePath("/admission");
+        revalidatePublicCoursePages(payload.slug);
         return { success: true };
       }
       error = retry.error;
     } else {
-      revalidatePath("/admin/courses");
+      revalidatePublicCoursePages(payload.slug);
       return { success: true };
     }
   }
@@ -174,9 +181,8 @@ export async function updateCourse(courseId: string, payload: Partial<CoursePayl
     return { success: false, error: "Unable to save course changes. Please try again." };
   }
 
-  revalidatePath("/admin/courses");
   revalidatePath(`/admin/courses/${courseId}/edit`);
-  revalidatePath("/admission");
+  revalidatePublicCoursePages(payload.slug);
   return { success: true };
 }
 
@@ -189,6 +195,8 @@ export async function toggleCourseStatus(courseId: string, currentStatus: string
   }
 
   const nextStatus = currentStatus === "Active" ? "Inactive" : "Active";
+
+  const { data: course } = await supabase.from("courses").select("slug").eq("id", courseId).single();
 
   const { error } = await supabase
     .from("courses")
@@ -212,8 +220,7 @@ export async function toggleCourseStatus(courseId: string, currentStatus: string
     return { success: false, error: "Failed to update course status." };
   }
 
-  revalidatePath("/admin/courses");
-  revalidatePath("/admission");
+  revalidatePublicCoursePages(course?.slug);
   return { success: true, newStatus: nextStatus };
 }
 
@@ -228,7 +235,7 @@ export async function deleteCourse(courseId: string) {
   // Fetch target course details first
   const { data: course, error: courseFetchError } = await supabase
     .from("courses")
-    .select("id, course_name")
+    .select("id, course_name, slug")
     .eq("id", courseId)
     .single();
 
@@ -298,7 +305,6 @@ export async function deleteCourse(courseId: string) {
     return { success: false, error: "Unable to delete course. Please try again." };
   }
 
-  revalidatePath("/admin/courses");
-  revalidatePath("/admission");
+  revalidatePublicCoursePages(course.slug);
   return { success: true };
 }

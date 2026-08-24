@@ -93,14 +93,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   
   let { data: course } = await supabase
     .from("courses")
-    .select("course_name, description, slug, seo_metadata")
+    .select("course_name, description, slug, seo_metadata, status")
+    .or("status.eq.Active,status.is.null")
     .eq("slug", slug)
     .maybeSingle();
 
-  // Backward-compatibility fallback
+  // Slug normalization fallback
   if (!course) {
-    const { data: allCourses } = await supabase.from("courses").select("course_name, description, slug, seo_metadata");
-    course = allCourses?.find((c: any) => toSlug(c.course_name) === slug) || null;
+    const { data: allCourses } = await supabase
+      .from("courses")
+      .select("course_name, description, slug, seo_metadata, status")
+      .or("status.eq.Active,status.is.null");
+    course = allCourses?.find((c: any) => toSlug(c.slug || c.course_name) === slug) || null;
   }
 
   if (!course) return { title: "Course Not Found | RCI" };
@@ -119,16 +123,20 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
   let { data: course } = await supabase
     .from("courses")
     .select("*")
+    .or("status.eq.Active,status.is.null")
     .eq("slug", slug)
     .maybeSingle();
 
-  // Backward-compatibility fallback
+  // Slug normalization fallback
   if (!course) {
-    const { data: allCourses } = await supabase.from("courses").select("*");
-    course = allCourses?.find((c: any) => toSlug(c.course_name) === slug) || null;
+    const { data: allCourses } = await supabase
+      .from("courses")
+      .select("*")
+      .or("status.eq.Active,status.is.null");
+    course = allCourses?.find((c: any) => toSlug(c.slug || c.course_name) === slug) || null;
   }
 
-  if (!course) return notFound();
+  if (!course || course.status === "Inactive") return notFound();
 
   const dbCurriculum = course.curriculum && Array.isArray(course.curriculum) && course.curriculum.length > 0
     ? (course.curriculum as any[])

@@ -32,7 +32,7 @@ function AdmissionFormContent() {
     const supabase = createClient();
     supabase
       .from("courses")
-      .select("id, course_name")
+      .select("id, course_name, slug")
       .or("status.eq.Active,status.is.null")
       .order("course_name", { ascending: true })
       .then(({ data }) => {
@@ -40,10 +40,12 @@ function AdmissionFormContent() {
         setCourses(loadedCourses);
 
         if (courseParam) {
-          // Find matching course by parameter substring or exact match
+          const paramLower = courseParam.toLowerCase();
           const match = loadedCourses.find((c) => 
-            c.course_name.toLowerCase().includes(courseParam.toLowerCase()) || 
-            courseParam.toLowerCase().includes(c.course_name.toLowerCase())
+            (c.slug && c.slug.toLowerCase() === paramLower) ||
+            c.course_name.toLowerCase() === paramLower ||
+            c.course_name.toLowerCase().includes(paramLower) || 
+            paramLower.includes(c.course_name.toLowerCase())
           );
           if (match) {
             setForm((prev) => ({ ...prev, selected_course: match.course_name }));
