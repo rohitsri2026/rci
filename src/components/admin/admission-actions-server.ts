@@ -250,28 +250,74 @@ export async function submitAdmission(form: {
 }) {
   const supabase = await createClient();
 
-  const cleanEmail = form.email ? form.email.trim().toLowerCase() : null;
-  const cleanPhone = form.phone ? form.phone.trim() : null;
+  // 1. Input sanitization & validation
+  const name = form.student_name ? form.student_name.trim() : "";
+  if (!name) {
+    return { success: false, error: "Full Name is required." };
+  }
+  if (name.length > 100) {
+    return { success: false, error: "Full Name must be 100 characters or less." };
+  }
 
-  const { data, error } = await supabase
+  const rawPhone = form.phone ? form.phone.trim() : "";
+  const phoneDigits = rawPhone.replace(/\D/g, "");
+  // If phone starts with 91 and has 12 digits, extract last 10 digits
+  const cleanPhone = (phoneDigits.length === 12 && phoneDigits.startsWith("91"))
+    ? phoneDigits.slice(2)
+    : phoneDigits;
+
+  if (!cleanPhone || cleanPhone.length !== 10) {
+    return { success: false, error: "Please enter a valid 10-digit Indian mobile number." };
+  }
+
+  const cleanEmail = form.email && form.email.trim() ? form.email.trim().toLowerCase() : null;
+  if (cleanEmail) {
+    if (cleanEmail.length > 150) {
+      return { success: false, error: "Email address must be 150 characters or less." };
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      return { success: false, error: "Please enter a valid email address." };
+    }
+  }
+
+  const course = form.selected_course ? form.selected_course.trim() : "";
+  if (!course) {
+    return { success: false, error: "Please select a course program." };
+  }
+  if (course.length > 150) {
+    return { success: false, error: "Course name must be 150 characters or less." };
+  }
+
+  // 2. Generate server-side UUID to prevent needing .select() which triggers RLS SELECT policy block for anonymous users
+  const admissionId = crypto.randomUUID();
+
+  const { error } = await supabase
     .from("admissions")
     .insert([
       {
-        student_name: form.student_name.trim(),
+        id: admissionId,
+        student_name: name,
         email: cleanEmail,
         phone: cleanPhone,
-        selected_course: form.selected_course,
+        selected_course: course,
         status: "Pending",
       },
-    ])
-    .select()
-    .single();
+    ]);
 
   if (error) {
-    return { success: false, error: "Unable to submit application. Please check your information and try again." };
+    console.error("[submitAdmission Server Error Diagnostics]", {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
+    return {
+      success: false,
+      error: "Unable to submit application. Please check your information and try again or contact admissions.",
+    };
   }
 
-  // Trigger EV-001: Admission Submitted
+  // 3. Trigger EV-001: Admission Submitted Notifications
   try {
     const { NotificationService } = await import("@/lib/notifications/service");
     
@@ -279,20 +325,22 @@ export async function submitAdmission(form: {
       await NotificationService.send("Email", {
         to: cleanEmail,
         title: "Admission Application Received - RCI",
-        message: `Dear ${form.student_name},\n\nThank you for applying to the ${form.selected_course} program at Rohit Computer Institute. Your application is currently under review.\n\nBest regards,\nRohit Computer Institute`,
-        metadata: { admission_id: data.id },
+        message: `Dear ${name},\n\nThank you for applying to the ${course} program at Rohit Computer Institute. Your application is currently under review.\n\nBest regards,\nRohit Computer Institute`,
+        metadata: { admission_id: admissionId },
       });
     }
 
     await NotificationService.send("InApp", {
       to: "admin",
       title: "New Admission Application",
-      message: `A new application has been submitted by ${form.student_name} for the ${form.selected_course} course.`,
-      metadata: { admission_id: data.id },
+      message: `A new application has been submitted by ${name} for the ${course} course.`,
+      metadata: { admission_id: admissionId },
     });
   } catch (notifErr: any) {
-    console.error("Failed to send admission submission notification:", notifErr.message);
+    console.error("Failed to send admission submission notification:", notifErr?.message || notifErr);
   }
 
-  return { success: true };
+  revalidatePath("/admin", "layout");
+  return { success: true, admissionId };
 }
+

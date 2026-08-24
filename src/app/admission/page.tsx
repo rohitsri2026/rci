@@ -24,6 +24,7 @@ function AdmissionFormContent() {
   const [form, setForm] = useState({ student_name: "", email: "", phone: "", selected_course: "" });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submittedRef, setSubmittedRef] = useState("");
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ student_name?: string; phone?: string; email?: string; selected_course?: string }>({});
 
@@ -104,6 +105,9 @@ function AdmissionFormContent() {
         setError(res.error || "Unable to submit application. Please try again or contact admissions.");
         setLoading(false);
       } else {
+        if (res.admissionId) {
+          setSubmittedRef(res.admissionId.slice(0, 8).toUpperCase());
+        }
         setSuccess(true);
         setLoading(false);
       }
@@ -114,7 +118,7 @@ function AdmissionFormContent() {
   };
 
   const whatsappUrl = RCIConfig.getWhatsAppUrl(
-    `Hello RCI, I have submitted an online application for ${form.selected_course || "a computer course"}. Please guide me on batch timings and fees.`
+    `Hello RCI, I have submitted an online application for ${form.selected_course || "a computer course"}${submittedRef ? ` (Ref: #${submittedRef})` : ""}. Please guide me on batch timings and fees.`
   );
 
   return (
@@ -139,9 +143,15 @@ function AdmissionFormContent() {
                 <CheckCircle2 className="w-9 h-9" />
               </div>
 
-              <h3 className="text-2xl sm:text-3xl font-black font-display text-slate-900 mb-3">
+              <h3 className="text-2xl sm:text-3xl font-black font-display text-slate-900 mb-2">
                 Application Submitted Successfully!
               </h3>
+
+              {submittedRef && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-xs font-mono font-bold mb-4">
+                  Reference ID: #{submittedRef}
+                </div>
+              )}
 
               <p className="text-slate-600 text-sm sm:text-base max-w-md mx-auto mb-8 leading-relaxed">
                 Thank you for applying to {RCIConfig.shortName}. Our admissions counseling team will contact you shortly to confirm your course schedule, installment fees, and lab batch timing.
