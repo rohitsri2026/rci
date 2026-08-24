@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Menu, X, ChevronDown, BookOpen, GraduationCap, Award, Home, User, PhoneCall } from "lucide-react";
+import { 
+  Menu, X, ChevronDown, ChevronRight, BookOpen, GraduationCap, 
+  Award, Home, User, PhoneCall 
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -44,6 +47,26 @@ export default function Header() {
         ]);
       }
     });
+  }, []);
+
+  // Handle outside click & Escape key for Courses dropdown accessibility
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setCoursesOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setCoursesOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   const handleMouseEnter = () => {
@@ -111,48 +134,86 @@ export default function Header() {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
-            <Link
-              href="/courses"
-              className={`flex items-center gap-1 text-sm font-semibold tracking-tight transition-colors hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-lg px-2.5 py-1.5 ${
+            <button
+              type="button"
+              onClick={() => setCoursesOpen((prev) => !prev)}
+              aria-expanded={coursesOpen}
+              aria-haspopup="menu"
+              className={`flex items-center gap-1 text-sm font-semibold tracking-tight transition-colors hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-lg px-2.5 py-1.5 cursor-pointer ${
                 pathname.startsWith("/courses") ? "text-blue-600 font-bold bg-blue-50/80" : "text-slate-700"
               }`}
             >
               Courses
               <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${coursesOpen ? "rotate-180 text-blue-600" : "text-slate-400"}`} />
-            </Link>
+            </button>
 
             {coursesOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-150 py-3 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="px-4 py-2 border-b border-slate-100 mb-1 flex items-center justify-between">
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Programs Offered</p>
-                  <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold">ISO Certified</span>
+              <div
+                role="menu"
+                aria-label="Courses menu"
+                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[340px] bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-2.5 px-2 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+              >
+                {/* Dropdown Header */}
+                <div className="px-3 py-2 border-b border-slate-100 mb-1.5 flex items-center justify-between">
+                  <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Programs Offered</p>
+                  <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">
+                    {courses.length} Programs
+                  </span>
                 </div>
 
-                <div className="max-h-72 overflow-y-auto px-2 space-y-1">
-                  {courses.map((course) => (
-                    <Link
-                      key={course.id}
-                      href={`/courses/${course.slug || toSlug(course.course_name)}`}
-                      onClick={() => setCoursesOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors group/item"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 group-hover/item:bg-blue-600 transition-colors">
-                        <BookOpen className="w-4 h-4 text-blue-600 group-hover/item:text-white transition-colors" />
-                      </div>
-                      <span className="text-slate-700 text-xs sm:text-sm font-semibold group-hover/item:text-blue-600 transition-colors line-clamp-1">
-                        {course.course_name}
-                      </span>
-                    </Link>
-                  ))}
+                {/* Course Links List */}
+                <div className="max-h-[320px] overflow-y-auto space-y-1 pr-0.5">
+                  {courses.map((course) => {
+                    const slug = course.slug || toSlug(course.course_name);
+                    const active = pathname === `/courses/${slug}`;
+                    return (
+                      <Link
+                        key={course.id}
+                        href={`/courses/${slug}`}
+                        role="menuitem"
+                        onClick={() => setCoursesOpen(false)}
+                        className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group/item focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
+                          active
+                            ? "bg-blue-50 text-blue-600 font-bold"
+                            : "hover:bg-blue-50/70 text-slate-700 hover:text-blue-600"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-150 ${
+                              active
+                                ? "bg-blue-600 text-white"
+                                : "bg-slate-100 text-slate-500 group-hover/item:bg-blue-600 group-hover/item:text-white"
+                            }`}
+                          >
+                            <BookOpen className="w-4 h-4" />
+                          </div>
+                          <span className="text-xs sm:text-sm font-semibold leading-snug line-clamp-2">
+                            {course.course_name}
+                          </span>
+                        </div>
+
+                        <ChevronRight
+                          className={`w-3.5 h-3.5 text-blue-600 transition-all duration-150 shrink-0 ${
+                            active
+                              ? "opacity-100 translate-x-0"
+                              : "opacity-0 -translate-x-1 group-hover/item:opacity-100 group-hover/item:translate-x-0"
+                          }`}
+                        />
+                      </Link>
+                    );
+                  })}
                 </div>
 
-                <div className="border-t border-slate-100 mt-2 pt-2 px-3">
+                {/* Dropdown Bottom CTA */}
+                <div className="border-t border-slate-100 mt-2 pt-2 px-1">
                   <Link
                     href="/courses"
+                    role="menuitem"
                     onClick={() => setCoursesOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full py-2 bg-slate-50 hover:bg-blue-50 text-blue-600 text-xs font-bold rounded-xl transition-colors"
+                    className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-50 hover:bg-blue-50 text-blue-600 text-xs font-extrabold rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
                   >
-                    Browse All Courses →
+                    View All Courses →
                   </Link>
                 </div>
               </div>
@@ -214,7 +275,9 @@ export default function Header() {
             Apply Now
           </Link>
           <button
+            type="button"
             aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
             className="p-2 text-slate-700 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
@@ -251,6 +314,8 @@ export default function Header() {
           {/* Mobile Courses Accordion */}
           <div className="border border-slate-100 rounded-2xl overflow-hidden">
             <button
+              type="button"
+              aria-expanded={mobileCourseOpen}
               onClick={() => setMobileCourseOpen(!mobileCourseOpen)}
               className="flex items-center justify-between w-full p-3.5 bg-slate-50 text-slate-800 text-base font-semibold"
             >
@@ -262,21 +327,33 @@ export default function Header() {
             </button>
             {mobileCourseOpen && (
               <div className="p-3 bg-white space-y-1 border-t border-slate-100">
-                {courses.map((course) => (
-                  <Link
-                    key={course.id}
-                    href={`/courses/${course.slug || toSlug(course.course_name)}`}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 p-2.5 rounded-lg text-slate-600 hover:bg-blue-50 hover:text-blue-600 text-sm font-medium"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                    {course.course_name}
-                  </Link>
-                ))}
+                {courses.map((course) => {
+                  const slug = course.slug || toSlug(course.course_name);
+                  const active = pathname === `/courses/${slug}`;
+                  return (
+                    <Link
+                      key={course.id}
+                      href={`/courses/${slug}`}
+                      onClick={() => {
+                        setMobileCourseOpen(false);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`flex items-center gap-2.5 p-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                        active ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-700 hover:bg-slate-50 hover:text-blue-600"
+                      }`}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${active ? "bg-blue-600" : "bg-slate-300"}`} />
+                      <span className="line-clamp-2 leading-snug">{course.course_name}</span>
+                    </Link>
+                  );
+                })}
                 <Link
                   href="/courses"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block text-center py-2.5 text-blue-600 text-xs font-bold uppercase tracking-wider bg-blue-50 rounded-lg mt-2"
+                  onClick={() => {
+                    setMobileCourseOpen(false);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="block text-center py-2.5 text-blue-600 text-xs font-extrabold uppercase tracking-wider bg-blue-50 rounded-xl mt-2"
                 >
                   View All Courses →
                 </Link>
