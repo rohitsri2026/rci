@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { 
   Lock, Mail, AlertCircle, Eye, EyeOff, 
-  ArrowRight, ShieldCheck, CheckCircle2, ArrowLeft, Loader2,
+  ArrowRight, ShieldCheck, ArrowLeft, Loader2,
   Users, BookOpen, Award, Building2
 } from "lucide-react";
 import Image from "next/image";
@@ -76,14 +76,14 @@ export default function AdminLoginPage() {
       </header>
 
       {/* Main Authentication Grid Container */}
-      <main className="max-w-5xl mx-auto w-full my-auto py-5 sm:py-8 relative z-10">
+      <main className="max-w-5xl mx-auto w-full my-auto py-5 sm:py-7 relative z-10">
         <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
           
           {/* LEFT COLUMN: RCI Admin Portal Introduction */}
-          <div className="lg:col-span-6 space-y-4 sm:space-y-5 text-center lg:text-left">
+          <div className="lg:col-span-6 space-y-4 text-center lg:text-left">
             <div>
               {/* Official RCI Logo & Eyebrow Badge */}
-              <div className="flex flex-col items-center lg:items-start gap-3 mb-3">
+              <div className="flex flex-col items-center lg:items-start gap-2.5 mb-2.5">
                 <Link href="/" className="inline-block focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-xl p-1">
                   <Image
                     src="/logo.png"
@@ -102,7 +102,7 @@ export default function AdminLoginPage() {
               </div>
 
               {/* Display Heading */}
-              <h1 className="text-3xl sm:text-[38px] font-extrabold tracking-[-0.035em] text-slate-950 leading-[1.12] mb-2.5">
+              <h1 className="text-3xl sm:text-[38px] font-extrabold tracking-[-0.035em] text-slate-950 leading-[1.12] mb-2">
                 Manage RCI, <br className="hidden sm:block" />
                 <span className="text-blue-600">
                   All in One Place.
@@ -116,12 +116,12 @@ export default function AdminLoginPage() {
             </div>
 
             {/* Admin Portal Management Capabilities Grid */}
-            <div className="bg-white/90 border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs max-w-md mx-auto lg:mx-0">
-              <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-3 text-left">
+            <div className="bg-white/90 border border-slate-200/90 rounded-2xl p-4 sm:p-4.5 shadow-2xs max-w-md mx-auto lg:mx-0">
+              <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-2.5 text-left">
                 Administrative Controls
               </h2>
               
-              <div className="grid grid-cols-2 gap-3 text-left">
+              <div className="grid grid-cols-2 gap-2.5 text-left">
                 {[
                   { title: "Student Management", icon: Users },
                   { title: "Course & Admissions", icon: BookOpen },
@@ -130,7 +130,7 @@ export default function AdminLoginPage() {
                 ].map((feature, idx) => {
                   const Icon = feature.icon;
                   return (
-                    <div key={idx} className="flex items-center gap-2.5 bg-slate-50/70 border border-slate-100 p-2.5 rounded-xl">
+                    <div key={idx} className="flex items-center gap-2.5 bg-slate-50/70 border border-slate-100 p-2.5 rounded-xl transition-all hover:bg-white hover:border-slate-200/80">
                       <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
                         <Icon className="w-3.5 h-3.5" />
                       </div>
@@ -154,7 +154,7 @@ export default function AdminLoginPage() {
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-blue-600" />
 
                 {/* Card Header */}
-                <div className="border-b border-slate-100 pb-4 mb-5">
+                <div className="border-b border-slate-100 pb-4 mb-4.5">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-[10.5px] font-extrabold uppercase tracking-wider mb-2">
                     <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
                     SECURE ADMIN LOGIN
@@ -169,14 +169,14 @@ export default function AdminLoginPage() {
 
                 {/* Inline Error Alert */}
                 {error && (
-                  <div className="flex items-center gap-2.5 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold mb-5">
+                  <div className="flex items-center gap-2.5 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold mb-4.5">
                     <AlertCircle className="w-4.5 h-4.5 shrink-0 text-red-600" />
                     <span>{error}</span>
                   </div>
                 )}
 
                 {/* Form */}
-                <form onSubmit={handleLogin} noValidate className="space-y-4.5">
+                <form onSubmit={handleLogin} noValidate className="space-y-4">
                   {/* Email Field */}
                   <div>
                     <label htmlFor="admin_email" className="block text-xs sm:text-sm font-extrabold text-slate-800 mb-1.5">
@@ -253,9 +253,10 @@ export default function AdminLoginPage() {
                   </button>
 
                   {/* Security Trust Signal */}
-                  <div className="pt-2 text-center text-[11.5px] font-semibold text-slate-500 flex items-center justify-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                    <span>Authorized RCI personnel only. Administrative access is securely protected.</span>
+                  <div className="pt-2 text-center text-[11.5px] font-medium text-slate-500 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600 shrink-0 inline-block" />
+                    <span className="font-bold text-slate-700">Authorized RCI personnel only.</span>
+                    <span className="text-slate-500">Administrative access is securely protected.</span>
                   </div>
                 </form>
               </div>
