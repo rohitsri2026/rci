@@ -35,7 +35,7 @@ export default function AdmissionProfileDrawer({
   onReject,
   onDelete,
 }: AdmissionProfileDrawerProps) {
-  // Close drawer on Escape key press
+  // Close drawer on Escape key press with proper cleanup
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -84,8 +84,10 @@ export default function AdmissionProfileDrawer({
     }
   };
 
-  const cleanPhone = admission.phone?.replace(/[^0-9]/g, "") || "";
-  const whatsappUrl = cleanPhone ? `https://wa.me/${cleanPhone}?text=Hello%20${encodeURIComponent(admission.student_name)},%20regarding%20your%20RCI%20admission%20application...` : null;
+  const rawDigits = admission.phone?.replace(/[^0-9]/g, "") || "";
+  const whatsappUrl = rawDigits.length >= 7 
+    ? `https://wa.me/${rawDigits}?text=Hello%20${encodeURIComponent(admission.student_name)},%20regarding%20your%20RCI%20admission%20application...` 
+    : null;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/60 backdrop-blur-xs transition-opacity">
@@ -248,7 +250,7 @@ export default function AdmissionProfileDrawer({
                   onClick={onClose}
                 >
                   <UserCheck className="w-4 h-4 text-emerald-400" />
-                  <span>View Student Profile</span>
+                  <span>View Student Record</span>
                 </Link>
               ) : (
                 <button

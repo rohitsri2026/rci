@@ -64,7 +64,7 @@ export default function AdmissionListClient({
   const [isProcessing, setIsProcessing] = useState(false);
   const [actionError, setActionError] = useState("");
 
-  // Global Escape key handler
+  // Global Escape key handler with event listener cleanup
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -75,15 +75,38 @@ export default function AdmissionListClient({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Map of student records for duplicate detection (keyed by email & phone)
+  // Normalized Map of existing student records for duplicate detection (keyed by email & last 10 digits of phone)
   const studentMap = useMemo(() => {
     const map = new Map<string, string>();
     existingStudents.forEach((s) => {
-      if (s.email) map.set(s.email.toLowerCase().trim(), s.id);
-      if (s.phone) map.set(s.phone.replace(/[^0-9]/g, ""), s.id);
+      if (s.email && s.email.trim()) {
+        map.set(`email:${s.email.toLowerCase().trim()}`, s.id);
+      }
+      if (s.phone) {
+        const digits = s.phone.replace(/[^0-9]/g, "");
+        if (digits.length >= 7) {
+          map.set(`phone:${digits.slice(-10)}`, s.id);
+        }
+      }
     });
     return map;
   }, [existingStudents]);
+
+  const getMatchingStudentId = (adm: Admission): string | null => {
+    if (adm.email && adm.email.trim()) {
+      const cleanEmail = adm.email.toLowerCase().trim();
+      if (studentMap.has(`email:${cleanEmail}`)) {
+        return studentMap.get(`email:${cleanEmail}`)!;
+      }
+    }
+    if (adm.phone) {
+      const digits = adm.phone.replace(/[^0-9]/g, "");
+      if (digits.length >= 7 && studentMap.has(`phone:${digits.slice(-10)}`)) {
+        return studentMap.get(`phone:${digits.slice(-10)}`)!;
+      }
+    }
+    return null;
+  };
 
   // Real-data metrics computation
   const metrics = useMemo(() => {
@@ -136,7 +159,7 @@ export default function AdmissionListClient({
       setApprovingAdmission(null);
       router.refresh();
     } else {
-      setActionError(res.error || "Failed to approve admission application.");
+      setActionError(res.error || "Unable to approve this application. Please try again.");
     }
   };
 
@@ -153,7 +176,7 @@ export default function AdmissionListClient({
       setRejectingAdmission(null);
       router.refresh();
     } else {
-      setActionError(res.error || "Failed to reject admission application.");
+      setActionError(res.error || "Unable to reject this application. Please try again.");
     }
   };
 
@@ -170,7 +193,7 @@ export default function AdmissionListClient({
       setDeletingAdmissionObj(null);
       router.refresh();
     } else {
-      setActionError(res.error || "Failed to delete admission application.");
+      setActionError(res.error || "Unable to delete this application. Please try again.");
     }
   };
 
@@ -354,15 +377,11 @@ export default function AdmissionListClient({
                 filteredAdmissions.map((adm) => {
                   const initials = getInitials(adm.student_name);
                   const isMenuOpen = activeMenuId === adm.id;
+                  const matchingStudentId = getMatchingStudentId(adm);
 
-                  const matchingStudentId =
-                    (adm.email && studentMap.get(adm.email.toLowerCase().trim())) ||
-                    (adm.phone && studentMap.get(adm.phone.replace(/[^0-9]/g, ""))) ||
-                    null;
-
-                  const cleanPhone = adm.phone?.replace(/[^0-9]/g, "") || "";
-                  const whatsappUrl = cleanPhone
-                    ? `https://wa.me/${cleanPhone}?text=Hello%20${encodeURIComponent(adm.student_name)},%20regarding%20your%20RCI%20admission%20application...`
+                  const rawDigits = adm.phone?.replace(/[^0-9]/g, "") || "";
+                  const whatsappUrl = rawDigits.length >= 7
+                    ? `https://wa.me/${rawDigits}?text=Hello%20${encodeURIComponent(adm.student_name)},%20regarding%20your%20RCI%20admission%20application...`
                     : null;
 
                   return (
@@ -414,7 +433,7 @@ export default function AdmissionListClient({
                               <MoreVertical className="w-4 h-4" />
                             </button>
 
-                            {/* Dropdown Menu Content */}
+                            {/* Deterministic Dropdown Menu */}
                             {isMenuOpen && (
                               <div
                                 className="absolute right-0 top-11 w-52 bg-white rounded-xl border border-slate-200/90 shadow-lg z-30 p-1 space-y-0.5 text-left"
@@ -431,6 +450,7 @@ export default function AdmissionListClient({
                                   <span>View Application</span>
                                 </button>
 
+                                {/* CASE 1: PENDING */}
                                 {adm.status === "Pending" && (
                                   <>
                                     <button
@@ -457,6 +477,7 @@ export default function AdmissionListClient({
                                   </>
                                 )}
 
+                                {/* CASE 2 & 3: APPROVED */}
                                 {adm.status === "Approved" && (
                                   <>
                                     {matchingStudentId ? (
@@ -490,12 +511,13 @@ export default function AdmissionListClient({
                                         onClick={() => setActiveMenuId(null)}
                                       >
                                         <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
-                                        <span>Contact WhatsApp</span>
+                                        <span>Contact Applicant</span>
                                       </a>
                                     )}
                                   </>
                                 )}
 
+                                {/* CASE 4: REJECTED */}
                                 {adm.status === "Rejected" && (
                                   <>
                                     {whatsappUrl && (
@@ -557,15 +579,11 @@ export default function AdmissionListClient({
           filteredAdmissions.map((adm) => {
             const initials = getInitials(adm.student_name);
             const isMenuOpen = activeMenuId === adm.id;
+            const matchingStudentId = getMatchingStudentId(adm);
 
-            const matchingStudentId =
-              (adm.email && studentMap.get(adm.email.toLowerCase().trim())) ||
-              (adm.phone && studentMap.get(adm.phone.replace(/[^0-9]/g, ""))) ||
-              null;
-
-            const cleanPhone = adm.phone?.replace(/[^0-9]/g, "") || "";
-            const whatsappUrl = cleanPhone
-              ? `https://wa.me/${cleanPhone}?text=Hello%20${encodeURIComponent(adm.student_name)},%20regarding%20your%20RCI%20admission%20application...`
+            const rawDigits = adm.phone?.replace(/[^0-9]/g, "") || "";
+            const whatsappUrl = rawDigits.length >= 7
+              ? `https://wa.me/${rawDigits}?text=Hello%20${encodeURIComponent(adm.student_name)},%20regarding%20your%20RCI%20admission%20application...`
               : null;
 
             return (
@@ -664,7 +682,7 @@ export default function AdmissionListClient({
                                 onClick={() => setActiveMenuId(null)}
                               >
                                 <MessageSquare className="w-4 h-4 text-emerald-600" />
-                                <span>Contact WhatsApp</span>
+                                <span>Contact Applicant</span>
                               </a>
                             )}
                           </>
@@ -738,13 +756,7 @@ export default function AdmissionListClient({
       {/* QUICK PREVIEW ADMISSION PROFILE DRAWER */}
       <AdmissionProfileDrawer
         admission={viewingAdmission}
-        matchingStudentId={
-          viewingAdmission
-            ? (viewingAdmission.email && studentMap.get(viewingAdmission.email.toLowerCase().trim())) ||
-              (viewingAdmission.phone && studentMap.get(viewingAdmission.phone.replace(/[^0-9]/g, ""))) ||
-              null
-            : null
-        }
+        matchingStudentId={viewingAdmission ? getMatchingStudentId(viewingAdmission) : null}
         onClose={() => setViewingAdmission(null)}
         onApprove={(adm) => setApprovingAdmission(adm)}
         onReject={(adm) => setRejectingAdmission(adm)}
