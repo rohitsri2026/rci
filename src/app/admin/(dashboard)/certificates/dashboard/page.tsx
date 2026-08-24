@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { Award, Calendar, Clock, CheckCircle2, ShieldAlert, ArrowRight, Activity, TrendingUp } from "lucide-react";
+import { Award, Calendar, Clock, CheckCircle2, ShieldAlert, ArrowRight, Activity, Eye, FileText } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
@@ -37,7 +37,7 @@ async function getCertificateStats() {
       .select("id", { count: "exact", head: true })
       .gte("created_at", startOfToday.toISOString()),
 
-    // Pending admissions (or certificates pending issue)
+    // Pending admissions awaiting registration
     supabase.from("admissions")
       .select("id", { count: "exact", head: true })
       .eq("status", "Pending"),
@@ -65,7 +65,7 @@ async function getCertificateStats() {
     supabase.from("audit_logs")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(5)
+      .limit(6)
   ]);
 
   return {
@@ -83,103 +83,117 @@ export default async function CertificateDashboardPage() {
   const stats = await getCertificateStats();
 
   const metrics = [
-    { label: "Total Certificates", value: stats.total, icon: Award, color: "blue", desc: "Overall certificates issued" },
+    { label: "Total Registry", value: stats.total, icon: Award, color: "blue", desc: "Overall certificates issued" },
     { label: "Issued This Month", value: stats.month, icon: Calendar, color: "green", desc: "Generated in current month" },
-    { label: "Generated Today", value: stats.today, icon: Clock, color: "orange", desc: "New certificates today" },
-    { label: "Pending Admissions", value: stats.pending, icon: ShieldAlert, color: "red", desc: "Awaiting approval for student registration" },
-    { label: "Verification Scans", value: stats.verified, icon: CheckCircle2, color: "purple", desc: "Scanned & verified QR instances" },
+    { label: "Issued Today", value: stats.today, icon: Clock, color: "amber", desc: "New certificates today" },
+    { label: "Pending Approvals", value: stats.pending, icon: ShieldAlert, color: "rose", desc: "Awaiting student registration" },
+    { label: "QR Verifications", value: stats.verified, icon: CheckCircle2, color: "purple", desc: "Verified QR scan instances" },
   ];
 
   const colorMap: Record<string, string> = {
     blue: "bg-blue-50 text-blue-600 border-blue-100",
-    green: "bg-green-50 text-green-600 border-green-100",
-    orange: "bg-amber-50 text-amber-600 border-amber-100",
-    red: "bg-rose-50 text-rose-600 border-rose-100",
+    green: "bg-emerald-50 text-emerald-600 border-emerald-100",
+    amber: "bg-amber-50 text-amber-600 border-amber-100",
+    rose: "bg-rose-50 text-rose-600 border-rose-100",
     purple: "bg-purple-50 text-purple-600 border-purple-100",
   };
 
   const statusColor: Record<string, string> = {
-    Valid: "bg-green-100 text-green-800",
-    Revoked: "bg-red-100 text-red-800",
-    Expired: "bg-slate-100 text-slate-800",
+    Valid: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    Revoked: "bg-rose-50 text-rose-700 border-rose-200",
+    Expired: "bg-amber-50 text-amber-700 border-amber-200",
   };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900 font-display">Certificate Analytics</h1>
-        <p className="text-slate-500 mt-1">Overview of issued certifications, recent activities, and verification logs.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight font-display">
+            Certificates Analytics & Overview
+          </h1>
+          <p className="text-slate-500 text-xs sm:text-sm mt-1">
+            Overview of issued certifications, recent verification activity, and audit logs.
+          </p>
+        </div>
+
+        <Link
+          href="/admin/certificates/generate"
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-md shadow-blue-500/20 shrink-0 self-start sm:self-auto"
+        >
+          <Award className="w-4 h-4" />
+          <span>Issue Certificate</span>
+        </Link>
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {metrics.map((m) => (
-          <div key={m.label} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 border ${colorMap[m.color]}`}>
-              <m.icon className="w-5 h-5" />
+          <div key={m.label} className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs space-y-1">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${colorMap[m.color]}`}>
+              <m.icon className="w-4.5 h-4.5" />
             </div>
-            <p className="text-3xl font-extrabold text-slate-900 leading-tight">{m.value}</p>
-            <p className="text-sm font-semibold text-slate-700 mt-1">{m.label}</p>
-            <p className="text-xs text-slate-400 mt-1">{m.desc}</p>
+            <p className="text-2xl font-extrabold text-slate-950 tracking-tight font-display mt-2">{m.value}</p>
+            <p className="text-xs font-extrabold text-slate-800">{m.label}</p>
+            <p className="text-[11px] text-slate-400 font-medium">{m.desc}</p>
           </div>
         ))}
       </div>
 
       {/* Quick Action Banner */}
-      <div className="bg-gradient-to-r from-blue-700 to-indigo-900 rounded-2xl p-6 text-white shadow-lg flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4 border border-slate-800">
         <div>
-          <h3 className="font-bold text-lg">Need to issue credentials?</h3>
-          <p className="text-blue-100 text-sm mt-1">Generate dynamic credentials for students individually or issue certificates in bulk.</p>
+          <h3 className="font-extrabold text-base sm:text-lg tracking-tight">Need to issue student credentials?</h3>
+          <p className="text-slate-400 text-xs sm:text-sm mt-1">Generate dynamic digital credentials for students individually or run bulk certificate batches.</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link href="/admin/certificates/generate" className="bg-white text-blue-800 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-100 transition-colors shadow-md">
-            Issue Certificates
+          <Link href="/admin/certificates/generate" className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm transition-colors shadow-md shadow-blue-500/20">
+            Issue Credentials
           </Link>
-          <Link href="/admin/certificates" className="border border-white/20 text-white hover:bg-white/10 px-5 py-2.5 rounded-xl font-bold text-sm transition-colors">
-            View Credentials list
+          <Link href="/admin/certificates" className="border border-slate-700 text-slate-200 hover:bg-slate-800 px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm transition-colors">
+            Registry Workspace
           </Link>
         </div>
       </div>
 
-      {/* Tables Layout */}
-      <div className="grid lg:grid-cols-3 gap-8">
+      {/* Main Grid: Recent Issued & Audit Activity */}
+      <div className="grid lg:grid-cols-3 gap-6">
         {/* Recently Generated Certificates */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-          <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-            <h3 className="font-bold text-slate-900 flex items-center gap-2">
-              <Award className="w-5 h-5 text-blue-600" />
-              <span>Recently Generated</span>
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden flex flex-col">
+          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <h3 className="font-extrabold text-slate-950 text-sm flex items-center gap-2">
+              <Award className="w-4 h-4 text-blue-600" />
+              <span>Recently Issued Credentials</span>
             </h3>
-            <Link href="/admin/certificates" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
-              <span>View All</span>
+            <Link href="/admin/certificates" className="text-xs font-extrabold text-blue-600 hover:underline flex items-center gap-1">
+              <span>View Registry</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
           <div className="flex-1 overflow-x-auto">
-            <table className="w-full text-sm text-left">
+            <table className="w-full text-xs text-left">
               <thead>
-                <tr className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-100">
+                <tr className="bg-slate-50/70 border-b border-slate-100 text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
                   <th className="px-5 py-3">Certificate ID</th>
                   <th className="px-5 py-3">Student</th>
                   <th className="px-5 py-3">Course</th>
                   <th className="px-5 py-3">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                 {stats.recentCertificates.length > 0 ? (
                   stats.recentCertificates.map((cert: any) => (
-                    <tr key={cert.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-5 py-3.5 font-mono text-blue-600 font-bold text-xs">
+                    <tr key={cert.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="px-5 py-3.5 font-mono font-extrabold text-slate-900 text-xs whitespace-nowrap">
                         {cert.certificate_number}
                       </td>
-                      <td className="px-5 py-3.5 font-semibold text-slate-900">
+                      <td className="px-5 py-3.5 font-extrabold text-slate-900 whitespace-nowrap">
                         {cert.student_name}
                       </td>
-                      <td className="px-5 py-3.5 text-slate-600">
+                      <td className="px-5 py-3.5 text-slate-700">
                         {cert.course_name}
                       </td>
-                      <td className="px-5 py-3.5">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${statusColor[cert.status] || "bg-slate-100"}`}>
+                      <td className="px-5 py-3.5 whitespace-nowrap">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold uppercase border ${statusColor[cert.status] || "bg-slate-100 text-slate-700 border-slate-200"}`}>
                           {cert.status}
                         </span>
                       </td>
@@ -188,7 +202,7 @@ export default async function CertificateDashboardPage() {
                 ) : (
                   <tr>
                     <td colSpan={4} className="px-5 py-8 text-center text-slate-400">
-                      No certificates generated yet.
+                      No certificates issued yet.
                     </td>
                   </tr>
                 )}
@@ -197,27 +211,27 @@ export default async function CertificateDashboardPage() {
           </div>
         </div>
 
-        {/* Recent Activity Audits */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col">
-          <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-            <h3 className="font-bold text-slate-900 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-indigo-600" />
-              <span>Recent Activity Logs</span>
+        {/* Recent Audit Activity Logs */}
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs flex flex-col">
+          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <h3 className="font-extrabold text-slate-950 text-sm flex items-center gap-2">
+              <Activity className="w-4 h-4 text-purple-600" />
+              <span>Audit Log Trail</span>
             </h3>
           </div>
-          <div className="p-5 flex-1 space-y-4">
+          <div className="p-4 flex-1 space-y-3.5">
             {stats.recentLogs.length > 0 ? (
               stats.recentLogs.map((log: any) => (
-                <div key={log.id} className="flex gap-3 text-xs leading-relaxed border-b border-slate-50 pb-3 last:border-0 last:pb-0">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1.5" />
+                <div key={log.id} className="flex gap-3 text-xs leading-relaxed border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+                  <div className="w-2 h-2 rounded-full bg-blue-600 shrink-0 mt-1" />
                   <div className="space-y-1">
-                    <p className="text-slate-800 font-medium">{log.details}</p>
-                    <div className="flex items-center gap-2 text-slate-400 font-semibold">
-                      <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[9px] font-bold">
+                    <p className="text-slate-800 font-semibold">{log.details}</p>
+                    <div className="flex items-center gap-2 text-slate-400 font-bold text-[10.5px]">
+                      <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md uppercase font-extrabold">
                         {log.action}
                       </span>
                       <span>•</span>
-                      <span>{log.user_email}</span>
+                      <span className="truncate max-w-[110px]">{log.user_email}</span>
                       <span>•</span>
                       <span>{new Date(log.created_at).toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
@@ -225,7 +239,7 @@ export default async function CertificateDashboardPage() {
                 </div>
               ))
             ) : (
-              <p className="text-center py-8 text-slate-400 text-sm">No activity recorded yet.</p>
+              <p className="text-center py-8 text-slate-400 text-xs font-semibold">No audit log activity recorded yet.</p>
             )}
           </div>
         </div>
