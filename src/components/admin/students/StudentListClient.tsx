@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { 
   Plus, Search, Filter, ArrowUpDown, Edit3, Trash2, 
-  MoreVertical, Copy, Check, Users, AlertTriangle, Loader2
+  MoreVertical, Copy, Check, Users, AlertTriangle, Loader2, User
 } from "lucide-react";
+import StudentProfileDrawer from "./StudentProfileDrawer";
 
 interface Student {
   id: string;
@@ -39,11 +40,23 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
   const [selectedCourse, setSelectedCourse] = useState("all");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "name">("newest");
 
-  // Dropdown Menu & Modal States
+  // Interaction & Modal States
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
   const [deletingStudent, setDeletingStudent] = useState<Student | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Close active dropdown menu on global Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActiveMenuId(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Filtered & Sorted Students
   const filteredStudents = useMemo(() => {
@@ -103,7 +116,6 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
     }
   };
 
-  // Helper for Student Initials Avatar
   const getInitials = (name: string) => {
     if (!name) return "ST";
     const parts = name.trim().split(" ");
@@ -122,7 +134,7 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
             Students
           </h1>
           <p className="text-slate-500 text-xs sm:text-sm mt-1">
-            Manage all registered student records, contact profiles and course enrollments.
+            Manage all registered students.
           </p>
         </div>
 
@@ -188,7 +200,7 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
         </div>
       </div>
 
-      {/* DESKTOP TABLE VIEW (Hidden on Mobile) */}
+      {/* DESKTOP TABLE VIEW */}
       <div className="hidden md:block bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -210,7 +222,7 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
 
                   return (
                     <tr key={student.id} className="hover:bg-slate-50/60 transition-colors">
-                      {/* Student Initials Avatar & Name */}
+                      {/* STUDENT NAME: font-extrabold text-slate-950 (Visually Strongest) */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 font-extrabold text-xs flex items-center justify-center shrink-0">
@@ -225,19 +237,19 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
                         </div>
                       </td>
 
-                      {/* Email */}
-                      <td className="px-6 py-4 text-slate-700 font-medium">{student.email || "—"}</td>
+                      {/* EMAIL: text-xs text-slate-600 font-medium */}
+                      <td className="px-6 py-4 text-slate-600 font-medium text-xs">{student.email || "—"}</td>
 
-                      {/* Phone */}
-                      <td className="px-6 py-4 font-mono text-slate-700 text-xs">{student.phone || "—"}</td>
+                      {/* PHONE: text-xs text-slate-600 font-mono */}
+                      <td className="px-6 py-4 font-mono text-slate-600 text-xs">{student.phone || "—"}</td>
 
-                      {/* Course */}
-                      <td className="px-6 py-4 font-bold text-slate-800 leading-snug max-w-[200px]">
+                      {/* COURSE: font-bold text-slate-800 text-xs (Allows Natural Wrapping) */}
+                      <td className="px-6 py-4 font-bold text-slate-800 text-xs leading-snug max-w-[220px]">
                         {student.courses?.course_name || "—"}
                       </td>
 
-                      {/* Enrolled On Date */}
-                      <td className="px-6 py-4 text-slate-500 font-semibold text-[11.5px]">
+                      {/* ENROLLED DATE: text-xs text-slate-600 font-medium */}
+                      <td className="px-6 py-4 text-slate-600 font-medium text-xs">
                         {new Date(student.created_at).toLocaleDateString("en-IN", {
                           day: "numeric",
                           month: "short",
@@ -245,23 +257,15 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
                         })}
                       </td>
 
-                      {/* Actions */}
+                      {/* ACTIONS */}
                       <td className="px-6 py-4 text-right relative">
                         <div className="inline-flex items-center gap-1.5 justify-end">
-                          <Link
-                            href={`/admin/students/${student.id}/edit`}
-                            className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Edit Student"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </Link>
-
-                          {/* Action Dropdown Menu Trigger */}
+                          {/* Three-Dot Action Button with 40px Hit Area */}
                           <div className="relative">
                             <button
                               onClick={() => setActiveMenuId(isMenuOpen ? null : student.id)}
-                              className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-                              aria-label="More actions"
+                              className="w-10 h-10 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors flex items-center justify-center focus-visible:ring-2 focus-visible:ring-blue-600/30 outline-none"
+                              aria-label="Student actions"
                             >
                               <MoreVertical className="w-4 h-4" />
                             </button>
@@ -269,15 +273,26 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
                             {/* Dropdown Menu Content */}
                             {isMenuOpen && (
                               <div 
-                                className="absolute right-0 top-8 w-44 bg-white rounded-xl border border-slate-200 shadow-xl z-20 p-1 space-y-0.5 text-left"
+                                className="absolute right-0 top-11 w-48 bg-white rounded-xl border border-slate-200/90 shadow-lg z-30 p-1 space-y-0.5 text-left"
                                 onMouseLeave={() => setActiveMenuId(null)}
                               >
+                                <button
+                                  onClick={() => {
+                                    setViewingStudent(student);
+                                    setActiveMenuId(null);
+                                  }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                                >
+                                  <User className="w-3.5 h-3.5 text-blue-600" />
+                                  <span>View Profile</span>
+                                </button>
+
                                 <Link
                                   href={`/admin/students/${student.id}/edit`}
                                   className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
                                   onClick={() => setActiveMenuId(null)}
                                 >
-                                  <Edit3 className="w-3.5 h-3.5 text-blue-600" />
+                                  <Edit3 className="w-3.5 h-3.5 text-slate-500" />
                                   <span>Edit Student</span>
                                 </Link>
 
@@ -347,7 +362,7 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
         </div>
       </div>
 
-      {/* MOBILE STUDENT CARD LIST (Visible on Mobile / Small Tablet) */}
+      {/* MOBILE STUDENT CARD LIST */}
       <div className="md:hidden space-y-3">
         {filteredStudents.length > 0 ? (
           filteredStudents.map((student) => {
@@ -368,23 +383,34 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
                     </div>
                   </div>
 
-                  {/* Actions Dropdown */}
+                  {/* Actions Dropdown Button */}
                   <div className="relative shrink-0">
                     <button
                       onClick={() => setActiveMenuId(isMenuOpen ? null : student.id)}
-                      className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center"
-                      aria-label="More actions"
+                      className="w-11 h-11 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors flex items-center justify-center focus-visible:ring-2 focus-visible:ring-blue-600/30 outline-none"
+                      aria-label="Student actions"
                     >
                       <MoreVertical className="w-5 h-5" />
                     </button>
 
                     {isMenuOpen && (
-                      <div className="absolute right-0 top-10 w-48 bg-white rounded-xl border border-slate-200 shadow-xl z-20 p-1 space-y-0.5 text-left">
+                      <div className="absolute right-0 top-12 w-48 bg-white rounded-xl border border-slate-200 shadow-xl z-30 p-1 space-y-0.5 text-left">
+                        <button
+                          onClick={() => {
+                            setViewingStudent(student);
+                            setActiveMenuId(null);
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
+                        >
+                          <User className="w-4 h-4 text-blue-600" />
+                          <span>View Profile</span>
+                        </button>
+
                         <Link
                           href={`/admin/students/${student.id}/edit`}
                           className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
                         >
-                          <Edit3 className="w-4 h-4 text-blue-600" />
+                          <Edit3 className="w-4 h-4 text-slate-500" />
                           <span>Edit Student</span>
                         </Link>
 
@@ -454,7 +480,13 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
         )}
       </div>
 
-      {/* POLISHED DELETE CONFIRMATION DIALOG MODAL */}
+      {/* QUICK PREVIEW STUDENT PROFILE DRAWER */}
+      <StudentProfileDrawer
+        student={viewingStudent}
+        onClose={() => setViewingStudent(null)}
+      />
+
+      {/* DELETE CONFIRMATION DIALOG MODAL */}
       {deletingStudent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
           <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4">
