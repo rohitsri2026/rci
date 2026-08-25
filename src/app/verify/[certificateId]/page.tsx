@@ -66,7 +66,7 @@ export default async function VerifyCertificateIdPage({ params }: Props) {
           <path d="M-100 700 C 400 800, 600 500, 1100 850" strokeWidth="2" strokeDasharray="12 12" />
         </svg>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-[1100px] relative z-10">
           <CertificateCard cert={cert} searchId={cleanId} />
         </div>
       </main>

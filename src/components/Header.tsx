@@ -52,6 +52,7 @@ export default function Header() {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setCoursesOpen(false);
+        setMobileMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -81,20 +82,20 @@ export default function Header() {
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-xl p-1">
+        <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-xl p-1 max-w-[70%] sm:max-w-none">
           <Image
             src="/logo.png"
             alt="Rohit Computer Institute Logo"
             width={160}
             height={60}
-            className="object-contain h-10 sm:h-12 w-auto transition-transform group-hover:scale-105"
+            className="object-contain h-9 sm:h-12 w-auto shrink-0 transition-transform group-hover:scale-105"
             priority
           />
-          <div className="flex flex-col">
-            <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none group-hover:text-blue-600 transition-colors">
+          <div className="flex flex-col min-w-0">
+            <span className="text-sm xs:text-base sm:text-2xl font-black text-slate-900 tracking-tight leading-tight truncate sm:whitespace-normal group-hover:text-blue-600 transition-colors">
               Rohit Computer Institute
             </span>
-            <span className="text-[10.5px] font-bold text-blue-600 tracking-widest uppercase mt-0.5">
+            <span className="text-[9px] xs:text-[10.5px] font-bold text-blue-600 tracking-widest uppercase mt-0.5 truncate hidden xs:block">
               Empowering Digital Careers
             </span>
           </div>
@@ -260,10 +261,10 @@ export default function Header() {
         </div>
 
         {/* Mobile Hamburger Toggle */}
-        <div className="lg:hidden flex items-center gap-2">
+        <div className="lg:hidden flex items-center gap-2 shrink-0">
           <Link
             href="/admission"
-            className="bg-blue-600 text-white text-xs font-bold px-3 py-2 rounded-lg"
+            className="hidden xs:inline-flex bg-blue-600 text-white text-xs font-bold px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
             Apply Now
           </Link>
@@ -271,7 +272,7 @@ export default function Header() {
             type="button"
             aria-label="Toggle navigation menu"
             aria-expanded={mobileMenuOpen}
-            className="p-2 text-slate-700 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="p-2 text-slate-700 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 min-h-[44px] min-w-[44px] flex items-center justify-center"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
