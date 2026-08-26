@@ -2,6 +2,7 @@ import React from "react";
 import CertificateBorder from "./CertificateBorder";
 import CertificateSeal from "./CertificateSeal";
 import QRCode from "./QRCode";
+import { RCIConfig } from "@/lib/config";
 import { Calendar, Award, CalendarCheck, MapPin, Globe, Phone } from "lucide-react";
 
 // Reusable SVG for Ashoka emblem & MSME logo combination with explicit hex colors to bypass Tailwind v4 oklch/lab variables
@@ -123,7 +124,7 @@ export default function CertificateTemplate({
   };
 
   const formattedCompletionDate = formatDate(completionDate);
-  const verifyUrl = `${typeof window !== "undefined" ? window.location.origin : "https://rciknp.vercel.app"}/verify/${certificateNumber}`;
+  const verifyUrl = RCIConfig.getVerificationUrl(certificateNumber);
 
   return (
     <div 

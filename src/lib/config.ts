@@ -30,4 +30,13 @@ export class RCIConfig {
     const encoded = encodeURIComponent(customMessage || defaultMsg);
     return `https://wa.me/${this.whatsappNumber}?text=${encoded}`;
   }
+
+  /**
+   * Helper to construct public certificate verification URLs
+   */
+  static getVerificationUrl(certificateNumber: string): string {
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || this.siteUrl;
+    const cleanId = encodeURIComponent((certificateNumber || "").trim().toUpperCase());
+    return `${baseUrl}/verify/${cleanId}`;
+  }
 }

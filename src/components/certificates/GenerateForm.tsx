@@ -4,9 +4,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { StudentInfo, CourseInfo } from "@/types/certificate";
 import CertificatePreview from "./CertificatePreview";
 import CertificateTemplate from "./CertificateTemplate";
+import CertificateQRCode from "./CertificateQRCode";
 import DownloadButton from "./DownloadButton";
 import PrintButton from "./PrintButton";
-import { Award, User, BookOpen, Calendar, HelpCircle, Check, Loader2, ArrowRight, CheckCircle2, ChevronRight } from "lucide-react";
+import { Award, User, BookOpen, Calendar, HelpCircle, Check, Loader2, ArrowRight, CheckCircle2, ChevronRight, Copy, ShieldCheck } from "lucide-react";
 import { z } from "zod";
 import { certificateGenerateSchema, bulkCertificateGenerateSchema } from "@/schemas/certificate";
 
@@ -20,6 +21,14 @@ export default function GenerateForm({ students, courses }: GenerateFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successCert, setSuccessCert] = useState<any>(null);
+  const [copiedCertId, setCopiedCertId] = useState(false);
+
+  const handleCopyCertNumber = (certNum: string) => {
+    if (!certNum) return;
+    navigator.clipboard.writeText(certNum);
+    setCopiedCertId(true);
+    setTimeout(() => setCopiedCertId(false), 2000);
+  };
 
   // Single Form State
   const [singleForm, setSingleForm] = useState({
@@ -311,18 +320,89 @@ export default function GenerateForm({ students, courses }: GenerateFormProps) {
           )}
 
           {successCert ? (
-            /* Success Screen for Single Generation */
+            /* Upgraded Professional Success Screen with QR Verification */
             <div className="space-y-6 animate-in fade-in duration-300">
-              <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-5 text-center">
-                <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto mb-2" />
-                <h4 className="font-bold text-slate-900">Certificate Generated!</h4>
-                <p className="text-xs text-slate-500 mt-1">
-                  Credential has been saved in the database with number{" "}
-                  <span className="font-bold font-mono text-blue-700">{successCert.certificate_number}</span>.
+              {/* Header Banner */}
+              <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 text-center space-y-2">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto shadow-2xs">
+                  <CheckCircle2 className="w-7 h-7 text-emerald-600" />
+                </div>
+                <h3 className="text-xl font-extrabold text-slate-950 font-display">Certificate Generated Successfully!</h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Credential has been issued and saved securely in the RCI database.
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* 2-Column Info & QR Card */}
+              <div className="bg-slate-50/80 rounded-2xl border border-slate-200/90 p-4 sm:p-5 grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                {/* Left Column: Certificate Details */}
+                <div className="bg-white rounded-xl border border-slate-200/80 p-4 space-y-3 flex flex-col justify-between">
+                  <div>
+                    <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Certificate Number</span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="font-mono text-xs sm:text-sm font-extrabold text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-lg break-all">
+                        {successCert.certificate_number}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyCertNumber(successCert.certificate_number)}
+                        className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors shrink-0"
+                        title="Copy certificate number"
+                        aria-label="Copy certificate number"
+                      >
+                        {copiedCertId ? (
+                          <Check className="w-4 h-4 text-emerald-600" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                    {copiedCertId && <span className="text-[10px] text-emerald-600 font-bold block mt-0.5">Copied to clipboard!</span>}
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-2.5 space-y-2 text-xs">
+                    <div>
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Student Name</span>
+                      <span className="font-extrabold text-slate-950 block truncate">{successCert.student_name}</span>
+                    </div>
+
+                    <div>
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Course Program</span>
+                      <span className="font-bold text-slate-700 block truncate">{successCert.course_name}</span>
+                    </div>
+
+                    <div>
+                      <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Issue Date</span>
+                      <span className="font-medium text-slate-600 block">{successCert.issue_date || new Date().toISOString().split("T")[0]}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: High-Res QR Code Box */}
+                <div className="bg-white rounded-xl border border-slate-200/80 p-4 flex flex-col items-center justify-center text-center space-y-2.5">
+                  <CertificateQRCode certificateNumber={successCert.certificate_number} size={140} />
+                  <div>
+                    <span className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider">Scan to Verify</span>
+                    <p className="text-[11px] text-slate-500 font-medium leading-tight mt-0.5 max-w-[180px]">
+                      Scan this QR code with your phone camera to verify this certificate online.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trust & Security Info Box */}
+              <div className="bg-blue-50/60 rounded-xl border border-blue-100 p-3.5 flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                <div className="text-xs space-y-0.5">
+                  <h4 className="font-extrabold text-slate-900">How does verification work?</h4>
+                  <p className="text-slate-600 leading-relaxed text-[11px]">
+                    Anyone can scan this QR code or visit the RCI verification portal and enter the certificate number to verify the authenticity of this certificate.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <DownloadButton
                   certificateNumber={successCert.certificate_number}
                   studentName={successCert.student_name}
@@ -336,10 +416,11 @@ export default function GenerateForm({ students, courses }: GenerateFormProps) {
               </div>
 
               <button
+                type="button"
                 onClick={() => setSuccessCert(null)}
                 className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors"
               >
-                Issue Another
+                Issue Another Certificate
               </button>
             </div>
           ) : activeTab === "single" ? (
