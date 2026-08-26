@@ -82,20 +82,20 @@ export default function Header() {
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-xl p-1 max-w-[70%] sm:max-w-none">
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 group focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-xl p-1 max-w-[72%] sm:max-w-none">
           <Image
             src="/logo.png"
             alt="Rohit Computer Institute Logo"
             width={160}
             height={60}
-            className="object-contain h-9 sm:h-12 w-auto shrink-0 transition-transform group-hover:scale-105"
+            className="object-contain h-8 sm:h-12 w-auto shrink-0 transition-transform group-hover:scale-105"
             priority
           />
           <div className="flex flex-col min-w-0">
-            <span className="text-sm xs:text-base sm:text-2xl font-black text-slate-900 tracking-tight leading-tight truncate sm:whitespace-normal group-hover:text-blue-600 transition-colors">
+            <span className="text-xs sm:text-xl lg:text-2xl font-black text-slate-900 tracking-tight leading-tight truncate sm:whitespace-normal group-hover:text-blue-600 transition-colors">
               Rohit Computer Institute
             </span>
-            <span className="text-[9px] xs:text-[10.5px] font-bold text-blue-600 tracking-widest uppercase mt-0.5 truncate hidden xs:block">
+            <span className="text-[9px] sm:text-[10.5px] font-bold text-blue-600 tracking-widest uppercase mt-0.5 truncate hidden sm:block">
               Empowering Digital Careers
             </span>
           </div>

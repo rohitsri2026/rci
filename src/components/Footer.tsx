@@ -162,8 +162,8 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-slate-900 pt-6 md:pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center md:text-left">
-          <p>
-            &copy; {new Date().getFullYear()} {RCIConfig.instituteName}. All rights reserved. Registered under MSME & ISO Quality Standards.
+          <p className="leading-relaxed">
+            &copy; {new Date().getFullYear()} {RCIConfig.instituteName}. All rights reserved. Registered under MSME &amp; ISO Quality Standards.
           </p>
 
           <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6">

@@ -46,9 +46,9 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
             RECORD NOT FOUND
           </span>
 
-          <h3 className="font-black text-2xl sm:text-3xl text-slate-900 font-display">
+          <h1 className="font-black text-2xl sm:text-3xl text-slate-900 font-display">
             Certificate Not Found
-          </h3>
+          </h1>
 
           {/* Compact Searched ID Metadata Block */}
           <div className="my-4 p-3 bg-slate-50 border border-slate-200/80 rounded-xl max-w-xs mx-auto text-center">
@@ -143,30 +143,30 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
             STATUS: REVOKED
           </span>
 
-          <h3 className="font-black text-2xl sm:text-3xl text-slate-900 font-display">
+          <h1 className="font-black text-2xl sm:text-3xl text-slate-900 font-display">
             Certificate Revoked
-          </h3>
+          </h1>
 
           <p className="text-slate-600 text-xs sm:text-sm mt-3 max-w-md mx-auto leading-relaxed">
             This certificate is currently not valid. It has been officially marked as <span className="font-extrabold text-amber-800">Revoked</span> in the institute registry.
           </p>
 
           <div className="mt-6 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-left max-w-md mx-auto text-xs space-y-2">
-            <div className="flex justify-between border-b border-slate-200/60 pb-1.5 gap-2">
+            <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5 gap-2">
               <span className="text-slate-400 font-medium shrink-0">Certificate No:</span>
-              <span className="font-mono font-bold text-slate-900 break-all text-right">{certificateNumber}</span>
+              <span className="font-mono font-bold text-slate-900 break-all text-right min-w-0">{certificateNumber}</span>
             </div>
-            <div className="flex justify-between border-b border-slate-200/60 pb-1.5 gap-2">
+            <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5 gap-2">
               <span className="text-slate-400 font-medium shrink-0">Student Name:</span>
-              <span className="font-bold text-slate-900 text-right">{studentName}</span>
+              <span className="font-bold text-slate-900 text-right min-w-0 break-words">{studentName}</span>
             </div>
-            <div className="flex justify-between border-b border-slate-200/60 pb-1.5 gap-2">
+            <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5 gap-2">
               <span className="text-slate-400 font-medium shrink-0">Course Program:</span>
-              <span className="font-bold text-slate-900 text-right">{courseName}</span>
+              <span className="font-bold text-slate-900 text-right min-w-0 break-words">{courseName}</span>
             </div>
-            <div className="flex justify-between gap-2">
+            <div className="flex justify-between items-center gap-2">
               <span className="text-slate-400 font-medium shrink-0">Current Status:</span>
-              <span className="font-extrabold text-amber-700 uppercase text-right">{cert.status}</span>
+              <span className="font-extrabold text-amber-700 uppercase text-right shrink-0">{cert.status}</span>
             </div>
           </div>
 
@@ -230,36 +230,36 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
             STATUS: EXPIRED
           </span>
 
-          <h3 className="font-black text-2xl sm:text-3xl text-slate-900 font-display">
+          <h1 className="font-black text-2xl sm:text-3xl text-slate-900 font-display">
             Certificate Expired
-          </h3>
+          </h1>
 
           <p className="text-slate-600 text-xs sm:text-sm mt-3 max-w-md mx-auto leading-relaxed">
             This certificate has expired based on official records and is currently no longer valid.
           </p>
 
           <div className="mt-6 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-left max-w-md mx-auto text-xs space-y-2">
-            <div className="flex justify-between border-b border-slate-200/60 pb-1.5 gap-2">
+            <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5 gap-2">
               <span className="text-slate-400 font-medium shrink-0">Certificate No:</span>
-              <span className="font-mono font-bold text-slate-900 break-all text-right">{certificateNumber}</span>
+              <span className="font-mono font-bold text-slate-900 break-all text-right min-w-0">{certificateNumber}</span>
             </div>
-            <div className="flex justify-between border-b border-slate-200/60 pb-1.5 gap-2">
+            <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5 gap-2">
               <span className="text-slate-400 font-medium shrink-0">Student Name:</span>
-              <span className="font-bold text-slate-900 text-right">{studentName}</span>
+              <span className="font-bold text-slate-900 text-right min-w-0 break-words">{studentName}</span>
             </div>
-            <div className="flex justify-between border-b border-slate-200/60 pb-1.5 gap-2">
+            <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5 gap-2">
               <span className="text-slate-400 font-medium shrink-0">Course Program:</span>
-              <span className="font-bold text-slate-900 text-right">{courseName}</span>
+              <span className="font-bold text-slate-900 text-right min-w-0 break-words">{courseName}</span>
             </div>
             {expiryDate && (
-              <div className="flex justify-between border-b border-slate-200/60 pb-1.5 gap-2">
+              <div className="flex justify-between items-center border-b border-slate-200/60 pb-1.5 gap-2">
                 <span className="text-slate-400 font-medium shrink-0">Expiration Date:</span>
-                <span className="font-bold text-amber-700 text-right">{new Date(expiryDate).toLocaleDateString("en-IN")}</span>
+                <span className="font-bold text-amber-700 text-right shrink-0">{new Date(expiryDate).toLocaleDateString("en-IN")}</span>
               </div>
             )}
-            <div className="flex justify-between gap-2">
+            <div className="flex justify-between items-center gap-2">
               <span className="text-slate-400 font-medium shrink-0">Current Status:</span>
-              <span className="font-extrabold text-amber-700 uppercase text-right">{cert.status}</span>
+              <span className="font-extrabold text-amber-700 uppercase text-right shrink-0">{cert.status}</span>
             </div>
           </div>
 
@@ -349,9 +349,9 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
 
               {/* Main Heading */}
               <div>
-                <h2 className="text-2xl sm:text-3xl font-black font-display leading-tight text-white">
+                <h1 className="text-2xl sm:text-3xl font-black font-display leading-tight text-white">
                   Certificate Successfully <span className="text-[#D4A72C]">Verified</span>
-                </h2>
+                </h1>
                 <p className="text-blue-100/80 text-[13px] sm:text-sm mt-2 max-w-sm leading-relaxed">
                   This certificate is authentic and issued by Rohit Computer Institute (RCI).
                 </p>
@@ -376,7 +376,7 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
               </div>
             </div>
 
-            <div className="relative z-10 w-full flex items-center justify-between text-[11px] text-blue-200/70 border-t border-white/10 pt-3.5 mt-1">
+            <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-2 text-[11px] text-blue-200/70 border-t border-white/10 pt-3.5 mt-1">
               <span className="flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#00A86B] shrink-0" />
                 <span>Real-time Database Record</span>
@@ -391,9 +391,9 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
               <div className="border-b border-slate-100 pb-4 mb-5 flex items-center justify-between flex-wrap gap-2">
                 <div>
                   <p className="text-[11px] font-extrabold text-[#155EEF] uppercase tracking-widest">OFFICIAL RECORD</p>
-                  <h3 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight font-display mt-0.5">
+                  <h2 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight font-display mt-0.5">
                     Certificate Details
-                  </h3>
+                  </h2>
                 </div>
                 <span className="text-xs font-extrabold text-[#00A86B] bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shrink-0">
                   Active &amp; Valid
@@ -502,9 +502,9 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
             <ShieldCheck className="w-3.5 h-3.5 text-[#155EEF]" />
             INSTITUTIONAL GUARANTEE
           </span>
-          <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-950 font-display tracking-tight">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-950 font-display tracking-tight">
             Trust &amp; Authenticity Indicators
-          </h3>
+          </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1.5 max-w-md mx-auto leading-relaxed">
             We ensure every certificate issued is genuine, verified and secure.
           </p>
