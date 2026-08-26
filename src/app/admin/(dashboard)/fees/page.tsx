@@ -14,6 +14,7 @@ import {
   ListFilter
 } from "lucide-react";
 import NotificationTrigger from "@/components/admin/notifications/NotificationTrigger";
+import PostActionNotification from "@/components/admin/notifications/PostActionNotification";
 
 export default function FeesDashboardPage() {
   const [ledgers, setLedgers] = useState<any[]>([]);
@@ -27,6 +28,14 @@ export default function FeesDashboardPage() {
   const [activeLedger, setActiveLedger] = useState<any>(null);
   const [paymentForm, setPaymentForm] = useState({ amount: "", mode: "UPI" });
   const [submittingPayment, setSubmittingPayment] = useState(false);
+  const [completedPaymentObj, setCompletedPaymentObj] = useState<{
+    studentName: string;
+    studentPhone: string;
+    studentId?: string;
+    amount: number;
+    transactionId: string;
+    mode: string;
+  } | null>(null);
 
   // Transactions drawer state
   const [drawerLedger, setDrawerLedger] = useState<any>(null);
@@ -80,6 +89,14 @@ export default function FeesDashboardPage() {
         setActionError(data.error || "Failed to record transaction.");
       } else {
         setActionSuccess(`Successfully recorded payment of ₹${paymentForm.amount}. Receipt: ${data.transaction.receipt_number}`);
+        setCompletedPaymentObj({
+          studentName: activeLedger.students?.full_name || "Student",
+          studentPhone: activeLedger.students?.phone || "",
+          studentId: activeLedger.students?.id,
+          amount: Number(paymentForm.amount),
+          transactionId: data.transaction.receipt_number || data.transaction.id?.slice(0, 8)?.toUpperCase(),
+          mode: paymentForm.mode,
+        });
         setPaymentForm({ amount: "", mode: "UPI" });
         setActiveLedger(null);
         fetchLedgers();
@@ -376,6 +393,49 @@ export default function FeesDashboardPage() {
                 className="w-full bg-slate-100 text-slate-800 hover:bg-slate-200 font-bold py-2.5 rounded-xl transition-colors"
               >
                 Close Ledger
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POST-ACTION PAYMENT SUCCESS NOTIFICATION MODAL */}
+      {completedPaymentObj && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200"
+          onClick={() => setCompletedPaymentObj(null)}
+        >
+          <div 
+            className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <PostActionNotification
+              type="success"
+              title="Payment Recorded Successfully!"
+              subtitle="Payment receipt generated. Send instant receipt notification to student:"
+              studentName={completedPaymentObj.studentName}
+              studentPhone={completedPaymentObj.studentPhone}
+              studentId={completedPaymentObj.studentId}
+              notificationType="payment_successful"
+              variables={{
+                student_name: completedPaymentObj.studentName,
+                payment_amount: completedPaymentObj.amount,
+                transaction_id: completedPaymentObj.transactionId,
+              }}
+              details={[
+                { label: "Amount Paid", value: `₹${completedPaymentObj.amount}` },
+                { label: "Payment Mode", value: completedPaymentObj.mode },
+                { label: "Receipt / Tx ID", value: completedPaymentObj.transactionId },
+              ]}
+            />
+            <div className="flex justify-end pt-2 border-t border-slate-100">
+              <button
+                onClick={() => setCompletedPaymentObj(null)}
+                className="h-10 px-5 rounded-xl border border-slate-200 text-slate-700 font-extrabold text-xs hover:bg-slate-100 transition-colors"
+              >
+                Close Window
               </button>
             </div>
           </div>

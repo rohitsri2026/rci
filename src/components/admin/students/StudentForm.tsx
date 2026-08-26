@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Loader2, UserPlus, Save, AlertCircle, AlertTriangle } from "lucide-react";
+import { Loader2, UserPlus, Save, AlertCircle, AlertTriangle, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import PostActionNotification from "@/components/admin/notifications/PostActionNotification";
 
 interface Course {
   id: string;
@@ -38,6 +39,11 @@ export default function StudentForm({ mode, studentId, initialData }: StudentFor
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [createdStudentObj, setCreatedStudentObj] = useState<{
+    full_name: string;
+    email: string;
+    phone: string;
+  } | null>(null);
 
   // Track if any form value has changed from initial state
   const isDirty = useCallback(() => {
@@ -142,8 +148,17 @@ export default function StudentForm({ mode, studentId, initialData }: StudentFor
         setError(json.error || `Failed to ${mode === "create" ? "add" : "update"} student.`);
         setLoading(false);
       } else {
-        router.push("/admin/students");
-        router.refresh();
+        if (mode === "create") {
+          setCreatedStudentObj({
+            full_name: cleanName,
+            email: cleanEmail,
+            phone: cleanPhone,
+          });
+          setLoading(false);
+        } else {
+          router.push("/admin/students");
+          router.refresh();
+        }
       }
     } catch {
       setError("An unexpected network error occurred. Please try again.");
@@ -153,14 +168,45 @@ export default function StudentForm({ mode, studentId, initialData }: StudentFor
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-6 sm:p-8 space-y-6">
-      {error && (
-        <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold">
-          <AlertCircle className="w-4.5 h-4.5 shrink-0 text-red-600" />
-          <span>{error}</span>
-        </div>
-      )}
+      {createdStudentObj ? (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <PostActionNotification
+            type="success"
+            title="Student Profile Created Successfully!"
+            subtitle="Student record has been saved securely. Send welcome notification now:"
+            studentName={createdStudentObj.full_name}
+            studentPhone={createdStudentObj.phone}
+            notificationType="general"
+            variables={{
+              student_name: createdStudentObj.full_name,
+              custom_message: `Welcome to Rohit Computer Institute (RCI)! Your student profile has been registered. Registered Phone: ${createdStudentObj.phone || "provided number"}.`,
+            }}
+            details={[
+              { label: "Mobile Phone", value: createdStudentObj.phone || "Not provided" },
+              { label: "Email Address", value: createdStudentObj.email || "Not provided" },
+            ]}
+          />
 
-      <form onSubmit={handleSubmit} noValidate className="space-y-7">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <Link
+              href="/admin/students"
+              className="h-11 px-6 inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm rounded-xl transition-all shadow-md shadow-slate-900/20"
+            >
+              <span>Go to Students Registry</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <>
+          {error && (
+            <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold">
+              <AlertCircle className="w-4.5 h-4.5 shrink-0 text-red-600" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} noValidate className="space-y-7">
         {/* SECTION 1: STUDENT INFORMATION */}
         <div className="space-y-4">
           <div className="border-b border-slate-100 pb-1.5">
@@ -348,6 +394,8 @@ export default function StudentForm({ mode, studentId, initialData }: StudentFor
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

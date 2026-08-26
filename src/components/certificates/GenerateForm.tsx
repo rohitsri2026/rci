@@ -10,6 +10,7 @@ import PrintButton from "./PrintButton";
 import { Award, User, BookOpen, Calendar, HelpCircle, Check, Loader2, ArrowRight, CheckCircle2, ChevronRight, Copy, ShieldCheck } from "lucide-react";
 import { z } from "zod";
 import { certificateGenerateSchema, bulkCertificateGenerateSchema } from "@/schemas/certificate";
+import PostActionNotification from "@/components/admin/notifications/PostActionNotification";
 
 interface GenerateFormProps {
   students: StudentInfo[];
@@ -322,16 +323,28 @@ export default function GenerateForm({ students, courses }: GenerateFormProps) {
           {successCert ? (
             /* Upgraded Professional Success Screen with QR Verification */
             <div className="space-y-6 animate-in fade-in duration-300">
-              {/* Header Banner */}
-              <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 text-center space-y-2">
-                <div className="w-12 h-12 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto shadow-2xs">
-                  <CheckCircle2 className="w-7 h-7 text-emerald-600" />
-                </div>
-                <h3 className="text-xl font-extrabold text-slate-950 font-display">Certificate Generated Successfully!</h3>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  Credential has been issued and saved securely in the RCI database.
-                </p>
-              </div>
+              {/* Post-Action Instant Notification Banner */}
+              <PostActionNotification
+                type="success"
+                title="Certificate Generated Successfully!"
+                subtitle="Official credential issued. Send instant notification to candidate:"
+                studentName={successCert.student_name}
+                studentPhone={selectedStudent?.phone || ""}
+                studentId={selectedStudent?.id}
+                notificationType="certificate_generated"
+                variables={{
+                  student_name: successCert.student_name,
+                  certificate_number: successCert.certificate_number,
+                  certificate_url: typeof window !== "undefined"
+                    ? `${window.location.origin}/verify/${successCert.certificate_number}`
+                    : `https://rciknp.vercel.app/verify/${successCert.certificate_number}`,
+                }}
+                details={[
+                  { label: "Certificate No", value: successCert.certificate_number },
+                  { label: "Course Program", value: successCert.course_name },
+                  { label: "Secured Grade", value: successCert.grade || "A+" },
+                ]}
+              />
 
               {/* 2-Column Info & QR Card */}
               <div className="bg-slate-50/80 rounded-2xl border border-slate-200/90 p-4 sm:p-5 grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">

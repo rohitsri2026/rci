@@ -10,6 +10,7 @@ import {
 import AdmissionProfileDrawer from "./AdmissionProfileDrawer";
 import { updateAdmissionStatus, convertAdmissionToStudent, deleteAdmission } from "../admission-actions-server";
 import ActionDropdown from "@/components/ui/ActionDropdown";
+import PostActionNotification from "@/components/admin/notifications/PostActionNotification";
 
 interface Admission {
   id: string;
@@ -172,18 +173,30 @@ export default function AdmissionListClient({
       });
   }, [admissions, search, selectedCourse, selectedStatus, sortOrder]);
 
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [completedActionResult, setCompletedActionResult] = useState<{
+    admission: Admission;
+    type: "approved" | "rejected";
+    rejectionReason?: string;
+  } | null>(null);
+
   // Handle Approve Action
   const handleApproveConfirm = async () => {
     if (!approvingAdmission || isProcessing) return;
     setIsProcessing(true);
     setActionError("");
 
-    const res = await updateAdmissionStatus(approvingAdmission.id, "Approved");
+    const targetAdm = approvingAdmission;
+    const res = await updateAdmissionStatus(targetAdm.id, "Approved");
     setIsProcessing(false);
 
     if (res.success) {
       setApprovingAdmission(null);
-      setSuccessToast(`Application for ${approvingAdmission.student_name} approved successfully.`);
+      setSuccessToast(`Application for ${targetAdm.student_name} approved successfully.`);
+      setCompletedActionResult({
+        admission: targetAdm,
+        type: "approved",
+      });
       router.refresh();
     } else {
       setActionError(res.error || "Unable to approve this application. Please try again.");
@@ -201,6 +214,10 @@ export default function AdmissionListClient({
 
     if (res.success) {
       setSuccessToast(`Student record for ${adm.student_name} created successfully.`);
+      setCompletedActionResult({
+        admission: adm,
+        type: "approved",
+      });
       router.refresh();
     } else {
       alert(res.error || "Unable to create student record. Please try again.");
@@ -213,12 +230,20 @@ export default function AdmissionListClient({
     setIsProcessing(true);
     setActionError("");
 
-    const res = await updateAdmissionStatus(rejectingAdmission.id, "Rejected");
+    const targetAdm = rejectingAdmission;
+    const reasonText = rejectionReason.trim() || "Incomplete documents / Qualification mismatch";
+    const res = await updateAdmissionStatus(targetAdm.id, "Rejected");
     setIsProcessing(false);
 
     if (res.success) {
       setRejectingAdmission(null);
-      setSuccessToast(`Application for ${rejectingAdmission.student_name} rejected.`);
+      setSuccessToast(`Application for ${targetAdm.student_name} rejected.`);
+      setCompletedActionResult({
+        admission: targetAdm,
+        type: "rejected",
+        rejectionReason: reasonText,
+      });
+      setRejectionReason("");
       router.refresh();
     } else {
       setActionError(res.error || "Unable to reject this application. Please try again.");
@@ -911,11 +936,25 @@ export default function AdmissionListClient({
               Are you sure you want to reject the application for <strong className="text-slate-900 font-bold">{rejectingAdmission.student_name}</strong>?
             </p>
 
+            <div>
+              <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-1">
+                Rejection Reason (Optional)
+              </label>
+              <input
+                type="text"
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="e.g. Incomplete documents provided"
+                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-red-500 bg-slate-50 font-medium"
+              />
+            </div>
+
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
               <button
                 onClick={() => {
                   setRejectingAdmission(null);
                   setActionError("");
+                  setRejectionReason("");
                 }}
                 disabled={isProcessing}
                 className="h-11 px-5 rounded-xl border border-slate-200 text-slate-700 font-extrabold text-xs sm:text-sm hover:bg-slate-100 transition-colors disabled:opacity-50 min-h-[44px]"
@@ -938,6 +977,49 @@ export default function AdmissionListClient({
                     <span>Reject Application</span>
                   </>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POST-ACTION NOTIFICATION SHORTCUT MODAL */}
+      {completedActionResult && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-200"
+          onClick={() => setCompletedActionResult(null)}
+        >
+          <div 
+            className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <PostActionNotification
+              type={completedActionResult.type === "approved" ? "success" : "danger"}
+              title={completedActionResult.type === "approved" ? "Application Approved Successfully!" : "Application Rejected"}
+              subtitle={completedActionResult.type === "approved" ? "Student record updated. Send instant notification to candidate:" : "Application status updated. Send instant notification to candidate:"}
+              studentName={completedActionResult.admission.student_name}
+              studentPhone={completedActionResult.admission.phone || ""}
+              notificationType={completedActionResult.type === "approved" ? "application_approved" : "application_rejected"}
+              variables={{
+                student_name: completedActionResult.admission.student_name,
+                application_id: completedActionResult.admission.id.slice(0, 8).toUpperCase(),
+                login_url: "https://rciknp.vercel.app/student/login",
+                rejection_reason: completedActionResult.rejectionReason || "Incomplete documents",
+              }}
+              details={[
+                { label: "Application ID", value: completedActionResult.admission.id.slice(0, 8).toUpperCase() },
+                { label: "Course Program", value: completedActionResult.admission.selected_course || "Unspecified" },
+                ...(completedActionResult.rejectionReason ? [{ label: "Rejection Reason", value: completedActionResult.rejectionReason }] : []),
+              ]}
+            />
+            <div className="flex justify-end pt-2 border-t border-slate-100">
+              <button
+                onClick={() => setCompletedActionResult(null)}
+                className="h-10 px-5 rounded-xl border border-slate-200 text-slate-700 font-extrabold text-xs hover:bg-slate-100 transition-colors"
+              >
+                Close Window
               </button>
             </div>
           </div>
