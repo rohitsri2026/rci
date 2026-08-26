@@ -40,7 +40,8 @@ const managementNavGroup = [
   { label: "Students", href: "/admin/students", icon: Users },
   { label: "Admissions", href: "/admin/admissions", icon: FileText },
   { label: "Courses", href: "/admin/courses", icon: BookOpen },
-  { label: "Notifications", href: "/admin/notifications", icon: MessageSquare },
+  { label: "Communication", href: "/admin/communication", icon: MessageSquare },
+  { label: "Notification Logs", href: "/admin/notifications", icon: History },
 ];
 
 const certificateSubItems = [

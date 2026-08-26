@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { X, Mail, Phone, BookOpen, Calendar, MapPin, Edit3, User } from "lucide-react";
+import { X, Mail, Phone, BookOpen, Calendar, MapPin, Edit3, User, MessageSquare } from "lucide-react";
 import NotificationTrigger from "@/components/admin/notifications/NotificationTrigger";
 
 interface Student {
@@ -241,7 +241,16 @@ export default function StudentProfileDrawer({ student, onClose }: StudentProfil
         </div>
 
         {/* Footer CTA */}
-        <div className="p-5 border-t border-slate-100 bg-white sticky bottom-0 z-10">
+        <div className="p-5 border-t border-slate-100 bg-white sticky bottom-0 z-10 space-y-2">
+          <Link
+            href={`/admin/communication?student_id=${student.id}`}
+            className="w-full h-11 inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-extrabold text-xs sm:text-sm transition-all"
+            onClick={onClose}
+          >
+            <MessageSquare className="w-4 h-4 text-blue-600" />
+            <span>Open Communication Center</span>
+          </Link>
+
           <Link
             href={`/admin/students/${student.id}/edit`}
             className="w-full h-11 inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-md shadow-blue-500/20 active:scale-98"
