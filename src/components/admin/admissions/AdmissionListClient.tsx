@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import AdmissionProfileDrawer from "./AdmissionProfileDrawer";
 import { updateAdmissionStatus, convertAdmissionToStudent, deleteAdmission } from "../admission-actions-server";
+import ActionDropdown from "@/components/ui/ActionDropdown";
 
 interface Admission {
   id: string;
@@ -483,27 +484,15 @@ export default function AdmissionListClient({
                       </td>
 
                       {/* ACTIONS */}
-                      <td className="px-6 py-4 text-right relative">
+                      <td className="px-6 py-4 text-right">
                         <div className="inline-flex items-center gap-1.5 justify-end">
-                          <div className="relative">
-                            <button
-                              onClick={() => setActiveMenuId(isMenuOpen ? null : adm.id)}
-                              className="w-10 h-10 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors flex items-center justify-center focus-visible:ring-2 focus-visible:ring-blue-600/30 outline-none"
-                              aria-label="Application actions"
-                            >
-                              <MoreVertical className="w-4 h-4" />
-                            </button>
-
-                            {/* Deterministic Dropdown Menu */}
-                            {isMenuOpen && (
-                              <div
-                                className="absolute right-0 top-11 w-52 bg-white rounded-xl border border-slate-200/90 shadow-lg z-30 p-1 space-y-0.5 text-left"
-                                onMouseLeave={() => setActiveMenuId(null)}
-                              >
+                          <ActionDropdown ariaLabel="Application actions" menuClassName="w-52 bg-white rounded-xl border border-slate-200/90 shadow-xl p-1 text-left space-y-0.5">
+                            {({ close }) => (
+                              <>
                                 <button
                                   onClick={() => {
                                     setViewingAdmission(adm);
-                                    setActiveMenuId(null);
+                                    close();
                                   }}
                                   className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
                                 >
@@ -517,7 +506,7 @@ export default function AdmissionListClient({
                                     <button
                                       onClick={() => {
                                         setApprovingAdmission(adm);
-                                        setActiveMenuId(null);
+                                        close();
                                       }}
                                       className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors"
                                     >
@@ -528,7 +517,7 @@ export default function AdmissionListClient({
                                     <button
                                       onClick={() => {
                                         setRejectingAdmission(adm);
-                                        setActiveMenuId(null);
+                                        close();
                                       }}
                                       className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                     >
@@ -546,7 +535,7 @@ export default function AdmissionListClient({
                                       <Link
                                         href={`/admin/students/${matchingStudentId}/edit`}
                                         className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-                                        onClick={() => setActiveMenuId(null)}
+                                        onClick={close}
                                       >
                                         <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
                                         <span>View Student Record</span>
@@ -556,7 +545,7 @@ export default function AdmissionListClient({
                                       <button
                                         onClick={() => {
                                           handleConvertAction(adm);
-                                          setActiveMenuId(null);
+                                          close();
                                         }}
                                         className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                       >
@@ -571,7 +560,7 @@ export default function AdmissionListClient({
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-                                        onClick={() => setActiveMenuId(null)}
+                                        onClick={close}
                                       >
                                         <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
                                         <span>Contact Applicant</span>
@@ -587,7 +576,7 @@ export default function AdmissionListClient({
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-                                    onClick={() => setActiveMenuId(null)}
+                                    onClick={close}
                                   >
                                     <MessageSquare className="w-3.5 h-3.5 text-slate-500" />
                                     <span>Contact Applicant</span>
@@ -601,7 +590,7 @@ export default function AdmissionListClient({
                                     <button
                                       onClick={() => {
                                         setDeletingAdmissionObj(adm);
-                                        setActiveMenuId(null);
+                                        close();
                                       }}
                                       className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                     >
@@ -610,9 +599,9 @@ export default function AdmissionListClient({
                                     </button>
                                   </>
                                 )}
-                              </div>
+                              </>
                             )}
-                          </div>
+                          </ActionDropdown>
                         </div>
                       </td>
                     </tr>
@@ -641,7 +630,6 @@ export default function AdmissionListClient({
         {filteredAdmissions.length > 0 ? (
           filteredAdmissions.map((adm) => {
             const initials = getInitials(adm.student_name);
-            const isMenuOpen = activeMenuId === adm.id;
             const matchingStudentId = getMatchingStudentId(adm);
 
             const rawDigits = adm.phone?.replace(/[^0-9]/g, "") || "";
@@ -664,124 +652,123 @@ export default function AdmissionListClient({
                   </div>
 
                   {/* Actions Dropdown Button */}
-                  <div className="relative shrink-0">
-                    <button
-                      onClick={() => setActiveMenuId(isMenuOpen ? null : adm.id)}
-                      className="w-11 h-11 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors flex items-center justify-center focus-visible:ring-2 focus-visible:ring-blue-600/30 outline-none"
-                      aria-label="Application actions"
+                  <div className="shrink-0">
+                    <ActionDropdown
+                      ariaLabel="Application actions"
+                      triggerClassName="w-11 h-11 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors flex items-center justify-center focus-visible:ring-2 focus-visible:ring-blue-600/30 outline-none"
+                      triggerIcon={<MoreVertical className="w-5 h-5" />}
+                      menuClassName="w-52 bg-white rounded-xl border border-slate-200 shadow-xl p-1 space-y-0.5 text-left"
                     >
-                      <MoreVertical className="w-5 h-5" />
-                    </button>
+                      {({ close }) => (
+                        <>
+                          <button
+                            onClick={() => {
+                              setViewingAdmission(adm);
+                              close();
+                            }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
+                          >
+                            <Eye className="w-4 h-4 text-blue-600" />
+                            <span>View Application</span>
+                          </button>
 
-                    {isMenuOpen && (
-                      <div className="absolute right-0 top-12 w-52 bg-white rounded-xl border border-slate-200 shadow-xl z-30 p-1 space-y-0.5 text-left">
-                        <button
-                          onClick={() => {
-                            setViewingAdmission(adm);
-                            setActiveMenuId(null);
-                          }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
-                        >
-                          <Eye className="w-4 h-4 text-blue-600" />
-                          <span>View Application</span>
-                        </button>
-
-                        {adm.status === "Pending" && (
-                          <>
-                            <button
-                              onClick={() => {
-                                setApprovingAdmission(adm);
-                                setActiveMenuId(null);
-                              }}
-                              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 rounded-lg"
-                            >
-                              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                              <span>Approve Application</span>
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                setRejectingAdmission(adm);
-                                setActiveMenuId(null);
-                              }}
-                              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg"
-                            >
-                              <XCircle className="w-4 h-4 text-red-600" />
-                              <span>Reject Application</span>
-                            </button>
-                          </>
-                        )}
-
-                        {adm.status === "Approved" && (
-                          <>
-                            {matchingStudentId ? (
-                              <Link
-                                href={`/admin/students/${matchingStudentId}/edit`}
-                                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
-                                onClick={() => setActiveMenuId(null)}
-                              >
-                                <UserCheck className="w-4 h-4 text-emerald-600" />
-                                <span>View Student Record</span>
-                              </Link>
-                            ) : (
+                          {adm.status === "Pending" && (
+                            <>
                               <button
                                 onClick={() => {
-                                  handleConvertAction(adm);
-                                  setActiveMenuId(null);
+                                  setApprovingAdmission(adm);
+                                  close();
                                 }}
-                                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-blue-600 hover:bg-blue-50 rounded-lg"
+                                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 rounded-lg"
                               >
-                                <UserCheck className="w-4 h-4 text-blue-600" />
-                                <span>Convert to Student</span>
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                                <span>Approve Application</span>
                               </button>
-                            )}
 
-                            {whatsappUrl && (
-                              <a
-                                href={whatsappUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
-                                onClick={() => setActiveMenuId(null)}
+                              <button
+                                onClick={() => {
+                                  setRejectingAdmission(adm);
+                                  close();
+                                }}
+                                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg"
                               >
-                                <MessageSquare className="w-4 h-4 text-emerald-600" />
-                                <span>Contact Applicant</span>
-                              </a>
-                            )}
-                          </>
-                        )}
+                                <XCircle className="w-4 h-4 text-red-600" />
+                                <span>Reject Application</span>
+                              </button>
+                            </>
+                          )}
 
-                        {adm.status === "Rejected" && whatsappUrl && (
-                          <a
-                            href={whatsappUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
-                            onClick={() => setActiveMenuId(null)}
-                          >
-                            <MessageSquare className="w-4 h-4 text-slate-500" />
-                            <span>Contact Applicant</span>
-                          </a>
-                        )}
+                          {adm.status === "Approved" && (
+                            <>
+                              {matchingStudentId ? (
+                                <Link
+                                  href={`/admin/students/${matchingStudentId}/edit`}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
+                                  onClick={close}
+                                >
+                                  <UserCheck className="w-4 h-4 text-emerald-600" />
+                                  <span>View Student Record</span>
+                                </Link>
+                              ) : (
+                                <button
+                                  onClick={() => {
+                                    handleConvertAction(adm);
+                                    close();
+                                  }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-blue-600 hover:bg-blue-50 rounded-lg"
+                                >
+                                  <UserCheck className="w-4 h-4 text-blue-600" />
+                                  <span>Convert to Student</span>
+                                </button>
+                              )}
 
-                        {/* DELETE APPLICATION (MOBILE - ALL 4 STATES) */}
-                        {isAdmin && (
-                          <>
-                            <div className="border-t border-slate-100 my-1" />
-                            <button
-                              onClick={() => {
-                                setDeletingAdmissionObj(adm);
-                                setActiveMenuId(null);
-                              }}
-                              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg"
+                              {whatsappUrl && (
+                                <a
+                                  href={whatsappUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
+                                  onClick={close}
+                                >
+                                  <MessageSquare className="w-4 h-4 text-emerald-600" />
+                                  <span>Contact Applicant</span>
+                                </a>
+                              )}
+                            </>
+                          )}
+
+                          {adm.status === "Rejected" && whatsappUrl && (
+                            <a
+                              href={whatsappUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
+                              onClick={close}
                             >
-                              <Trash2 className="w-4 h-4 text-red-600" />
-                              <span>Delete Application</span>
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    )}
+                              <MessageSquare className="w-4 h-4 text-slate-500" />
+                              <span>Contact Applicant</span>
+                            </a>
+                          )}
+
+                          {/* DELETE APPLICATION (MOBILE - ALL 4 STATES) */}
+                          {isAdmin && (
+                            <>
+                              <div className="border-t border-slate-100 my-1" />
+                              <button
+                                onClick={() => {
+                                  setDeletingAdmissionObj(adm);
+                                  close();
+                                }}
+                                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg"
+                              >
+                                <Trash2 className="w-4 h-4 text-red-600" />
+                                <span>Delete Application</span>
+                              </button>
+                            </>
+                          )}
+                        </>
+                      )}
+                    </ActionDropdown>
                   </div>
                 </div>
 

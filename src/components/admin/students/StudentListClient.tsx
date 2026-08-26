@@ -8,6 +8,7 @@ import {
   MoreVertical, Copy, Check, Users, AlertTriangle, Loader2, User
 } from "lucide-react";
 import StudentProfileDrawer from "./StudentProfileDrawer";
+import ActionDropdown from "@/components/ui/ActionDropdown";
 
 interface Student {
   id: string;
@@ -258,28 +259,15 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
                       </td>
 
                       {/* ACTIONS */}
-                      <td className="px-6 py-4 text-right relative">
+                      <td className="px-6 py-4 text-right">
                         <div className="inline-flex items-center gap-1.5 justify-end">
-                          {/* Three-Dot Action Button with 40px Hit Area */}
-                          <div className="relative">
-                            <button
-                              onClick={() => setActiveMenuId(isMenuOpen ? null : student.id)}
-                              className="w-10 h-10 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors flex items-center justify-center focus-visible:ring-2 focus-visible:ring-blue-600/30 outline-none"
-                              aria-label="Student actions"
-                            >
-                              <MoreVertical className="w-4 h-4" />
-                            </button>
-
-                            {/* Dropdown Menu Content */}
-                            {isMenuOpen && (
-                              <div 
-                                className="absolute right-0 top-11 w-48 bg-white rounded-xl border border-slate-200/90 shadow-lg z-30 p-1 space-y-0.5 text-left"
-                                onMouseLeave={() => setActiveMenuId(null)}
-                              >
+                          <ActionDropdown ariaLabel="Student actions" menuClassName="w-48 bg-white rounded-xl border border-slate-200/90 shadow-xl p-1 space-y-0.5 text-left">
+                            {({ close }) => (
+                              <>
                                 <button
                                   onClick={() => {
                                     setViewingStudent(student);
-                                    setActiveMenuId(null);
+                                    close();
                                   }}
                                   className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
                                 >
@@ -290,7 +278,7 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
                                 <Link
                                   href={`/admin/students/${student.id}/edit`}
                                   className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-                                  onClick={() => setActiveMenuId(null)}
+                                  onClick={close}
                                 >
                                   <Edit3 className="w-3.5 h-3.5 text-slate-500" />
                                   <span>Edit Student</span>
@@ -329,16 +317,16 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
                                 <button
                                   onClick={() => {
                                     setDeletingStudent(student);
-                                    setActiveMenuId(null);
+                                    close();
                                   }}
                                   className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                 >
                                   <Trash2 className="w-3.5 h-3.5 text-red-600" />
                                   <span>Delete Student</span>
                                 </button>
-                              </div>
+                              </>
                             )}
-                          </div>
+                          </ActionDropdown>
                         </div>
                       </td>
                     </tr>
@@ -384,70 +372,70 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
                   </div>
 
                   {/* Actions Dropdown Button */}
-                  <div className="relative shrink-0">
-                    <button
-                      onClick={() => setActiveMenuId(isMenuOpen ? null : student.id)}
-                      className="w-11 h-11 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors flex items-center justify-center focus-visible:ring-2 focus-visible:ring-blue-600/30 outline-none"
-                      aria-label="Student actions"
+                  <div className="shrink-0">
+                    <ActionDropdown
+                      ariaLabel="Student actions"
+                      triggerClassName="w-11 h-11 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors flex items-center justify-center focus-visible:ring-2 focus-visible:ring-blue-600/30 outline-none"
+                      triggerIcon={<MoreVertical className="w-5 h-5" />}
+                      menuClassName="w-48 bg-white rounded-xl border border-slate-200 shadow-xl p-1 space-y-0.5 text-left"
                     >
-                      <MoreVertical className="w-5 h-5" />
-                    </button>
-
-                    {isMenuOpen && (
-                      <div className="absolute right-0 top-12 w-48 bg-white rounded-xl border border-slate-200 shadow-xl z-30 p-1 space-y-0.5 text-left">
-                        <button
-                          onClick={() => {
-                            setViewingStudent(student);
-                            setActiveMenuId(null);
-                          }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
-                        >
-                          <User className="w-4 h-4 text-blue-600" />
-                          <span>View Profile</span>
-                        </button>
-
-                        <Link
-                          href={`/admin/students/${student.id}/edit`}
-                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
-                        >
-                          <Edit3 className="w-4 h-4 text-slate-500" />
-                          <span>Edit Student</span>
-                        </Link>
-
-                        {student.email && (
+                      {({ close }) => (
+                        <>
                           <button
-                            onClick={() => handleCopy(student.email!, `email-${student.id}`)}
+                            onClick={() => {
+                              setViewingStudent(student);
+                              close();
+                            }}
                             className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
                           >
-                            <Copy className="w-4 h-4 text-slate-400" />
-                            <span>{copiedField === `email-${student.id}` ? "Copied Email!" : "Copy Email"}</span>
+                            <User className="w-4 h-4 text-blue-600" />
+                            <span>View Profile</span>
                           </button>
-                        )}
 
-                        {student.phone && (
-                          <button
-                            onClick={() => handleCopy(student.phone!, `phone-${student.id}`)}
+                          <Link
+                            href={`/admin/students/${student.id}/edit`}
                             className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
+                            onClick={close}
                           >
-                            <Copy className="w-4 h-4 text-slate-400" />
-                            <span>{copiedField === `phone-${student.id}` ? "Copied Phone!" : "Copy Phone"}</span>
+                            <Edit3 className="w-4 h-4 text-slate-500" />
+                            <span>Edit Student</span>
+                          </Link>
+
+                          {student.email && (
+                            <button
+                              onClick={() => handleCopy(student.email!, `email-${student.id}`)}
+                              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
+                            >
+                              <Copy className="w-4 h-4 text-slate-400" />
+                              <span>{copiedField === `email-${student.id}` ? "Copied Email!" : "Copy Email"}</span>
+                            </button>
+                          )}
+
+                          {student.phone && (
+                            <button
+                              onClick={() => handleCopy(student.phone!, `phone-${student.id}`)}
+                              className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-lg"
+                            >
+                              <Copy className="w-4 h-4 text-slate-400" />
+                              <span>{copiedField === `phone-${student.id}` ? "Copied Phone!" : "Copy Phone"}</span>
+                            </button>
+                          )}
+
+                          <div className="border-t border-slate-100 my-1" />
+
+                          <button
+                            onClick={() => {
+                              setDeletingStudent(student);
+                              close();
+                            }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg"
+                          >
+                            <Trash2 className="w-4 h-4 text-red-600" />
+                            <span>Delete Student</span>
                           </button>
-                        )}
-
-                        <div className="border-t border-slate-100 my-1" />
-
-                        <button
-                          onClick={() => {
-                            setDeletingStudent(student);
-                            setActiveMenuId(null);
-                          }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 rounded-lg"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-600" />
-                          <span>Delete Student</span>
-                        </button>
-                      </div>
-                    )}
+                        </>
+                      )}
+                    </ActionDropdown>
                   </div>
                 </div>
 

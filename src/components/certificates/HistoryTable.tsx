@@ -11,6 +11,7 @@ import {
 import CertificateTemplate from "./CertificateTemplate";
 import CertificateProfileDrawer from "../admin/certificates/CertificateProfileDrawer";
 import CertificateRevokeDialog from "../admin/certificates/CertificateRevokeDialog";
+import ActionDropdown from "@/components/ui/ActionDropdown";
 
 interface HistoryTableProps {
   initialCourses: CourseInfo[];
@@ -493,88 +494,81 @@ export default function HistoryTable({ initialCourses, userRole }: HistoryTableP
 
                       {/* Contextual Actions */}
                       <td className="py-4 px-5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                        <div className="relative inline-block text-left">
-                          <button
-                            type="button"
-                            onClick={() => setActiveMenuId(isMenuOpen ? null : cert.id)}
-                            className="min-w-[40px] min-h-[40px] p-2 rounded-xl border border-slate-200/80 hover:border-slate-300 hover:bg-slate-100/70 text-slate-600 flex items-center justify-center transition-all focus:outline-none focus:ring-2 focus:ring-blue-600"
-                            aria-label="Certificate actions"
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
+                        <div className="inline-flex items-center gap-1.5 justify-end">
+                          <ActionDropdown ariaLabel="Certificate actions" menuClassName="w-48 bg-white rounded-2xl border border-slate-200 shadow-xl p-1.5 text-left space-y-0.5">
+                            {({ close }) => (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    close();
+                                    setViewingCert(cert);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                                >
+                                  <Eye className="w-3.5 h-3.5 text-blue-600" />
+                                  <span>View Details</span>
+                                </button>
 
-                          {isMenuOpen && (
-                            <div className="origin-top-right absolute right-0 mt-1 w-48 rounded-2xl shadow-xl bg-white border border-slate-200 z-30 p-1.5 animate-in fade-in zoom-in-95 duration-150 text-left">
-                              <button
-                                onClick={() => {
-                                  setActiveMenuId(null);
-                                  setViewingCert(cert);
-                                }}
-                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
-                              >
-                                <Eye className="w-3.5 h-3.5 text-blue-600" />
-                                View Details
-                              </button>
+                                <button
+                                  onClick={() => {
+                                    close();
+                                    handleDownloadSingle(cert);
+                                  }}
+                                  disabled={downloadingId === cert.id}
+                                  className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors disabled:opacity-50"
+                                >
+                                  {downloadingId === cert.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5 text-emerald-600" />}
+                                  <span>Download PDF</span>
+                                </button>
 
-                              <button
-                                onClick={() => {
-                                  setActiveMenuId(null);
-                                  handleDownloadSingle(cert);
-                                }}
-                                disabled={downloadingId === cert.id}
-                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors disabled:opacity-50"
-                              >
-                                {downloadingId === cert.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5 text-emerald-600" />}
-                                Download PDF
-                              </button>
+                                <button
+                                  onClick={() => {
+                                    close();
+                                    handlePrintSingle(cert);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                                >
+                                  <Printer className="w-3.5 h-3.5 text-slate-500" />
+                                  <span>Print Certificate</span>
+                                </button>
 
-                              <button
-                                onClick={() => {
-                                  setActiveMenuId(null);
-                                  handlePrintSingle(cert);
-                                }}
-                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
-                              >
-                                <Printer className="w-3.5 h-3.5 text-slate-500" />
-                                Print Certificate
-                              </button>
+                                <a
+                                  href={`/verify/${cert.certificate_number}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={close}
+                                  className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
+                                  <span>Verify Online</span>
+                                </a>
 
-                              <a
-                                href={`/verify/${cert.certificate_number}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                onClick={() => setActiveMenuId(null)}
-                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
-                              >
-                                <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
-                                Verify Online
-                              </a>
+                                <button
+                                  onClick={() => handleCopyId(cert.certificate_number)}
+                                  className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                                >
+                                  {copiedId === cert.certificate_number ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+                                  <span>{copiedId === cert.certificate_number ? "Copied ID" : "Copy Certificate ID"}</span>
+                                </button>
 
-                              <button
-                                onClick={() => handleCopyId(cert.certificate_number)}
-                                className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
-                              >
-                                {copiedId === cert.certificate_number ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
-                                {copiedId === cert.certificate_number ? "Copied ID" : "Copy Certificate ID"}
-                              </button>
-
-                              {cert.status === "Valid" && userRole !== "Viewer" && (
-                                <>
-                                  <div className="my-1 border-t border-slate-100" />
-                                  <button
-                                    onClick={() => {
-                                      setActiveMenuId(null);
-                                      setRevokingCert(cert);
-                                    }}
-                                    className="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl flex items-center gap-2 transition-colors"
-                                  >
-                                    <ShieldAlert className="w-3.5 h-3.5" />
-                                    Revoke Certificate
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          )}
+                                {cert.status === "Valid" && userRole !== "Viewer" && (
+                                  <>
+                                    <div className="my-1 border-t border-slate-100" />
+                                    <button
+                                      onClick={() => {
+                                        close();
+                                        setRevokingCert(cert);
+                                      }}
+                                      className="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl flex items-center gap-2 transition-colors"
+                                    >
+                                      <ShieldAlert className="w-3.5 h-3.5" />
+                                      <span>Revoke Certificate</span>
+                                    </button>
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </ActionDropdown>
                         </div>
                       </td>
                     </tr>
