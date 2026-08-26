@@ -6,11 +6,14 @@ import { Certificate, CourseInfo } from "@/types/certificate";
 import { 
   Search, ArrowUpDown, Filter, Plus, Eye, Download, Printer, 
   ExternalLink, Copy, Check, ShieldAlert, AlertTriangle, CheckCircle2, 
-  Clock, MoreVertical, X, Award, FileText, Loader2, ChevronLeft, ChevronRight
+  Clock, MoreVertical, X, Award, FileText, Loader2, ChevronLeft, ChevronRight,
+  QrCode, Trash2
 } from "lucide-react";
 import CertificateTemplate from "./CertificateTemplate";
 import CertificateProfileDrawer from "../admin/certificates/CertificateProfileDrawer";
 import CertificateRevokeDialog from "../admin/certificates/CertificateRevokeDialog";
+import CertificateQRModal from "./CertificateQRModal";
+import CertificateDeleteDialog from "./CertificateDeleteDialog";
 import ActionDropdown from "@/components/ui/ActionDropdown";
 
 interface HistoryTableProps {
@@ -37,8 +40,11 @@ export default function HistoryTable({ initialCourses, userRole }: HistoryTableP
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [viewingCert, setViewingCert] = useState<Certificate | null>(null);
   const [revokingCert, setRevokingCert] = useState<Certificate | null>(null);
+  const [qrCert, setQrCert] = useState<Certificate | null>(null);
+  const [deletingCert, setDeletingCert] = useState<Certificate | null>(null);
   const [activePrintCert, setActivePrintCert] = useState<Certificate | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // Close dropdown menu on Escape key press
   useEffect(() => {
@@ -202,6 +208,31 @@ export default function HistoryTable({ initialCourses, userRole }: HistoryTableP
     setActiveMenuId(null);
   };
 
+  // Auto-dismiss toast after 3.5 seconds
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  const handleDeleteConfirm = async (certificateId: string) => {
+    const res = await fetch(`/api/certificates/${certificateId}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Failed to delete certificate");
+    }
+
+    if (viewingCert?.id === certificateId) setViewingCert(null);
+    if (qrCert?.id === certificateId) setQrCert(null);
+
+    setToast({ message: "Certificate deleted successfully.", type: "success" });
+    fetchCertificates();
+  };
+
   const handleRevokeConfirm = async (certificateId: string) => {
     const res = await fetch(`/api/certificates/${certificateId}`, {
       method: "PATCH",
@@ -215,6 +246,7 @@ export default function HistoryTable({ initialCourses, userRole }: HistoryTableP
     }
 
     setViewingCert(null);
+    setToast({ message: "Certificate revoked successfully.", type: "success" });
     fetchCertificates();
   };
 
@@ -495,7 +527,7 @@ export default function HistoryTable({ initialCourses, userRole }: HistoryTableP
                       {/* Contextual Actions */}
                       <td className="py-4 px-5 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                         <div className="inline-flex items-center gap-1.5 justify-end">
-                          <ActionDropdown ariaLabel="Certificate actions" menuClassName="w-48 bg-white rounded-2xl border border-slate-200 shadow-xl p-1.5 text-left space-y-0.5">
+                          <ActionDropdown ariaLabel="Certificate actions" menuClassName="w-52 bg-white rounded-2xl border border-slate-200 shadow-xl p-1.5 text-left space-y-0.5">
                             {({ close }) => (
                               <>
                                 <button
@@ -507,6 +539,17 @@ export default function HistoryTable({ initialCourses, userRole }: HistoryTableP
                                 >
                                   <Eye className="w-3.5 h-3.5 text-blue-600" />
                                   <span>View Details</span>
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    close();
+                                    setQrCert(cert);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                                >
+                                  <QrCode className="w-3.5 h-3.5 text-blue-600" />
+                                  <span>View QR Code</span>
                                 </button>
 
                                 <button
@@ -561,8 +604,24 @@ export default function HistoryTable({ initialCourses, userRole }: HistoryTableP
                                       }}
                                       className="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl flex items-center gap-2 transition-colors"
                                     >
-                                      <ShieldAlert className="w-3.5 h-3.5" />
+                                      <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
                                       <span>Revoke Certificate</span>
+                                    </button>
+                                  </>
+                                )}
+
+                                {userRole !== "Viewer" && (
+                                  <>
+                                    {cert.status !== "Valid" && <div className="my-1 border-t border-slate-100" />}
+                                    <button
+                                      onClick={() => {
+                                        close();
+                                        setDeletingCert(cert);
+                                      }}
+                                      className="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl flex items-center gap-2 transition-colors"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                                      <span>Delete Certificate</span>
                                     </button>
                                   </>
                                 )}
@@ -619,7 +678,15 @@ export default function HistoryTable({ initialCourses, userRole }: HistoryTableP
                       <span className="font-bold text-slate-900">{cert.grade || "A+"}</span>
                     </div>
 
-                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => setQrCert(cert)}
+                        className="min-w-[44px] min-h-[44px] p-2.5 rounded-xl border border-blue-200/80 bg-blue-50/70 hover:bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs"
+                        aria-label="View QR Code"
+                      >
+                        <QrCode className="w-4 h-4" />
+                      </button>
+
                       <button
                         onClick={() => handleDownloadSingle(cert)}
                         className="min-w-[44px] min-h-[44px] p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-emerald-600 flex items-center justify-center font-bold text-xs"
@@ -628,13 +695,107 @@ export default function HistoryTable({ initialCourses, userRole }: HistoryTableP
                         <Download className="w-4 h-4" />
                       </button>
 
-                      <button
-                        onClick={() => setViewingCert(cert)}
-                        className="min-w-[44px] min-h-[44px] p-2.5 rounded-xl border border-slate-200 bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center font-bold text-xs"
-                        aria-label="View certificate profile"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
+                      <ActionDropdown ariaLabel="Certificate actions" menuClassName="w-52 bg-white rounded-2xl border border-slate-200 shadow-xl p-1.5 text-left space-y-0.5">
+                        {({ close }) => (
+                          <>
+                            <button
+                              onClick={() => {
+                                close();
+                                setViewingCert(cert);
+                              }}
+                              className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-blue-600" />
+                              <span>View Details</span>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                close();
+                                setQrCert(cert);
+                              }}
+                              className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                            >
+                              <QrCode className="w-3.5 h-3.5 text-blue-600" />
+                              <span>View QR Code</span>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                close();
+                                handleDownloadSingle(cert);
+                              }}
+                              disabled={downloadingId === cert.id}
+                              className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors disabled:opacity-50"
+                            >
+                              {downloadingId === cert.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5 text-emerald-600" />}
+                              <span>Download PDF</span>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                close();
+                                handlePrintSingle(cert);
+                              }}
+                              className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                            >
+                              <Printer className="w-3.5 h-3.5 text-slate-500" />
+                              <span>Print Certificate</span>
+                            </button>
+
+                            <a
+                              href={`/verify/${cert.certificate_number}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={close}
+                              className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
+                              <span>Verify Online</span>
+                            </a>
+
+                            <button
+                              onClick={() => handleCopyId(cert.certificate_number)}
+                              className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-2 transition-colors"
+                            >
+                              {copiedId === cert.certificate_number ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+                              <span>{copiedId === cert.certificate_number ? "Copied ID" : "Copy Certificate ID"}</span>
+                            </button>
+
+                            {cert.status === "Valid" && userRole !== "Viewer" && (
+                              <>
+                                <div className="my-1 border-t border-slate-100" />
+                                <button
+                                  onClick={() => {
+                                    close();
+                                    setRevokingCert(cert);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl flex items-center gap-2 transition-colors"
+                                >
+                                  <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
+                                  <span>Revoke Certificate</span>
+                                </button>
+                              </>
+                            )}
+
+                            {userRole !== "Viewer" && (
+                              <>
+                                {cert.status !== "Valid" && <div className="my-1 border-t border-slate-100" />}
+                                <button
+                                  onClick={() => {
+                                    close();
+                                    setDeletingCert(cert);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl flex items-center gap-2 transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                                  <span>Delete Certificate</span>
+                                </button>
+                              </>
+                            )}
+                          </>
+                        )}
+                      </ActionDropdown>
                     </div>
                   </div>
                 </div>
@@ -713,6 +874,24 @@ export default function HistoryTable({ initialCourses, userRole }: HistoryTableP
         </div>
       )}
 
+      {/* Floating Toast Banner */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl border flex items-center gap-3 text-xs sm:text-sm font-bold animate-in fade-in slide-in-from-bottom-4 duration-200 ${
+            toast.type === "success"
+              ? "bg-slate-900 text-white border-slate-800"
+              : "bg-rose-950 text-rose-100 border-rose-800"
+          }`}
+        >
+          <div
+            className={`w-2.5 h-2.5 rounded-full ${
+              toast.type === "success" ? "bg-emerald-400" : "bg-rose-400"
+            }`}
+          />
+          <span>{toast.message}</span>
+        </div>
+      )}
+
       {/* Certificate Details Drawer Component */}
       <CertificateProfileDrawer
         certificate={viewingCert}
@@ -720,6 +899,7 @@ export default function HistoryTable({ initialCourses, userRole }: HistoryTableP
         onDownload={handleDownloadSingle}
         onPrint={handlePrintSingle}
         onVerify={(cert) => window.open(`/verify/${cert.certificate_number}`, "_blank")}
+        onViewQR={(cert) => setQrCert(cert)}
         onRevoke={(cert) => {
           setViewingCert(null);
           setRevokingCert(cert);
@@ -727,11 +907,24 @@ export default function HistoryTable({ initialCourses, userRole }: HistoryTableP
         userRole={userRole}
       />
 
+      {/* View QR Code Modal */}
+      <CertificateQRModal
+        certificate={qrCert}
+        onClose={() => setQrCert(null)}
+      />
+
       {/* Revoke Confirmation Dialog */}
       <CertificateRevokeDialog
         certificate={revokingCert}
         onClose={() => setRevokingCert(null)}
         onConfirm={handleRevokeConfirm}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <CertificateDeleteDialog
+        certificate={deletingCert}
+        onClose={() => setDeletingCert(null)}
+        onConfirm={handleDeleteConfirm}
       />
     </div>
   );

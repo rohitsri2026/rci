@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { 
-  X, Award, User, BookOpen, Calendar, ShieldCheck, 
+  X, Award, User, BookOpen, Calendar, ShieldCheck, QrCode,
   Download, Printer, ExternalLink, Copy, Check, AlertTriangle, ShieldAlert, CheckCircle2, Clock
 } from "lucide-react";
 import { Certificate } from "@/types/certificate";
@@ -13,6 +13,7 @@ interface CertificateProfileDrawerProps {
   onDownload: (cert: Certificate) => void;
   onPrint: (cert: Certificate) => void;
   onVerify: (cert: Certificate) => void;
+  onViewQR?: (cert: Certificate) => void;
   onRevoke?: (cert: Certificate) => void;
   userRole?: string;
 }
@@ -23,6 +24,7 @@ export default function CertificateProfileDrawer({
   onDownload,
   onPrint,
   onVerify,
+  onViewQR,
   onRevoke,
   userRole = "Viewer",
 }: CertificateProfileDrawerProps) {
@@ -271,11 +273,21 @@ export default function CertificateProfileDrawer({
           </div>
 
           <div className="flex items-center gap-2 pt-1">
+            {onViewQR && (
+              <button
+                onClick={() => onViewQR(certificate)}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 border border-blue-200 bg-blue-50/70 hover:bg-blue-100 text-blue-700 font-bold text-xs py-2 px-3 rounded-xl transition-colors"
+              >
+                <QrCode className="w-3.5 h-3.5 text-blue-600" />
+                <span>View QR Code</span>
+              </button>
+            )}
+
             <button
               onClick={() => onVerify(certificate)}
               className="flex-1 inline-flex items-center justify-center gap-1.5 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs py-2 px-3 rounded-xl transition-colors"
             >
-              <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
+              <ExternalLink className="w-3.5 h-3.5 text-purple-600" />
               <span>Verify Online</span>
             </button>
 
