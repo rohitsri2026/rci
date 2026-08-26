@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { normalizePhone } from "@/lib/utils";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -14,34 +15,42 @@ export async function POST(request: Request) {
       );
     }
 
-    const rawInput = loginId.trim();
-    const cleanPhone = rawInput.replace(/\D/g, "");
+    const rawInput = String(loginId).trim();
+    const normalizedInputPhone = normalizePhone(rawInput);
+    const normalizedInputPassword = normalizePhone(password);
     const isEmailInput = rawInput.includes("@");
 
+    const adminClient = createAdminClient();
     const supabase = await createClient();
 
-    // 1. Search for student record in official institute database
+    // 1. Service-role lookup to bypass unauthenticated RLS restrictions
+    const { data: allStudents, error: studentQueryErr } = await adminClient
+      .from("students")
+      .select("id, full_name, email, phone, status");
+
+    if (studentQueryErr) {
+      console.error("Database student query error:", studentQueryErr);
+      return NextResponse.json(
+        { error: "An unexpected database lookup error occurred." },
+        { status: 500 }
+      );
+    }
+
     let student: any = null;
 
     if (isEmailInput) {
-      const { data } = await supabase
-        .from("students")
-        .select("id, full_name, email, phone")
-        .ilike("email", rawInput)
-        .maybeSingle();
-      student = data;
+      student = allStudents?.find(
+        (s) => s.email && s.email.trim().toLowerCase() === rawInput.toLowerCase()
+      );
     }
 
-    if (!student && cleanPhone) {
-      // Match by phone number
-      const { data } = await supabase
-        .from("students")
-        .select("id, full_name, email, phone")
-        .or(`phone.eq.${cleanPhone},phone.ilike.%${cleanPhone}%`)
-        .maybeSingle();
-      student = data;
+    if (!student && normalizedInputPhone) {
+      student = allStudents?.find(
+        (s) => s.phone && normalizePhone(s.phone) === normalizedInputPhone
+      );
     }
 
+    // Truly no student record exists
     if (!student) {
       return NextResponse.json(
         { error: "No registered student record found with this phone number or login ID. Please contact RCI administration." },
@@ -49,18 +58,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // Determine candidate emails for Supabase Auth account
-    const studentPhoneClean = (student.phone || cleanPhone || "").replace(/\D/g, "");
-    const authEmails: string[] = [];
-    if (student.email) authEmails.push(student.email.trim());
-    if (studentPhoneClean) authEmails.push(`${studentPhoneClean}@student.rciknp.com`);
-    authEmails.push(`student.${student.id.slice(0, 8)}@student.rciknp.com`);
+    const studentPhoneNormalized = normalizePhone(student.phone) || normalizedInputPhone;
+
+    // Deterministic Auth candidate emails
+    const primaryAuthEmail = student.email
+      ? student.email.trim().toLowerCase()
+      : `${studentPhoneNormalized}@student.rciknp.com`;
+
+    const candidateAuthEmails: string[] = [
+      primaryAuthEmail,
+      `${studentPhoneNormalized}@student.rciknp.com`,
+      `student.${student.id.slice(0, 8)}@student.rciknp.com`,
+    ];
 
     let authenticatedUser: any = null;
     let authErrorMsg = "";
 
-    // 2. Try logging in with candidate emails
-    for (const emailOption of authEmails) {
+    // 2. Attempt login with candidate Auth emails
+    for (const emailOption of Array.from(new Set(candidateAuthEmails))) {
       const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
         email: emailOption,
         password,
@@ -74,49 +89,72 @@ export async function POST(request: Request) {
       }
     }
 
-    // 3. Auto-provision Auth User if initial login & auth account does not exist yet
-    if (!authenticatedUser && (password === studentPhoneClean || password === cleanPhone)) {
-      const primaryAuthEmail = student.email || `${studentPhoneClean}@student.rciknp.com`;
-      const adminClient = createAdminClient();
+    // 3. If login failed, check if Auth user already exists or needs first-time provisioning
+    if (!authenticatedUser) {
+      const { data: userList } = await adminClient.auth.admin.listUsers();
+      const existingUser = userList?.users.find(
+        (u) =>
+          u.email?.toLowerCase() === primaryAuthEmail.toLowerCase() ||
+          u.user_metadata?.student_id === student.id ||
+          (u.user_metadata?.phone && normalizePhone(u.user_metadata.phone) === studentPhoneNormalized)
+      );
 
-      try {
-        const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
-          email: primaryAuthEmail,
-          password: password,
-          email_confirm: true,
-          user_metadata: {
-            role: "Student",
-            student_id: student.id,
-            phone: studentPhoneClean,
-            password_changed: false,
-          },
-        });
+      // Is the password entered matching the student's initial phone number?
+      const isInitialPhonePassword =
+        password.trim() === studentPhoneNormalized ||
+        normalizedInputPassword === studentPhoneNormalized;
 
-        if (!createError && newUser.user) {
-          // Attempt sign in with newly created credentials
-          const { data: retryAuth, error: retryError } = await supabase.auth.signInWithPassword({
+      if (!existingUser && isInitialPhonePassword) {
+        // Auto-provision Auth account for first-time login
+        try {
+          const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
             email: primaryAuthEmail,
-            password,
+            password: password,
+            email_confirm: true,
+            user_metadata: {
+              role: "Student",
+              student_id: student.id,
+              phone: studentPhoneNormalized,
+              password_changed: false,
+            },
           });
 
-          if (!retryError && retryAuth.user) {
-            authenticatedUser = retryAuth.user;
+          if (!createError && newUser.user) {
+            // Attempt sign-in with newly provisioned user
+            const { data: retryAuth, error: retryError } = await supabase.auth.signInWithPassword({
+              email: primaryAuthEmail,
+              password,
+            });
+
+            if (!retryError && retryAuth.user) {
+              authenticatedUser = retryAuth.user;
+            }
+          } else if (createError) {
+            console.error("Provisioning user creation error:", createError.message);
           }
+        } catch (provisionErr) {
+          console.error("Auto-provisioning student auth error:", provisionErr);
         }
-      } catch (provisionErr) {
-        console.error("Auto-provisioning student auth failed:", provisionErr);
+      } else if (existingUser) {
+        // Auth user exists, but password was incorrect
+        return NextResponse.json(
+          { error: "Incorrect password. Please enter your valid password or use your 10-digit registered phone number if logging in for the first time." },
+          { status: 401 }
+        );
       }
     }
 
     if (!authenticatedUser) {
       return NextResponse.json(
-        { error: authErrorMsg || "Invalid credentials. Please verify your phone number and password." },
+        { error: authErrorMsg || "Invalid password. Your initial password is your 10-digit registered phone number." },
         { status: 401 }
       );
     }
 
-    // Check if initial phone-number password is in use
-    const isPhonePassword = password === studentPhoneClean || password === cleanPhone;
+    // Check if initial phone password is in use or password_changed flag is false
+    const isPhonePassword =
+      password.trim() === studentPhoneNormalized ||
+      normalizedInputPassword === studentPhoneNormalized;
     const passwordChanged = authenticatedUser.user_metadata?.password_changed === true;
     const mustChangePassword = isPhonePassword || !passwordChanged;
 

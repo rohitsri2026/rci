@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { normalizePhone } from "@/lib/utils";
 
 /**
  * Gets the current student's linked record from the students table.
@@ -49,17 +51,16 @@ export async function getStudentSession() {
     student = data;
   }
 
-  // 3. Try matching by phone
-  if (!student && (user.phone || user.user_metadata?.phone)) {
-    const cleanPhone = (user.phone || user.user_metadata?.phone || "").replace(/\D/g, "");
-    if (cleanPhone) {
-      const { data } = await supabase
-        .from("students")
-        .select(selectQuery)
-        .or(`phone.eq.${cleanPhone},phone.ilike.%${cleanPhone}%`)
-        .maybeSingle();
-      student = data;
-    }
+  // 3. Try matching by normalized phone
+  const userPhone = user.phone || user.user_metadata?.phone;
+  const userNormalizedPhone = normalizePhone(userPhone);
+
+  if (!student && userNormalizedPhone) {
+    const adminClient = createAdminClient();
+    const { data: allStudents } = await adminClient.from("students").select(selectQuery);
+    student = allStudents?.find(
+      (s) => s.phone && normalizePhone(s.phone) === userNormalizedPhone
+    );
   }
 
   if (!student) {

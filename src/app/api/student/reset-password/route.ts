@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyRole } from "@/lib/auth";
+import { normalizePhone } from "@/lib/utils";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -19,8 +20,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Student ID is required." }, { status: 400 });
     }
 
-    // 2. Fetch student details
-    const { data: student, error: fetchErr } = await supabase
+    // 2. Fetch student details using admin client
+    const adminClient = createAdminClient();
+    const { data: student, error: fetchErr } = await adminClient
       .from("students")
       .select("id, full_name, email, phone")
       .eq("id", studentId)
@@ -30,8 +32,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Student record not found." }, { status: 404 });
     }
 
-    const cleanPhone = (student.phone || "").replace(/\D/g, "");
-    if (!cleanPhone) {
+    const normalizedPhone = normalizePhone(student.phone);
+    if (!normalizedPhone) {
       return NextResponse.json(
         { error: "Student has no registered phone number to reset password." },
         { status: 400 }
@@ -39,35 +41,39 @@ export async function POST(request: Request) {
     }
 
     // 3. Find and reset student Auth user password
-    const adminClient = createAdminClient();
-    const targetEmail = student.email || `${cleanPhone}@student.rciknp.com`;
+    const targetEmail = student.email
+      ? student.email.trim().toLowerCase()
+      : `${normalizedPhone}@student.rciknp.com`;
 
-    // Search for existing auth user by email
     const { data: userList } = await adminClient.auth.admin.listUsers();
     const existingUser = userList?.users.find(
-      (u) => u.email === targetEmail || u.user_metadata?.student_id === studentId
+      (u) =>
+        u.email?.toLowerCase() === targetEmail ||
+        u.user_metadata?.student_id === studentId ||
+        (u.user_metadata?.phone && normalizePhone(u.user_metadata.phone) === normalizedPhone)
     );
 
     if (existingUser) {
       const { error: updateErr } = await adminClient.auth.admin.updateUserById(existingUser.id, {
-        password: cleanPhone,
+        password: normalizedPhone,
         user_metadata: {
           ...existingUser.user_metadata,
+          phone: normalizedPhone,
           password_changed: false,
         },
       });
 
       if (updateErr) throw updateErr;
     } else {
-      // Create user if not created yet
+      // Create auth user if not created yet
       await adminClient.auth.admin.createUser({
         email: targetEmail,
-        password: cleanPhone,
+        password: normalizedPhone,
         email_confirm: true,
         user_metadata: {
           role: "Student",
           student_id: studentId,
-          phone: cleanPhone,
+          phone: normalizedPhone,
           password_changed: false,
         },
       });
@@ -75,7 +81,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Password for ${student.full_name} has been reset to registered phone number (${cleanPhone}).`,
+      message: `Password for ${student.full_name} has been reset to registered phone number (${normalizedPhone}).`,
     });
   } catch (err: any) {
     console.error("Admin student password reset error:", err);
