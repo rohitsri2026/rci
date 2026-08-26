@@ -1,6 +1,6 @@
 import { getStudentSession } from "@/lib/student-auth";
 import { redirect } from "next/navigation";
-import { CreditCard, CheckCircle, AlertCircle, Clock, Receipt } from "lucide-react";
+import { CreditCard, CheckCircle, AlertCircle, Clock, Receipt, ShieldCheck } from "lucide-react";
 
 export default async function StudentFeesPage() {
   const { student, supabase } = await getStudentSession();
@@ -21,90 +21,107 @@ export default async function StudentFeesPage() {
   const planTotal = Number(plan?.total_amount ?? 0);
   const discount = Number(ledger?.discount_amount ?? 0);
   const paid = Number(ledger?.total_paid ?? 0);
-  const due = Math.max(0, planTotal - discount - paid);
+  const totalCourseFee = Math.max(0, planTotal - discount);
+  const due = Math.max(0, totalCourseFee - paid);
 
   const statusConfig: Record<string, { color: string; icon: any; label: string }> = {
-    Paid: { color: "text-emerald-700 bg-emerald-50 border-emerald-200", icon: CheckCircle, label: "Fully Paid" },
-    Partial: { color: "text-amber-700 bg-amber-50 border-amber-200", icon: Clock, label: "Partially Paid" },
-    Unpaid: { color: "text-red-700 bg-red-50 border-red-200", icon: AlertCircle, label: "Unpaid" },
+    Paid: { color: "text-emerald-700 bg-emerald-50 border-emerald-200", icon: CheckCircle, label: "PAID" },
+    Partial: { color: "text-amber-700 bg-amber-50 border-amber-200", icon: Clock, label: "PARTIALLY PAID" },
+    Unpaid: { color: "text-rose-700 bg-rose-50 border-rose-200", icon: AlertCircle, label: "PENDING" },
   };
-  const statusKey = ledger?.status as string ?? "Unpaid";
+  const statusKey = ledger?.status as string ?? (due === 0 && totalCourseFee > 0 ? "Paid" : paid > 0 ? "Partial" : "Unpaid");
   const status = statusConfig[statusKey] ?? statusConfig.Unpaid;
 
+  const percentPaid = totalCourseFee > 0 ? Math.min(100, Math.round((paid / totalCourseFee) * 100)) : 0;
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 max-w-5xl">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900 font-display">Fee Management</h1>
-        <p className="text-slate-500 mt-1 text-sm">Track your fee payments, installments, and receipts.</p>
+        <h1 className="text-3xl font-extrabold text-[#07152F] font-display">Fee Ledger</h1>
+        <p className="text-slate-500 mt-1 text-sm font-medium">Track your course fee payments, balance, and official institute receipts.</p>
       </div>
 
       {!ledger ? (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center h-64 gap-3 text-slate-400">
-          <CreditCard className="w-10 h-10" />
-          <p className="font-semibold">No fee record found</p>
-          <p className="text-sm text-slate-300">Please contact the administration to set up your fee plan.</p>
+        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs p-12 flex flex-col items-center justify-center gap-3 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shadow-2xs">
+            <CreditCard className="w-8 h-8 text-blue-600" />
+          </div>
+          <h3 className="font-extrabold text-slate-900 text-lg font-display">No Fee Ledger Assigned</h3>
+          <p className="text-xs text-slate-500 max-w-sm font-medium">
+            Please contact RCI institute administration desk to assign your course fee plan.
+          </p>
         </div>
       ) : (
         <>
-          {/* Summary Cards */}
+          {/* Summary KPI Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Total Fee", value: `₹${planTotal - discount}`, sub: discount > 0 ? `₹${discount} discount applied` : plan?.plan_name ?? "", color: "text-slate-700 bg-slate-50" },
-              { label: "Amount Paid", value: `₹${paid}`, sub: `${transactions.length} transaction(s)`, color: "text-emerald-700 bg-emerald-50" },
-              { label: "Balance Due", value: `₹${due}`, sub: due > 0 ? "Pending payment" : "Fully settled!", color: due > 0 ? "text-red-700 bg-red-50" : "text-emerald-700 bg-emerald-50" },
-              { label: "Status", value: status.label, sub: `${plan?.installments_count ?? 1} installment plan`, color: status.color },
+              { label: "Total Fee", value: `₹${totalCourseFee.toLocaleString("en-IN")}`, sub: discount > 0 ? `₹${discount} discount applied` : plan?.plan_name ?? "Standard Plan", color: "text-slate-900 bg-white border-slate-200" },
+              { label: "Amount Paid", value: `₹${paid.toLocaleString("en-IN")}`, sub: `${transactions.length} transaction(s)`, color: "text-emerald-700 bg-emerald-50/70 border-emerald-200" },
+              { label: "Balance Due", value: `₹${due.toLocaleString("en-IN")}`, sub: due > 0 ? "Pending payment" : "Fully settled!", color: due > 0 ? "text-rose-700 bg-rose-50/70 border-rose-200" : "text-emerald-700 bg-emerald-50/70 border-emerald-200" },
+              { label: "Payment Status", value: status.label, sub: `${plan?.installments_count ?? 1} installment plan`, color: status.color },
             ].map((card) => (
-              <div key={card.label} className={`rounded-2xl border p-5 ${card.color}`}>
-                <p className="text-xs font-semibold uppercase tracking-wide opacity-60 mb-1">{card.label}</p>
-                <p className="text-xl font-bold font-display">{card.value}</p>
-                <p className="text-xs mt-1 opacity-60">{card.sub}</p>
+              <div key={card.label} className={`rounded-2xl border p-5 shadow-2xs ${card.color}`}>
+                <p className="text-[10.5px] font-extrabold uppercase tracking-wider opacity-70 mb-1">{card.label}</p>
+                <p className="text-xl sm:text-2xl font-extrabold font-display">{card.value}</p>
+                <p className="text-xs mt-1 opacity-70 font-semibold">{card.sub}</p>
               </div>
             ))}
           </div>
 
-          {/* Progress Bar */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="font-bold text-slate-900">Payment Progress</h3>
-              <span className="text-sm font-bold text-indigo-600">{planTotal > 0 ? Math.round((paid / (planTotal - discount)) * 100) : 0}%</span>
+          {/* Progress Meter Bar */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-6 space-y-3">
+            <div className="flex justify-between items-center">
+              <h3 className="font-extrabold text-slate-950 text-base font-display">Payment Progress</h3>
+              <span className="text-sm font-extrabold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+                {percentPaid}% Paid
+              </span>
             </div>
-            <div className="w-full bg-slate-100 rounded-full h-3">
+            <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden p-0.5 border border-slate-200/60">
               <div
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 h-3 rounded-full transition-all"
-                style={{ width: `${planTotal > 0 ? Math.min(100, Math.round((paid / Math.max(1, planTotal - discount)) * 100)) : 0}%` }}
+                className="bg-[#155EEF] h-full rounded-full transition-all duration-500"
+                style={{ width: `${percentPaid}%` }}
               />
             </div>
-            <div className="flex justify-between text-xs text-slate-400 mt-2">
-              <span>Paid: ₹{paid}</span>
-              <span>Total: ₹{planTotal - discount}</span>
+            <div className="flex justify-between text-xs text-slate-500 font-bold pt-1">
+              <span>Paid: ₹{paid.toLocaleString("en-IN")}</span>
+              <span>Total: ₹{totalCourseFee.toLocaleString("en-IN")}</span>
             </div>
           </div>
 
           {/* Transaction History */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
-              <Receipt className="w-5 h-5 text-slate-400" />
-              <h3 className="font-bold text-slate-900">Transaction History</h3>
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Receipt className="w-5 h-5 text-blue-600" />
+                <h3 className="font-extrabold text-slate-950 text-base font-display">Transaction History</h3>
+              </div>
+              <span className="text-xs font-bold text-slate-500">
+                {transactions.length} record(s)
+              </span>
             </div>
+
             {transactions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-32 text-slate-400 gap-2 text-sm">
-                <Receipt className="w-6 h-6" />
-                No payments recorded yet.
+              <div className="flex flex-col items-center justify-center p-8 text-slate-400 gap-2 text-xs font-semibold">
+                <Receipt className="w-8 h-8 text-slate-300" />
+                <span>No fee payments recorded yet.</span>
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
                 {transactions.sort((a: any, b: any) => new Date(b.paid_at).getTime() - new Date(a.paid_at).getTime()).map((t: any) => (
-                  <div key={t.id} className="flex items-center gap-4 px-6 py-4">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
-                      <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  <div key={t.id} className="flex items-center justify-between gap-4 px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+                        <CheckCircle className="w-5 h-5 text-emerald-600" />
+                      </div>
+                      <div>
+                        <p className="font-extrabold text-slate-950 text-sm">₹{Number(t.amount_paid).toLocaleString("en-IN")}</p>
+                        <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                          Mode: <strong className="text-slate-800">{t.payment_mode || "Cash"}</strong> • Receipt: <span className="font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">{t.receipt_number}</span>
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-bold text-slate-900 text-sm">₹{t.amount_paid}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {t.payment_mode} • Receipt: <span className="font-mono text-slate-700">{t.receipt_number}</span>
-                      </p>
-                    </div>
-                    <p className="text-xs text-slate-400 shrink-0">
+                    <p className="text-xs font-bold text-slate-500 shrink-0">
                       {new Date(t.paid_at).toLocaleDateString("en-IN", { dateStyle: "medium" })}
                     </p>
                   </div>

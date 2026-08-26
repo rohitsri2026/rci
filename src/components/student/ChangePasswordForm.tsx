@@ -209,8 +209,29 @@ export default function ChangePasswordForm({ isFirstLogin = false }: ChangePassw
             </div>
           </div>
 
-          {/* Password Requirements Checklist */}
-          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2 text-xs">
+          {/* Password Strength Indicator & Requirements Checklist */}
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-3 text-xs">
+            {/* Visual Password Strength Bar */}
+            {newPassword.length > 0 && (
+              <div className="space-y-1.5 pb-2 border-b border-slate-200/60">
+                <div className="flex justify-between items-center text-[11px] font-extrabold">
+                  <span className="text-slate-500 uppercase tracking-wider">Password Strength:</span>
+                  <span className={
+                    (!hasMinLength || (!hasLetter && !hasNumber)) ? "text-rose-600 font-bold" :
+                    (hasMinLength && hasLetter && hasNumber) ? "text-emerald-600 font-bold" : "text-amber-600 font-bold"
+                  }>
+                    {(!hasMinLength || (!hasLetter && !hasNumber)) ? "Weak" :
+                     (hasMinLength && hasLetter && hasNumber) ? "Strong" : "Fair"}
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden flex gap-1 p-0.5">
+                  <div className={`h-full rounded-full transition-all duration-300 ${
+                    newPassword.length > 0 ? ((!hasMinLength || (!hasLetter && !hasNumber)) ? "bg-rose-500 w-1/3" : (hasMinLength && hasLetter && hasNumber) ? "bg-emerald-500 w-full" : "bg-amber-500 w-2/3") : "w-0"
+                  }`} />
+                </div>
+              </div>
+            )}
+
             <span className="font-extrabold text-slate-700 uppercase tracking-wider text-[10.5px] block mb-1">
               Password Requirements
             </span>

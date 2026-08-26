@@ -26,8 +26,27 @@ export default function StudentNotificationsPage() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchNotifications();
+    let isMounted = true;
+    const load = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !isMounted) return;
+
+      const { data } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (isMounted) {
+        setNotifications(data ?? []);
+        setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const markAsRead = async (id: string) => {

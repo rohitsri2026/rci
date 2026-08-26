@@ -210,24 +210,28 @@ export default async function StudentDashboardPage() {
             </Link>
           </div>
 
-          {/* Card 2: Course Progress / Info */}
+          {/* Card 2: Exam Results */}
           <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 flex flex-col justify-between">
             <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center font-bold mb-3">
               <TrendingUp className="w-5 h-5" />
             </div>
             <div>
               <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                Course Info
+                Exam Results
               </span>
-              <h4 className="text-base sm:text-lg font-extrabold text-slate-950 mt-0.5 font-display">
-                Active Enrolled
+              <h4 className="text-xl sm:text-2xl font-extrabold text-slate-950 mt-0.5 font-display">
+                {examResults.length > 0
+                  ? `${examResults[0].marks_obtained}/${examResults[0].max_marks || 100}`
+                  : "No Exams"}
               </h4>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">
-                Status: In Progress
+              <p className="text-xs text-slate-500 font-medium mt-0.5 truncate">
+                {examResults.length > 0
+                  ? `Latest: ${examResults[0].exams?.title || "Exam"}`
+                  : "No exam records yet"}
               </p>
             </div>
-            <Link href="/student/courses" className="text-xs font-extrabold text-purple-600 hover:text-purple-800 flex items-center gap-1 mt-3">
-              View Syllabus <ChevronRight className="w-3.5 h-3.5" />
+            <Link href="/student/exams" className="text-xs font-extrabold text-purple-600 hover:text-purple-800 flex items-center gap-1 mt-3">
+              View All Results <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -296,7 +300,7 @@ export default async function StudentDashboardPage() {
             href="/student/courses"
             className="text-xs font-extrabold text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"
           >
-            Course Details <ChevronRight className="w-3.5 h-3.5" />
+            View Course <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -370,7 +374,7 @@ export default async function StudentDashboardPage() {
               className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200 font-extrabold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors"
             >
               <FileText className="w-4 h-4 text-blue-600" />
-              <span>View Full Fee Ledger</span>
+              <span>View Fee Details</span>
             </Link>
           </div>
         </div>

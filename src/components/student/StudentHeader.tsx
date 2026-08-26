@@ -52,15 +52,25 @@ export default function StudentHeader({
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
-  // Close profile dropdown on outside click
+  // Close profile dropdown on outside click or Escape key
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
         setProfileOpen(false);
       }
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setProfileOpen(false);
+        setMobileDrawerOpen(false);
+      }
+    };
     document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   const handleLogout = async () => {
