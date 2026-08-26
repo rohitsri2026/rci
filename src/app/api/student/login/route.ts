@@ -20,18 +20,33 @@ export async function POST(request: Request) {
     const normalizedInputPassword = normalizePhone(password);
     const isEmailInput = rawInput.includes("@");
 
+    // Validate phone number length if not an email address
+    if (!isEmailInput && (!normalizedInputPhone || normalizedInputPhone.length !== 10)) {
+      return NextResponse.json(
+        { error: "Please enter a valid 10-digit registered phone number." },
+        { status: 400 }
+      );
+    }
+
     const adminClient = createAdminClient();
     const supabase = await createClient();
 
-    // 1. Service-role lookup to bypass unauthenticated RLS restrictions
+    // 1. Query students table for existing columns only (id, full_name, email, phone)
     const { data: allStudents, error: studentQueryErr } = await adminClient
       .from("students")
-      .select("id, full_name, email, phone, status");
+      .select("id, full_name, email, phone");
 
     if (studentQueryErr) {
-      console.error("Database student query error:", studentQueryErr);
+      console.error("[STUDENT_LOGIN_LOOKUP_ERROR]", {
+        stage: "student_lookup",
+        phone: normalizedInputPhone,
+        message: studentQueryErr.message,
+        code: studentQueryErr.code,
+        details: studentQueryErr.details,
+        hint: studentQueryErr.hint,
+      });
       return NextResponse.json(
-        { error: "An unexpected database lookup error occurred." },
+        { error: "Student login service is temporarily unavailable. Please try again later." },
         { status: 500 }
       );
     }
@@ -53,7 +68,7 @@ export async function POST(request: Request) {
     // Truly no student record exists
     if (!student) {
       return NextResponse.json(
-        { error: "No registered student record found with this phone number or login ID. Please contact RCI administration." },
+        { error: "No registered student account was found with this phone number." },
         { status: 401 }
       );
     }
@@ -92,14 +107,14 @@ export async function POST(request: Request) {
     // 3. If login failed, check if Auth user already exists or needs first-time provisioning
     if (!authenticatedUser) {
       const { data: userList } = await adminClient.auth.admin.listUsers();
-      const existingUser = userList?.users.find(
+      const existingUser = userList?.users?.find(
         (u) =>
           u.email?.toLowerCase() === primaryAuthEmail.toLowerCase() ||
           u.user_metadata?.student_id === student.id ||
           (u.user_metadata?.phone && normalizePhone(u.user_metadata.phone) === studentPhoneNormalized)
       );
 
-      // Is the password entered matching the student's initial phone number?
+      // Is the password entered matching the student's initial 10-digit phone number?
       const isInitialPhonePassword =
         password.trim() === studentPhoneNormalized ||
         normalizedInputPassword === studentPhoneNormalized;
@@ -138,7 +153,7 @@ export async function POST(request: Request) {
       } else if (existingUser) {
         // Auth user exists, but password was incorrect
         return NextResponse.json(
-          { error: "Incorrect password. Please enter your valid password or use your 10-digit registered phone number if logging in for the first time." },
+          { error: "Incorrect password. Please try again." },
           { status: 401 }
         );
       }
@@ -146,7 +161,7 @@ export async function POST(request: Request) {
 
     if (!authenticatedUser) {
       return NextResponse.json(
-        { error: authErrorMsg || "Invalid password. Your initial password is your 10-digit registered phone number." },
+        { error: authErrorMsg || "Incorrect password. Please try again." },
         { status: 401 }
       );
     }
@@ -164,9 +179,9 @@ export async function POST(request: Request) {
       redirect: mustChangePassword ? "/student/change-password?firstLogin=true" : "/student/dashboard",
     });
   } catch (err: any) {
-    console.error("Student login endpoint error:", err);
+    console.error("Student login endpoint exception:", err);
     return NextResponse.json(
-      { error: err.message || "An unexpected login error occurred." },
+      { error: "Student login service is temporarily unavailable. Please try again later." },
       { status: 500 }
     );
   }
