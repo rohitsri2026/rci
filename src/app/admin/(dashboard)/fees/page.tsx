@@ -13,6 +13,7 @@ import {
   Loader2,
   ListFilter
 } from "lucide-react";
+import NotificationTrigger from "@/components/admin/notifications/NotificationTrigger";
 
 export default function FeesDashboardPage() {
   const [ledgers, setLedgers] = useState<any[]>([]);
@@ -232,6 +233,18 @@ export default function FeesDashboardPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right space-x-2">
+                        <NotificationTrigger
+                          studentId={ledger.students?.id}
+                          studentName={ledger.students?.full_name || "Student"}
+                          studentPhone={ledger.students?.phone || ""}
+                          type={balance > 0 ? "payment_failed" : "payment_successful"}
+                          variables={{
+                            student_name: ledger.students?.full_name,
+                            payment_amount: paid,
+                            transaction_id: ledger.id?.slice(0, 8)?.toUpperCase(),
+                          }}
+                          size="xs"
+                        />
                         <button
                           onClick={() => setDrawerLedger(ledger)}
                           className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-semibold px-3 py-1.5 rounded-lg border border-slate-200 transition-colors inline-flex items-center gap-1 text-xs"

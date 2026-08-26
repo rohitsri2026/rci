@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { X, Mail, Phone, BookOpen, Calendar, MapPin, Edit3, User } from "lucide-react";
+import NotificationTrigger from "@/components/admin/notifications/NotificationTrigger";
 
 interface Student {
   id: string;
@@ -198,6 +199,26 @@ export default function StudentProfileDrawer({ student, onClose }: StudentProfil
                   <span>Reset Student Password</span>
                 </button>
               )}
+            </div>
+          </div>
+
+          {/* Section 4: MANUAL NOTIFICATIONS */}
+          <div className="space-y-3 pt-2 border-t border-slate-100">
+            <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
+              Send Manual Notification
+            </h4>
+            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-extrabold text-slate-900">WhatsApp / SMS</p>
+                <p className="text-[11px] text-slate-500 font-medium">Send template or custom message</p>
+              </div>
+              <NotificationTrigger
+                studentId={student.id}
+                studentName={student.full_name}
+                studentPhone={student.phone || ""}
+                type="general"
+                size="xs"
+              />
             </div>
           </div>
 

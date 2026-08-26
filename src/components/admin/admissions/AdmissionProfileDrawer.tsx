@@ -6,6 +6,7 @@ import {
   X, Mail, Phone, BookOpen, Calendar, CheckCircle2, XCircle, 
   Clock, MessageSquare, UserCheck, Trash2, FileText, AlertCircle 
 } from "lucide-react";
+import NotificationTrigger from "@/components/admin/notifications/NotificationTrigger";
 
 interface Admission {
   id: string;
@@ -226,6 +227,36 @@ export default function AdmissionProfileDrawer({
               </div>
             </div>
           )}
+
+          {/* Section 4: MANUAL NOTIFICATIONS */}
+          <div className="space-y-3 pt-1">
+            <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">
+              Send Manual Notification
+            </h4>
+            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-extrabold text-slate-900">WhatsApp / SMS</p>
+                <p className="text-[11px] text-slate-500 font-medium">Send application status update</p>
+              </div>
+              <NotificationTrigger
+                studentName={admission.student_name}
+                studentPhone={admission.phone || ""}
+                type={
+                  admission.status === "Approved"
+                    ? "application_approved"
+                    : admission.status === "Rejected"
+                    ? "application_rejected"
+                    : "application_submitted"
+                }
+                variables={{
+                  student_name: admission.student_name,
+                  application_id: admission.id.slice(0, 8).toUpperCase(),
+                  login_url: "https://rciknp.vercel.app/student/login",
+                }}
+                size="xs"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Action Controls at Bottom */}

@@ -21,7 +21,8 @@ import {
   History,
   FilePlus,
   X,
-  UserCheck
+  UserCheck,
+  MessageSquare
 } from "lucide-react";
 import { RCIConfig } from "@/lib/config";
 
@@ -39,6 +40,7 @@ const managementNavGroup = [
   { label: "Students", href: "/admin/students", icon: Users },
   { label: "Admissions", href: "/admin/admissions", icon: FileText },
   { label: "Courses", href: "/admin/courses", icon: BookOpen },
+  { label: "Notifications", href: "/admin/notifications", icon: MessageSquare },
 ];
 
 const certificateSubItems = [

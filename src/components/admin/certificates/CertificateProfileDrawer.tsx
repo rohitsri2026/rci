@@ -6,6 +6,7 @@ import {
   Download, Printer, ExternalLink, Copy, Check, AlertTriangle, ShieldAlert, CheckCircle2, Clock
 } from "lucide-react";
 import { Certificate } from "@/types/certificate";
+import NotificationTrigger from "@/components/admin/notifications/NotificationTrigger";
 
 interface CertificateProfileDrawerProps {
   certificate: Certificate | null;
@@ -229,6 +230,27 @@ export default function CertificateProfileDrawer({
             <p className="text-xs font-mono text-slate-700 bg-white border border-blue-100 rounded-xl p-2.5 break-all select-all">
               {verificationUrl}
             </p>
+          </div>
+
+          {/* Manual Certificate Notification */}
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-extrabold text-slate-900">Certificate Notification</p>
+                <p className="text-[11px] text-slate-500 font-medium">Send via WhatsApp / SMS</p>
+              </div>
+              <NotificationTrigger
+                studentName={studentName}
+                studentPhone={certificate.students?.phone || ""}
+                type="certificate_generated"
+                variables={{
+                  student_name: studentName,
+                  certificate_number: certificate.certificate_number,
+                  certificate_url: verificationUrl,
+                }}
+                size="xs"
+              />
+            </div>
           </div>
 
           {/* Token Details */}
