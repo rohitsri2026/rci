@@ -149,7 +149,55 @@ export default function StudentProfileDrawer({ student, onClose }: StudentProfil
             </div>
           </div>
 
-          {/* Section 3: ADDRESS (Rendered ONLY if address exists) */}
+          {/* Section 3: STUDENT AUTHENTICATION */}
+          <div className="space-y-3">
+            <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100 flex items-center justify-between">
+              <span>Student Authentication</span>
+              <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold border border-emerald-200">
+                Student login is enabled
+              </span>
+            </h4>
+
+            <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-3.5 space-y-2 text-xs">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 font-bold">Login Credentials:</span>
+                <span className="font-mono font-extrabold text-blue-700">Registered Phone Number</span>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-snug">
+                Initial password is the student&apos;s registered phone number. Passwords are securely hashed.
+              </p>
+
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!student.phone) {
+                    alert("This student does not have a registered phone number to reset password.");
+                    return;
+                  }
+                  if (!confirm(`Reset password for ${student.full_name} to registered phone number (${student.phone})?`)) {
+                    return;
+                  }
+                  try {
+                    const res = await fetch("/api/student/reset-password", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ studentId: student.id }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || "Failed to reset password");
+                    alert(data.message || "Student password reset successfully!");
+                  } catch (err: any) {
+                    alert(err.message || "Failed to reset password.");
+                  }
+                }}
+                className="w-full mt-1.5 py-2 px-3 bg-white hover:bg-slate-50 border border-blue-200 text-blue-700 font-extrabold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+              >
+                <span>Reset Student Password</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Section 4: ADDRESS (Rendered ONLY if address exists) */}
           {student.address && (
             <div className="space-y-3">
               <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100">

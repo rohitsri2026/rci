@@ -3,26 +3,40 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
   BookOpen,
-  CalendarCheck,
+  Calendar,
   CreditCard,
   Award,
   Bell,
   ChevronRight,
   GraduationCap,
-  Zap,
   TrendingUp,
   AlertCircle,
+  CheckCircle2,
+  FileText,
+  User,
+  Phone,
+  Mail,
+  ShieldCheck,
+  BookMarked,
+  Download,
+  ExternalLink,
+  Clock,
+  QrCode
 } from "lucide-react";
 
 export default async function StudentDashboardPage() {
-  const { student, user, supabase } = await getStudentSession();
+  const { student, user, supabase, mustChangePassword } = await getStudentSession();
 
   if (!student || !user) {
     redirect("/student/login");
   }
 
-  // Parallel data fetching — all scoped to this student's ID
-  const [feesRes, certsRes, notifRes, attendanceRes] = await Promise.all([
+  if (mustChangePassword) {
+    redirect("/student/change-password?firstLogin=true");
+  }
+
+  // Fetch real database records in parallel — scoped to this student ID
+  const [feesRes, certsRes, notifRes, examsRes] = await Promise.all([
     supabase
       .from("student_fees_ledger")
       .select("status, total_paid, fee_plans(total_amount), discount_amount")
@@ -30,150 +44,470 @@ export default async function StudentDashboardPage() {
       .maybeSingle(),
     supabase
       .from("certificates")
-      .select("id", { count: "exact", head: true })
+      .select("*")
       .eq("student_id", student.id)
-      .eq("status", "Valid"),
+      .order("issue_date", { ascending: false }),
     supabase
       .from("notifications")
-      .select("id", { count: "exact", head: true })
+      .select("*")
       .eq("user_id", user.id)
-      .eq("is_read", false),
+      .order("created_at", { ascending: false })
+      .limit(3),
     supabase
-      .from("attendance")
-      .select("status")
-      .eq("student_id", student.id),
+      .from("exam_results")
+      .select("*, exams(*)")
+      .eq("student_id", student.id)
+      .order("created_at", { ascending: false })
+      .limit(3),
   ]);
 
   const ledger = feesRes.data as any;
-  const certCount = certsRes.count ?? 0;
-  const unreadNotif = notifRes.count ?? 0;
+  const certificates = certsRes.data || [];
+  const notifications = notifRes.data || [];
+  const examResults = examsRes.data || [];
 
-  // Attendance %
-  const attendanceRecords = attendanceRes.data ?? [];
-  const presentCount = attendanceRecords.filter((a: any) => a.status === "Present").length;
-  const attendancePct = attendanceRecords.length > 0
-    ? Math.round((presentCount / attendanceRecords.length) * 100)
-    : null;
-
-  // Fee balance
+  // Fee calculation
   const planTotal = Number((ledger?.fee_plans as any)?.total_amount ?? 0);
   const discount = Number(ledger?.discount_amount ?? 0);
-  const paid = Number(ledger?.total_paid ?? 0);
-  const feeBalance = Math.max(0, planTotal - discount - paid);
+  const paidAmount = Number(ledger?.total_paid ?? 0);
+  const totalCourseFee = Math.max(0, planTotal - discount);
+  const remainingFee = Math.max(0, totalCourseFee - paidAmount);
+
+  let feeStatus = ledger?.status || (remainingFee === 0 && totalCourseFee > 0 ? "Paid" : remainingFee > 0 && paidAmount > 0 ? "Partially Paid" : "Pending");
 
   const course = student.courses as any;
+  const studentFormattedId = `RCI-STU-${student.id.slice(0, 6).toUpperCase()}`;
 
-  const quickActions = [
-    { label: "View Attendance", href: "/student/attendance", icon: CalendarCheck, color: "bg-violet-50 text-violet-700 border-violet-100" },
-    { label: "Check Results", href: "/student/results", icon: TrendingUp, color: "bg-blue-50 text-blue-700 border-blue-100" },
-    { label: "Pay Fees", href: "/student/fees", icon: CreditCard, color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
-    { label: "My Certificates", href: "/student/certificates", icon: Award, color: "bg-amber-50 text-amber-700 border-amber-100" },
-  ];
+  // Current Date formatting
+  const todayDateStr = new Date().toLocaleDateString("en-IN", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
-    <div className="space-y-8">
-      {/* Welcome Hero */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-700 rounded-3xl p-8 text-white shadow-xl shadow-indigo-200">
-        <div className="flex items-start justify-between">
+    <div className="space-y-6 sm:space-y-8">
+      
+      {/* 1. WELCOME HERO BANNER */}
+      <div className="bg-gradient-to-br from-[#07152F] via-[#0B224D] to-[#155EEF] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <p className="text-white/70 text-sm font-medium mb-1">Welcome back 👋</p>
-            <h1 className="text-3xl font-bold font-display tracking-tight">{student.full_name}</h1>
-            {course && (
-              <div className="flex items-center gap-2 mt-3">
-                <GraduationCap className="w-4 h-4 text-white/60" />
-                <span className="text-white/70 text-sm">{course.course_name}</span>
-              </div>
-            )}
-          </div>
-          <div className="text-right hidden md:block">
-            <p className="text-white/50 text-xs mb-1">Student ID</p>
-            <p className="text-white font-mono font-bold text-sm">{student.id.slice(0, 8).toUpperCase()}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          {
-            label: "Attendance",
-            value: attendancePct !== null ? `${attendancePct}%` : "N/A",
-            sub: `${presentCount}/${attendanceRecords.length} days`,
-            icon: CalendarCheck,
-            color: "text-violet-600 bg-violet-50",
-            href: "/student/attendance",
-          },
-          {
-            label: "Certificates",
-            value: certCount,
-            sub: "Valid certificates",
-            icon: Award,
-            color: "text-amber-600 bg-amber-50",
-            href: "/student/certificates",
-          },
-          {
-            label: "Fee Balance",
-            value: `₹${feeBalance}`,
-            sub: feeBalance > 0 ? "Pending" : "All paid!",
-            icon: CreditCard,
-            color: feeBalance > 0 ? "text-red-600 bg-red-50" : "text-emerald-600 bg-emerald-50",
-            href: "/student/fees",
-          },
-          {
-            label: "Notifications",
-            value: unreadNotif,
-            sub: "Unread messages",
-            icon: Bell,
-            color: "text-indigo-600 bg-indigo-50",
-            href: "/student/notifications",
-          },
-        ].map((card) => (
-          <Link key={card.label} href={card.href} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow group">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${card.color} mb-4`}>
-              <card.icon className="w-5 h-5" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-bold mb-3 text-blue-200">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>{todayDateStr}</span>
             </div>
-            <p className="text-2xl font-bold text-slate-900 font-display">{card.value}</p>
-            <p className="text-slate-500 text-xs mt-1">{card.label}</p>
-            <p className="text-slate-400 text-[10px] mt-0.5">{card.sub}</p>
-          </Link>
-        ))}
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight font-display">
+              Welcome back, {student.full_name}! 👋
+            </h1>
+            <p className="text-blue-100/90 text-xs sm:text-sm mt-1.5 font-medium max-w-xl">
+              Track your learning progress, fee ledgers, exam results, and verifiable certificates from one place.
+            </p>
+          </div>
+
+          <div className="shrink-0 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 text-center sm:text-right">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-200 block">
+              Official Student ID
+            </span>
+            <span className="text-base sm:text-lg font-mono font-extrabold text-white mt-0.5 block">
+              {studentFormattedId}
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-        <div className="flex items-center gap-2 mb-5">
-          <Zap className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-lg font-bold text-slate-900">Quick Actions</h2>
+      {/* 2. PROFILE SUMMARY CARD & QUICK STATS GRID */}
+      <div className="grid lg:grid-cols-12 gap-6 items-stretch">
+        
+        {/* Profile Summary Card */}
+        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 sm:p-6 flex flex-col justify-between space-y-4">
+          <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-[#155EEF] text-white font-extrabold text-lg flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+                {student.full_name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h3 className="font-extrabold text-slate-950 text-base sm:text-lg leading-tight font-display">
+                  {student.full_name}
+                </h3>
+                <span className="text-xs font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 mt-1 inline-block">
+                  {studentFormattedId}
+                </span>
+              </div>
+            </div>
+
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wide bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+              ACTIVE
+            </span>
+          </div>
+
+          <div className="space-y-2.5 text-xs sm:text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 font-extrabold uppercase text-[10.5px] tracking-wider flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-blue-600" /> Current Course
+              </span>
+              <span className="font-extrabold text-slate-900 truncate max-w-[180px]">
+                {course?.course_name || "General Computer Program"}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 font-extrabold uppercase text-[10.5px] tracking-wider flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-slate-400" /> Phone
+              </span>
+              <span className="font-bold text-slate-800">{student.phone || "Not provided"}</span>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 font-extrabold uppercase text-[10.5px] tracking-wider flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-slate-400" /> Email
+              </span>
+              <span className="font-bold text-slate-800 truncate max-w-[180px]">{student.email || user.email}</span>
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-slate-400 font-extrabold uppercase text-[10.5px] tracking-wider flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-slate-400" /> Enrollment Date
+              </span>
+              <span className="font-bold text-slate-700">
+                {student.created_at ? new Date(student.created_at).toLocaleDateString("en-IN") : "—"}
+              </span>
+            </div>
+          </div>
+
+          <Link
+            href="/student/profile"
+            className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/80 font-extrabold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+          >
+            <User className="w-3.5 h-3.5 text-blue-600" />
+            <span>View Full Profile</span>
+          </Link>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {quickActions.map((action) => (
-            <Link
-              key={action.label}
-              href={action.href}
-              className={`flex flex-col items-center gap-2.5 p-4 rounded-xl border text-center font-semibold text-sm hover:shadow-md transition-all ${action.color}`}
-            >
-              <action.icon className="w-6 h-6" />
-              {action.label}
+
+        {/* Quick Stats Grid */}
+        <div className="lg:col-span-7 grid grid-cols-2 gap-4">
+          
+          {/* Card 1: Current Course */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 flex flex-col justify-between">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center font-bold mb-3">
+              <GraduationCap className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">
+                Current Course
+              </span>
+              <h4 className="text-base sm:text-lg font-extrabold text-slate-950 mt-0.5 truncate font-display">
+                {course?.course_name || "Registered Program"}
+              </h4>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Duration: {course?.duration || "Standard"}
+              </p>
+            </div>
+            <Link href="/student/courses" className="text-xs font-extrabold text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-3">
+              Course Details <ChevronRight className="w-3.5 h-3.5" />
             </Link>
-          ))}
+          </div>
+
+          {/* Card 2: Course Progress / Info */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 flex flex-col justify-between">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center font-bold mb-3">
+              <TrendingUp className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">
+                Course Info
+              </span>
+              <h4 className="text-base sm:text-lg font-extrabold text-slate-950 mt-0.5 font-display">
+                Active Enrolled
+              </h4>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Status: In Progress
+              </p>
+            </div>
+            <Link href="/student/courses" className="text-xs font-extrabold text-purple-600 hover:text-purple-800 flex items-center gap-1 mt-3">
+              View Syllabus <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {/* Card 3: Fee Due */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 flex flex-col justify-between">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold mb-3 ${
+              remainingFee > 0 ? "bg-rose-50 text-rose-600 border border-rose-100" : "bg-emerald-50 text-emerald-600 border border-emerald-100"
+            }`}>
+              <CreditCard className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">
+                Fee Due
+              </span>
+              <h4 className={`text-xl sm:text-2xl font-extrabold tracking-tight mt-0.5 font-display ${
+                remainingFee > 0 ? "text-rose-700" : "text-emerald-700"
+              }`}>
+                ₹{remainingFee.toLocaleString("en-IN")}
+              </h4>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Paid: ₹{paidAmount.toLocaleString("en-IN")}
+              </p>
+            </div>
+            <Link href="/student/fees" className="text-xs font-extrabold text-blue-600 hover:text-blue-800 flex items-center gap-1 mt-3">
+              View Fee Ledger <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {/* Card 4: Certificates */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-5 flex flex-col justify-between">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center font-bold mb-3">
+              <Award className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider block">
+                Certificates
+              </span>
+              <h4 className="text-2xl font-extrabold text-slate-950 mt-0.5 font-display">
+                {certificates.length}
+              </h4>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                Issued credentials
+              </p>
+            </div>
+            <Link href="/student/certificates" className="text-xs font-extrabold text-amber-600 hover:text-amber-800 flex items-center gap-1 mt-3">
+              My Certificates <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
         </div>
       </div>
 
-      {/* Fee Alert */}
-      {feeBalance > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center shrink-0">
-            <AlertCircle className="w-5 h-5 text-amber-600" />
+      {/* 3. MY CURRENT COURSE CARD */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
+              <BookOpen className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-extrabold text-slate-950 tracking-tight font-display">My Current Course</h2>
+              <p className="text-xs text-slate-500 font-medium">Detailed course information and enrollment status</p>
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="font-bold text-amber-900">Fee Payment Pending</p>
-            <p className="text-amber-700 text-sm mt-0.5">You have an outstanding fee balance of <strong>₹{feeBalance}</strong>. Please contact the administration or visit the fees section.</p>
-          </div>
-          <Link href="/student/fees" className="flex items-center gap-1 text-amber-700 font-bold text-sm hover:text-amber-900 shrink-0">
-            View <ChevronRight className="w-4 h-4" />
+          <Link
+            href="/student/courses"
+            className="text-xs font-extrabold text-blue-600 hover:text-blue-800 inline-flex items-center gap-1"
+          >
+            Course Details <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
-      )}
+
+        {course ? (
+          <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">Course Name</span>
+              <span className="font-extrabold text-slate-950 text-sm block">{course.course_name}</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">Duration</span>
+              <span className="font-bold text-slate-800 block">{course.duration || "Standard Program"}</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">Course Fee</span>
+              <span className="font-bold text-slate-800 block">₹{course.fees || "N/A"}</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">Enrollment Date</span>
+              <span className="font-bold text-slate-800 block">{student.created_at ? new Date(student.created_at).toLocaleDateString("en-IN") : "Active"}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-slate-50 rounded-xl p-6 text-center text-slate-500 text-xs font-semibold">
+            No active course assigned. Please contact the administrator.
+          </div>
+        )}
+      </div>
+
+      {/* 4. FEE LEDGER SUMMARY & EXAMS GRID */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        
+        {/* Fee Ledger Summary */}
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-6 space-y-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0">
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-950 tracking-tight font-display">Fee Ledger Summary</h3>
+                <p className="text-xs text-slate-500 font-medium">Payment status and remaining balance</p>
+              </div>
+            </div>
+
+            <span className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold uppercase border ${
+              feeStatus === "Paid" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200"
+            }`}>
+              {feeStatus}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 bg-slate-50 border border-slate-200/80 rounded-xl p-4 text-center">
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Total Fee</span>
+              <span className="text-sm font-extrabold text-slate-900 mt-1 block">₹{totalCourseFee.toLocaleString("en-IN")}</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600 block">Paid</span>
+              <span className="text-sm font-extrabold text-emerald-700 mt-1 block">₹{paidAmount.toLocaleString("en-IN")}</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-600 block">Remaining</span>
+              <span className="text-sm font-extrabold text-rose-700 mt-1 block">₹{remainingFee.toLocaleString("en-IN")}</span>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <Link
+              href="/student/fees"
+              className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200 font-extrabold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <FileText className="w-4 h-4 text-blue-600" />
+              <span>View Full Fee Ledger</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Recent Exam Results */}
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-6 space-y-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center shrink-0">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-950 tracking-tight font-display">Recent Exam Results</h3>
+                <p className="text-xs text-slate-500 font-medium">Academic performance and marks</p>
+              </div>
+            </div>
+
+            <Link href="/student/exams" className="text-xs font-extrabold text-purple-600 hover:text-purple-800 flex items-center gap-1">
+              All Results <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {examResults.length > 0 ? (
+            <div className="space-y-2">
+              {examResults.map((res: any) => (
+                <div key={res.id} className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-extrabold text-slate-900 block">{res.exams?.title || "Exam"}</span>
+                    <span className="text-slate-500 font-medium block mt-0.5">{res.exams?.subject || "Computer Application"}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-extrabold text-purple-700 block">{res.marks_obtained} / {res.max_marks || 100}</span>
+                    <span className="text-[10px] font-bold text-emerald-600 uppercase">PASSED</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-slate-50 rounded-xl p-6 text-center text-slate-500 text-xs font-semibold">
+              No exam results available yet.
+            </div>
+          )}
+
+          <Link
+            href="/student/exams"
+            className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200 font-extrabold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+          >
+            <span>View All Results</span>
+          </Link>
+        </div>
+
+      </div>
+
+      {/* 5. MY CERTIFICATES SECTION */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0">
+              <Award className="w-5 h-5 text-amber-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-extrabold text-slate-950 tracking-tight font-display">My Certificates</h2>
+              <p className="text-xs text-slate-500 font-medium">Official institute certificates issued to your account</p>
+            </div>
+          </div>
+
+          <Link href="/student/certificates" className="text-xs font-extrabold text-amber-600 hover:text-amber-800 flex items-center gap-1">
+            View All <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {certificates.length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {certificates.map((cert: any) => (
+              <div key={cert.id} className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex flex-col justify-between space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <span className="font-mono text-xs font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                      {cert.certificate_number}
+                    </span>
+                    <h4 className="font-extrabold text-slate-950 text-sm mt-2">{cert.course_name}</h4>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
+                    cert.status === "Valid" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"
+                  }`}>
+                    {cert.status}
+                  </span>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
+                  <span className="text-slate-500 font-medium">Grade: <strong className="text-slate-900">{cert.grade || "A+"}</strong></span>
+                  <a
+                    href={`/verify/${cert.certificate_number}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 font-extrabold text-purple-700 hover:underline"
+                  >
+                    <QrCode className="w-3.5 h-3.5" />
+                    <span>Verify Online</span>
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-slate-50 rounded-xl p-8 text-center text-slate-500 space-y-2">
+            <Award className="w-8 h-8 text-slate-400 mx-auto" />
+            <p className="text-xs font-extrabold text-slate-700">Your certificate will appear here after successful course completion.</p>
+          </div>
+        )}
+      </div>
+
+      {/* 6. STUDY MATERIALS SECTION */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 border border-purple-100 flex items-center justify-center shrink-0">
+              <BookMarked className="w-5 h-5 text-purple-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-extrabold text-slate-950 tracking-tight font-display">Study Materials</h2>
+              <p className="text-xs text-slate-500 font-medium">Course notes, practice files, and reference PDFs</p>
+            </div>
+          </div>
+
+          <Link href="/student/materials" className="text-xs font-extrabold text-purple-600 hover:text-purple-800 flex items-center gap-1">
+            Browse All <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        <div className="bg-slate-50 rounded-xl p-8 text-center text-slate-500 space-y-2">
+          <BookMarked className="w-8 h-8 text-slate-400 mx-auto" />
+          <p className="text-xs font-extrabold text-slate-700">Study materials will appear here soon.</p>
+          <p className="text-[11px] text-slate-400">Class notes and reference modules assigned to your course will be uploaded shortly.</p>
+        </div>
+      </div>
+
     </div>
   );
 }
