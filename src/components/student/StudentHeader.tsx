@@ -145,12 +145,12 @@ export default function StudentHeader({
           <Link
             href="/student/notifications"
             className="relative min-w-[44px] min-h-[44px] rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label="View Notifications"
+            aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
           >
             <Bell className="w-4.5 h-4.5" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-rose-600 text-white font-extrabold text-[10px] flex items-center justify-center border-2 border-[#07152F] animate-pulse">
-                {unreadCount > 9 ? "9+" : unreadCount}
+              <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-rose-600 text-white font-extrabold text-[10px] flex items-center justify-center border-2 border-[#07152F] animate-pulse">
+                {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
           </Link>

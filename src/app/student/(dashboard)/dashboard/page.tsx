@@ -27,10 +27,11 @@ export default async function StudentDashboardPage() {
   let feesRes: any = null;
   let certsRes: any = null;
   let examsRes: any = null;
+  let unreadNotifCount = 0;
   let queryError = false;
 
   try {
-    const [feesResult, certsResult, examsResult] = await Promise.all([
+    const [feesResult, certsResult, examsResult, notifsResult] = await Promise.all([
       supabase
         .from("student_fees_ledger")
         .select("status, total_paid, fee_plans(total_amount), discount_amount")
@@ -47,11 +48,17 @@ export default async function StudentDashboardPage() {
         .eq("student_id", student.id)
         .order("created_at", { ascending: false })
         .limit(3),
+      supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .or(`user_id.eq.${user.id},user_id.is.null`)
+        .eq("is_read", false),
     ]);
 
     feesRes = feesResult;
     certsRes = certsResult;
     examsRes = examsResult;
+    unreadNotifCount = notifsResult?.count ?? 0;
   } catch (err) {
     console.error("Dashboard data fetching error:", err);
     queryError = true;
@@ -90,10 +97,11 @@ export default async function StudentDashboardPage() {
         studentId={student.id}
       />
 
-      {/* 3. Attention / Important Updates Panel */}
+      {/* 3. Attention / Dashboard Notification Summary Panel */}
       <AttentionPanel
         remainingFee={remainingFee}
         hasCertificates={certificates.length > 0}
+        unreadNotifCount={unreadNotifCount}
       />
 
       {/* 4. Quick Actions */}
