@@ -56,7 +56,7 @@ export default function CommunicationCenterPage() {
   const [channel, setChannel] = useState<"whatsapp" | "sms">("whatsapp");
   const [templateType, setTemplateType] = useState<NotificationType>("general");
   const [messageBody, setMessageBody] = useState("");
-  const [customReason] = useState("Incomplete documents provided");
+  const [customReason] = useState("दस्तावेज़ अपूर्ण हैं (Incomplete documents)");
 
   // Interaction & Modal States
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
@@ -129,7 +129,7 @@ export default function CommunicationCenterPage() {
   const currentVariables: NotificationVariables = useMemo(() => {
     if (!selectedStudent) return {};
 
-    const studentName = selectedStudent.full_name || "Student Candidate";
+    const studentName = selectedStudent.full_name || "विद्यार्थी";
     const appId = selectedStudent.application?.application_id || selectedStudent.id.slice(0, 8).toUpperCase();
     const certNum = selectedStudent.certificate?.certificate_number || `RCI-CERT-${appId}`;
     const certUrl = selectedStudent.certificate?.url || `https://rciknp.vercel.app/verify/${certNum}`;
@@ -145,7 +145,7 @@ export default function CommunicationCenterPage() {
       certificate_url: certUrl,
       payment_amount: paidAmount,
       transaction_id: txId,
-      custom_message: "Your practical computer class has been scheduled for tomorrow at 10:00 AM.",
+      custom_message: "आपकी प्रैक्टिकल कंप्यूटर क्लास कल सुबह 10:00 बजे आयोजित की जाएगी।",
     };
   }, [selectedStudent, customReason]);
 
@@ -517,14 +517,14 @@ export default function CommunicationCenterPage() {
                   onChange={(e) => setTemplateType(e.target.value as NotificationType)}
                   className="w-full h-11 px-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer"
                 >
-                  <option value="application_submitted">Application Submitted (✅ Submission)</option>
-                  <option value="application_approved">Application Approved (🎉 Approval)</option>
-                  <option value="application_rejected">Application Rejected (❌ Rejection)</option>
-                  <option value="payment_successful">Payment Successful (💳 Receipt)</option>
-                  <option value="payment_failed">Payment Failed (⚠️ Reminder)</option>
-                  <option value="certificate_generated">Certificate Generated (🎓 Credential)</option>
-                  <option value="certificate_updated">Certificate Updated (📜 Update)</option>
-                  <option value="general">General / Custom Notice (📢 Custom)</option>
+                  <option value="application_submitted">📋 आवेदन जमा हुआ (Application Submitted)</option>
+                  <option value="application_approved">🎉 आवेदन स्वीकृत (Application Approved)</option>
+                  <option value="application_rejected">❌ आवेदन अस्वीकृत (Application Rejected)</option>
+                  <option value="payment_successful">💳 भुगतान सफल (Payment Successful)</option>
+                  <option value="payment_failed">⚠️ भुगतान असफल (Payment Failed)</option>
+                  <option value="certificate_generated">🎓 प्रमाण-पत्र तैयार (Certificate Generated)</option>
+                  <option value="certificate_updated">📜 प्रमाण-पत्र अपडेट (Certificate Updated)</option>
+                  <option value="general">📢 सामान्य सूचना (General Notice)</option>
                 </select>
               </div>
 

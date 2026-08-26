@@ -11,158 +11,171 @@ export interface NotificationTemplateDef {
 export const NOTIFICATION_TEMPLATES: Record<NotificationType, NotificationTemplateDef> = {
   application_submitted: {
     type: "application_submitted",
-    title: "Application Submitted",
-    description: "Sent when student completes and submits their admission application.",
+    title: "📋 आवेदन जमा हुआ (Application Submitted)",
+    description: "विद्यार्थी द्वारा प्रवेश आवेदन सफलतापूर्वक जमा किए जाने पर भेजा जाता है।",
     supportedVariables: ["student_name", "application_id"],
-    templateText: `✅ RCI Application Submitted
+    templateText: `📋 RCI आवेदन सफलतापूर्वक जमा हो गया है
 
-Dear {{student_name}},
+प्रिय {{student_name}},
 
-Your RCI application has been successfully submitted.
+आपका RCI आवेदन सफलतापूर्वक जमा हो गया है।
 
 Application ID: {{application_id}}
 
-Please keep your Application ID for future reference.
+कृपया भविष्य में आवेदन की स्थिति देखने के लिए इस Application ID को सुरक्षित रखें।
 
-Regards,
+धन्यवाद।
+
 Rohit Computer Institute (RCI)`,
   },
 
   application_approved: {
     type: "application_approved",
-    title: "Application Approved",
-    description: "Sent when an administrator approves a student's admission application.",
+    title: "🎉 आवेदन स्वीकृत (Application Approved)",
+    description: "एडमिन द्वारा विद्यार्थी का प्रवेश आवेदन स्वीकृत किए जाने पर भेजा जाता है।",
     supportedVariables: ["student_name", "application_id", "login_url"],
-    templateText: `🎉 RCI Application Approved
+    templateText: `🎉 RCI आवेदन स्वीकृत हो गया है
 
-Dear {{student_name}},
+प्रिय {{student_name}},
 
-Your RCI application has been approved successfully.
+हमें आपको सूचित करते हुए खुशी हो रही है कि आपका RCI आवेदन सफलतापूर्वक स्वीकृत कर दिया गया है।
 
 Application ID: {{application_id}}
 
-Please login to your RCI Student Portal for further details:
+आगे की जानकारी के लिए अपने RCI Student Portal में लॉगिन करें:
+
 {{login_url}}
 
-Regards,
+धन्यवाद।
+
 Rohit Computer Institute (RCI)`,
   },
 
   application_rejected: {
     type: "application_rejected",
-    title: "Application Rejected / Action Required",
-    description: "Sent when an application requires student revision or has been rejected.",
+    title: "❌ आवेदन अस्वीकृत (Application Rejected)",
+    description: "आवेदन में त्रुटि या अस्वीकृति होने पर विद्यार्थी को सूचित करने हेतु भेजा जाता है।",
     supportedVariables: ["student_name", "application_id", "rejection_reason"],
-    templateText: `❌ RCI Application Update
+    templateText: `❌ RCI आवेदन संबंधी सूचना
 
-Dear {{student_name}},
+प्रिय {{student_name}},
 
-Your RCI application requires attention.
+आपके RCI आवेदन की समीक्षा की गई है।
 
 Application ID: {{application_id}}
 {{rejection_reason_section}}
+कृपया अपने RCI Student Portal में लॉगिन करके आवेदन की स्थिति और आगे की आवश्यक जानकारी देखें।
 
-Please login to your RCI Student Portal to view your application status and details.
+धन्यवाद।
 
-Regards,
 Rohit Computer Institute (RCI)`,
   },
 
   payment_successful: {
     type: "payment_successful",
-    title: "Payment Successful",
-    description: "Sent when a fee payment transaction is successfully recorded.",
+    title: "💳 भुगतान सफल (Payment Successful)",
+    description: "शुल्क भुगतान सफलतापूर्वक प्राप्त होने पर रसीद हेतु भेजा जाता है।",
     supportedVariables: ["student_name", "payment_amount", "transaction_id"],
-    templateText: `💳 RCI Payment Successful
+    templateText: `💳 RCI भुगतान सफल रहा
 
-Dear {{student_name}},
+प्रिय {{student_name}},
 
-Your payment has been received successfully.
+आपका भुगतान सफलतापूर्वक प्राप्त हो गया है।
 
-Amount: ₹{{payment_amount}}
+भुगतान राशि: ₹{{payment_amount}}
+
 Transaction ID: {{transaction_id}}
 
-Thank you for choosing RCI.
+आपके सहयोग के लिए धन्यवाद।
 
-Regards,
 Rohit Computer Institute (RCI)`,
   },
 
   payment_failed: {
     type: "payment_failed",
-    title: "Payment Failed / Pending",
-    description: "Sent when a payment transaction could not be completed.",
+    title: "⚠️ भुगतान असफल (Payment Failed)",
+    description: "भुगतान असफल या लंबित होने पर भेजा जाता है।",
     supportedVariables: ["student_name"],
-    templateText: `⚠️ RCI Payment Update
+    templateText: `⚠️ RCI भुगतान संबंधी सूचना
 
-Dear {{student_name}},
+प्रिय {{student_name}},
 
-Your recent payment could not be completed.
+आपका हाल ही का भुगतान सफल नहीं हो सका।
 
-Please login to your RCI Student Portal and try again.
+कृपया अपने RCI Student Portal में लॉगिन करके दोबारा प्रयास करें।
 
-Regards,
+यदि राशि आपके खाते से कट गई है, तो कृपया कुछ समय प्रतीक्षा करें और आवश्यकता होने पर RCI से संपर्क करें।
+
+धन्यवाद।
+
 Rohit Computer Institute (RCI)`,
   },
 
   certificate_generated: {
     type: "certificate_generated",
-    title: "Certificate Generated",
-    description: "Sent when a course certificate is issued for a student.",
+    title: "🎓 प्रमाण-पत्र तैयार (Certificate Generated)",
+    description: "विद्यार्थी का कंप्यूटर प्रमाण-पत्र जारी होने पर भेजा जाता है।",
     supportedVariables: ["student_name", "certificate_number", "certificate_url"],
-    templateText: `🎓 RCI Certificate Generated
+    templateText: `🎓 RCI प्रमाण-पत्र तैयार हो गया है
 
-Dear {{student_name}},
+प्रिय {{student_name}},
 
-Your RCI certificate has been successfully generated.
+आपका RCI प्रमाण-पत्र सफलतापूर्वक तैयार हो गया है।
 
 Certificate No: {{certificate_number}}
 
-You can download and verify your certificate online:
+आप अपना प्रमाण-पत्र डाउनलोड और ऑनलाइन सत्यापित करने के लिए नीचे दिए गए लिंक का उपयोग कर सकते हैं:
+
 {{certificate_url}}
 
-Regards,
+धन्यवाद।
+
 Rohit Computer Institute (RCI)`,
   },
 
   certificate_updated: {
     type: "certificate_updated",
-    title: "Certificate Updated",
-    description: "Sent when a student's course certificate details are updated.",
+    title: "📜 प्रमाण-पत्र अपडेट (Certificate Updated)",
+    description: "प्रमाण-पत्र विवरण अपडेट होने पर भेजा जाता है।",
     supportedVariables: ["student_name", "certificate_number", "certificate_url"],
-    templateText: `📜 RCI Certificate Updated
+    templateText: `📜 RCI प्रमाण-पत्र अपडेट किया गया है
 
-Dear {{student_name}},
+प्रिय {{student_name}},
 
-Your RCI certificate has been updated successfully.
+आपका RCI प्रमाण-पत्र सफलतापूर्वक अपडेट कर दिया गया है।
 
 Certificate No: {{certificate_number}}
 
-Please login to your RCI Student Portal to download the latest certificate:
+कृपया अपने RCI Student Portal में लॉगिन करके नवीनतम प्रमाण-पत्र डाउनलोड करें।
+
+प्रमाण-पत्र सत्यापन/डाउनलोड लिंक:
+
 {{certificate_url}}
 
-Regards,
+धन्यवाद।
+
 Rohit Computer Institute (RCI)`,
   },
 
   general: {
     type: "general",
-    title: "General Notification / Reminder",
-    description: "Editable custom template for announcements and general student reminders.",
+    title: "📢 सामान्य सूचना (General Notice)",
+    description: "कस्टम संदेशों और सामान्य घोषणाओं हेतु हिंदी टेम्पलेट।",
     supportedVariables: ["student_name", "custom_message"],
-    templateText: `📢 RCI Student Notification
+    templateText: `📢 RCI विद्यार्थी सूचना
 
-Dear {{student_name}},
+प्रिय {{student_name}},
 
 {{custom_message}}
 
-Regards,
+धन्यवाद।
+
 Rohit Computer Institute (RCI)`,
   },
 };
 
 /**
- * Resolves template variables into a final rendered text message.
+ * Resolves template variables into a final rendered text message in Hindi.
  */
 export function renderNotificationTemplate(
   type: NotificationType,
@@ -171,9 +184,9 @@ export function renderNotificationTemplate(
   const def = NOTIFICATION_TEMPLATES[type] || NOTIFICATION_TEMPLATES.general;
   let text = def.templateText;
 
-  // Handle special dynamic conditional sections
+  // Handle special dynamic conditional rejection reason section
   if (variables.rejection_reason && variables.rejection_reason.trim()) {
-    text = text.replace("{{rejection_reason_section}}", `Reason: ${variables.rejection_reason.trim()}\n`);
+    text = text.replace("{{rejection_reason_section}}", `\nअस्वीकृति का कारण:\n${variables.rejection_reason.trim()}\n`);
   } else {
     text = text.replace("{{rejection_reason_section}}\n", "").replace("{{rejection_reason_section}}", "");
   }
@@ -181,7 +194,7 @@ export function renderNotificationTemplate(
   // Supply default site URLs if missing
   const defaultLoginUrl = variables.login_url || "https://rciknp.vercel.app/student/login";
   const vars: Record<string, string> = {
-    student_name: variables.student_name || "Student",
+    student_name: variables.student_name || "विद्यार्थी",
     application_id: variables.application_id || "N/A",
     certificate_number: variables.certificate_number || "N/A",
     payment_amount: String(variables.payment_amount || "0"),
@@ -189,8 +202,8 @@ export function renderNotificationTemplate(
     login_url: defaultLoginUrl,
     certificate_url: variables.certificate_url || defaultLoginUrl,
     rejection_reason: variables.rejection_reason || "",
-    date: variables.date || new Date().toLocaleDateString("en-IN"),
-    custom_message: variables.custom_message || "This is an important reminder regarding your course at RCI.",
+    date: variables.date || new Date().toLocaleDateString("hi-IN"),
+    custom_message: variables.custom_message || "आपकी क्लास से संबंधित महत्वपूर्ण सूचना।",
   };
 
   // Replace all {{variable}} placeholders
