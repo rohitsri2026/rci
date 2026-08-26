@@ -11,7 +11,6 @@ import {
   BookOpen,
   CreditCard,
   Award,
-  FileText,
   Bell,
   User,
   KeyRound,
@@ -34,8 +33,8 @@ interface StudentHeaderProps {
 const navLinks = [
   { label: "Dashboard", href: "/student/dashboard", icon: LayoutDashboard },
   { label: "My Course", href: "/student/courses", icon: BookOpen },
-  { label: "Fee Ledger", href: "/student/fees", icon: CreditCard },
-  { label: "Exams & Marks", href: "/student/exams", icon: FlaskConical },
+  { label: "Fees", href: "/student/fees", icon: CreditCard },
+  { label: "Exams", href: "/student/exams", icon: FlaskConical },
   { label: "Certificates", href: "/student/certificates", icon: Award },
   { label: "Study Materials", href: "/student/materials", icon: BookMarked },
 ];
@@ -91,23 +90,28 @@ export default function StudentHeader({
     <header className="sticky top-0 z-40 bg-[#07152F] text-white border-b border-slate-800 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         
-        {/* Left: RCI Logo & Student Portal Badge */}
+        {/* Left: RCI Logo & Student Portal Branding */}
         <div className="flex items-center gap-3 shrink-0">
-          <Link href="/student/dashboard" className="flex items-center gap-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-xl p-1">
-            <Image
-              src="/logo.png"
-              alt={`${RCIConfig.instituteName} Logo`}
-              width={130}
-              height={45}
-              className="h-9 w-auto object-contain brightness-0 invert"
-              priority
-            />
+          <Link href="/student/dashboard" className="flex items-center gap-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-xl p-1 group">
+            <div className="bg-white rounded-xl p-1.5 shrink-0 shadow-xs flex items-center justify-center border border-slate-700/50">
+              <Image
+                src="/logo.png"
+                alt="Rohit Computer Institute Logo"
+                width={36}
+                height={36}
+                className="w-7 h-7 sm:w-8 sm:h-8 object-contain"
+                priority
+              />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs sm:text-base font-extrabold text-white tracking-tight leading-tight truncate font-display group-hover:text-blue-400 transition-colors">
+                Rohit Computer Institute
+              </span>
+              <span className="text-[10px] sm:text-[11px] font-extrabold text-blue-400 uppercase tracking-wider leading-none mt-0.5">
+                Student Portal
+              </span>
+            </div>
           </Link>
-
-          <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-600/20 text-blue-300 border border-blue-500/30 text-[11px] font-extrabold uppercase tracking-wider">
-            <GraduationCap className="w-3.5 h-3.5 text-blue-400" />
-            Student Portal
-          </span>
         </div>
 
         {/* Center: Desktop Navigation Links */}
@@ -140,7 +144,7 @@ export default function StudentHeader({
           {/* Notifications Icon Link */}
           <Link
             href="/student/notifications"
-            className="relative w-10 h-10 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="relative min-w-[44px] min-h-[44px] rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
             aria-label="View Notifications"
           >
             <Bell className="w-4.5 h-4.5" />
@@ -156,7 +160,7 @@ export default function StudentHeader({
             <button
               type="button"
               onClick={() => setProfileOpen(!profileOpen)}
-              className="flex items-center gap-2.5 p-1.5 pl-2.5 rounded-xl border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="min-h-[44px] flex items-center gap-2.5 p-1.5 pl-2.5 rounded-xl border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-expanded={profileOpen}
               aria-haspopup="true"
             >
@@ -214,11 +218,11 @@ export default function StudentHeader({
             )}
           </div>
 
-          {/* Mobile Drawer Hamburger Trigger */}
+          {/* Mobile Drawer Hamburger Trigger (Min touch target 44px x 44px) */}
           <button
             type="button"
             onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
-            className="lg:hidden w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="lg:hidden min-w-[44px] min-h-[44px] rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
             aria-label="Toggle Mobile Menu"
           >
             {mobileDrawerOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -240,18 +244,29 @@ export default function StudentHeader({
             <div className="space-y-6">
               {/* Drawer Top Branding */}
               <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div className="flex items-center gap-2">
-                  <Image
-                    src="/logo.png"
-                    alt={`${RCIConfig.instituteName} Logo`}
-                    width={110}
-                    height={38}
-                    className="h-8 w-auto object-contain brightness-0 invert"
-                  />
-                </div>
+                <Link href="/student/dashboard" onClick={() => setMobileDrawerOpen(false)} className="flex items-center gap-2.5">
+                  <div className="bg-white rounded-xl p-1.5 shrink-0 border border-slate-700/50">
+                    <Image
+                      src="/logo.png"
+                      alt="Rohit Computer Institute Logo"
+                      width={32}
+                      height={32}
+                      className="w-7 h-7 object-contain"
+                      priority
+                    />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-extrabold text-white tracking-tight leading-tight truncate">
+                      Rohit Computer Institute
+                    </span>
+                    <span className="text-[10px] font-extrabold text-blue-400 uppercase tracking-wider leading-none mt-0.5">
+                      Student Portal
+                    </span>
+                  </div>
+                </Link>
                 <button
                   onClick={() => setMobileDrawerOpen(false)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800"
+                  className="min-w-[44px] min-h-[44px] rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 flex items-center justify-center"
                   aria-label="Close Mobile Drawer"
                 >
                   <X className="w-5 h-5" />

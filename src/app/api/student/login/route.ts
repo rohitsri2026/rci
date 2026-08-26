@@ -176,7 +176,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       mustChangePassword,
-      redirect: mustChangePassword ? "/student/change-password?firstLogin=true" : "/student/dashboard",
+      redirect: "/student/dashboard",
     });
   } catch (err: any) {
     console.error("Student login endpoint exception:", err);
