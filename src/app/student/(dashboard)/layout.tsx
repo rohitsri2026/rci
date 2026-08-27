@@ -1,6 +1,8 @@
 import { getStudentSession } from "@/lib/student-auth";
 import { redirect } from "next/navigation";
 import StudentHeader from "@/components/student/StudentHeader";
+import { StudentNotificationProvider } from "@/context/StudentNotificationContext";
+import NotificationToast from "@/components/student/NotificationToast";
 import { AlertTriangle, LogOut } from "lucide-react";
 
 export default async function StudentDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -16,7 +18,7 @@ export default async function StudentDashboardLayout({ children }: { children: R
     const { count } = await supabase
       .from("notifications")
       .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
+      .or(`user_id.eq.${user.id},user_id.is.null`)
       .eq("is_read", false);
     unreadNotifCount = count ?? 0;
   } catch (err) {
@@ -50,16 +52,23 @@ export default async function StudentDashboardLayout({ children }: { children: R
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
-      <StudentHeader
-        studentName={student.full_name}
-        studentEmail={student.email ?? user.email ?? ""}
-        studentId={student.id ? `RCI-STU-${student.id.slice(0, 6).toUpperCase()}` : undefined}
-        unreadCount={unreadNotifCount}
-      />
-      <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8">
-        {children}
-      </main>
-    </div>
+    <StudentNotificationProvider
+      userId={user.id}
+      studentId={student.id}
+      initialUnreadCount={unreadNotifCount}
+    >
+      <NotificationToast />
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+        <StudentHeader
+          studentName={student.full_name}
+          studentEmail={student.email ?? user.email ?? ""}
+          studentId={student.id ? `RCI-STU-${student.id.slice(0, 6).toUpperCase()}` : undefined}
+          unreadCount={unreadNotifCount}
+        />
+        <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8">
+          {children}
+        </main>
+      </div>
+    </StudentNotificationProvider>
   );
 }

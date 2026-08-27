@@ -273,13 +273,35 @@ CREATE TABLE IF NOT EXISTS public.notifications (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
+-- Enable Realtime publication for notifications table
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime'
+  ) THEN
+    CREATE PUBLICATION supabase_realtime;
+  END IF;
+END $$;
+
+ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
+
 -- Enable RLS for notifications table
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
 -- Notifications policies
 DROP POLICY IF EXISTS "Allow authenticated users to read notifications" ON public.notifications;
 CREATE POLICY "Allow authenticated users to read notifications" ON public.notifications
-  FOR SELECT TO authenticated USING (true);
+  FOR SELECT TO authenticated
+  USING (
+    user_id IS NULL 
+    OR user_id = auth.uid()
+    OR EXISTS (
+      SELECT 1 FROM public.students s WHERE s.id = user_id AND s.user_id = auth.uid()
+    )
+    OR EXISTS (
+      SELECT 1 FROM public.user_profiles p WHERE p.id = auth.uid() AND p.role IN ('Admin', 'Staff')
+    )
+  );
 
 DROP POLICY IF EXISTS "Allow authenticated users to insert notifications" ON public.notifications;
 CREATE POLICY "Allow authenticated users to insert notifications" ON public.notifications

@@ -39,14 +39,18 @@ const navLinks = [
   { label: "Study Materials", href: "/student/materials", icon: BookMarked },
 ];
 
+import { useStudentNotifications } from "@/context/StudentNotificationContext";
+
 export default function StudentHeader({
   studentName,
   studentEmail,
   studentId,
-  unreadCount = 0,
+  unreadCount: initialUnreadCount = 0,
 }: StudentHeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { unreadCount: realtimeUnreadCount } = useStudentNotifications();
+  const displayUnreadCount = realtimeUnreadCount ?? initialUnreadCount;
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
@@ -145,12 +149,12 @@ export default function StudentHeader({
           <Link
             href="/student/notifications"
             className="relative min-w-[44px] min-h-[44px] rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
+            aria-label={displayUnreadCount > 0 ? `Notifications, ${displayUnreadCount} unread` : "Notifications"}
           >
             <Bell className="w-4.5 h-4.5" />
-            {unreadCount > 0 && (
+            {displayUnreadCount > 0 && (
               <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-rose-600 text-white font-extrabold text-[10px] flex items-center justify-center border-2 border-[#07152F] animate-pulse">
-                {unreadCount > 99 ? "99+" : unreadCount}
+                {displayUnreadCount > 99 ? "99+" : displayUnreadCount}
               </span>
             )}
           </Link>

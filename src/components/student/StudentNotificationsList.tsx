@@ -7,6 +7,8 @@ import StudentNotificationCard, {
 import NotificationFilters, { FilterTab } from "./NotificationFilters";
 import { Check, CheckCircle2, Bell, AlertCircle, RefreshCw } from "lucide-react";
 
+import { useStudentNotifications } from "@/context/StudentNotificationContext";
+
 interface StudentNotificationsListProps {
   initialNotifications?: NotificationItem[];
   initialUnreadCount?: number;
@@ -16,105 +18,43 @@ export default function StudentNotificationsList({
   initialNotifications = [],
   initialUnreadCount = 0,
 }: StudentNotificationsListProps) {
-  const [notifications, setNotifications] =
-    useState<NotificationItem[]>(initialNotifications);
-  const [unreadCount, setUnreadCount] = useState<number>(initialUnreadCount);
+  const {
+    notifications,
+    unreadCount,
+    markAsRead: contextMarkAsRead,
+    markAllAsRead: contextMarkAllAsRead,
+    refreshNotifications,
+    loading: contextLoading,
+  } = useStudentNotifications();
+
   const [activeTab, setActiveTab] = useState<FilterTab>("all");
-  const [loading, setLoading] = useState<boolean>(initialNotifications.length === 0);
   const [markingAll, setMarkingAll] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const fetchNotifications = async () => {
-    setLoading(true);
-    setErrorMessage("");
-    try {
-      const res = await fetch("/api/student/notifications");
-      const data = await res.json();
-      if (res.ok && data.notifications) {
-        setNotifications(data.notifications);
-        setUnreadCount(data.unreadCount ?? 0);
-      } else {
-        setErrorMessage(data.error || "Failed to load notifications.");
-      }
-    } catch (err: any) {
-      console.error("Fetch notifications error:", err);
-      setErrorMessage("Unable to load notifications. Please check your internet connection.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (initialNotifications.length === 0) {
-      fetchNotifications();
+    if (initialNotifications.length > 0 && notifications.length === 0) {
+      refreshNotifications();
     }
   }, []);
 
-  // Optimistic Mark Single as Read
   const handleMarkAsRead = async (id: string) => {
-    const originalNotifications = [...notifications];
-    const originalUnread = unreadCount;
-
-    // Optimistic state update
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-    );
-    setUnreadCount((prev) => Math.max(0, prev - 1));
-
     try {
-      const res = await fetch("/api/student/notifications", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notificationId: id }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        // Revert on error
-        setNotifications(originalNotifications);
-        setUnreadCount(originalUnread);
-        setErrorMessage(data.error || "Failed to update notification status.");
-      }
+      await contextMarkAsRead(id);
     } catch (err) {
       console.error("Mark read error:", err);
-      setNotifications(originalNotifications);
-      setUnreadCount(originalUnread);
-      setErrorMessage("Network error marking notification as read.");
+      setErrorMessage("Failed to mark notification as read.");
     }
   };
 
-  // Optimistic Mark All as Read
   const handleMarkAllRead = async () => {
     if (unreadCount === 0 || markingAll) return;
-
-    const originalNotifications = [...notifications];
-    const originalUnread = unreadCount;
-
     setMarkingAll(true);
     setErrorMessage("");
-
-    // Optimistic state update
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-    setUnreadCount(0);
-
     try {
-      const res = await fetch("/api/student/notifications", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ markAll: true }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        setNotifications(originalNotifications);
-        setUnreadCount(originalUnread);
-        setErrorMessage(data.error || "Failed to mark all notifications as read.");
-      }
+      await contextMarkAllAsRead();
     } catch (err) {
       console.error("Mark all read error:", err);
-      setNotifications(originalNotifications);
-      setUnreadCount(originalUnread);
-      setErrorMessage("Network error marking all as read.");
+      setErrorMessage("Failed to mark all notifications as read.");
     } finally {
       setMarkingAll(false);
     }
@@ -174,7 +114,7 @@ export default function StudentNotificationsList({
             <span>{errorMessage}</span>
           </div>
           <button
-            onClick={fetchNotifications}
+            onClick={refreshNotifications}
             className="text-xs font-extrabold underline hover:text-rose-950 shrink-0"
           >
             Retry
@@ -191,7 +131,7 @@ export default function StudentNotificationsList({
 
       {/* Notification Cards List */}
       <div className="space-y-3.5">
-        {loading ? (
+        {contextLoading ? (
           // Skeleton Loading State
           Array.from({ length: 4 }).map((_, i) => (
             <div

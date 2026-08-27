@@ -10,11 +10,15 @@ interface AttentionPanelProps {
   unreadNotifCount?: number;
 }
 
+import { useStudentNotifications } from "@/context/StudentNotificationContext";
+
 export default function AttentionPanel({
   remainingFee = 0,
   hasCertificates = false,
-  unreadNotifCount = 0,
+  unreadNotifCount: initialUnreadCount = 0,
 }: AttentionPanelProps) {
+  const { unreadCount: realtimeUnreadCount } = useStudentNotifications();
+  const unreadNotifCount = realtimeUnreadCount ?? initialUnreadCount;
   const needsFeeAttention = remainingFee > 0;
   const hasUnreadNotifs = unreadNotifCount > 0;
 
