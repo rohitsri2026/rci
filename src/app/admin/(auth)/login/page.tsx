@@ -55,36 +55,42 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between p-4 sm:p-6 lg:p-8 relative overflow-hidden">
-      {/* Subtle Blue Background Ambient Glow */}
-      <div className="absolute top-[10%] left-[15%] w-[450px] h-[450px] bg-blue-500/8 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[10%] right-[15%] w-[400px] h-[400px] bg-blue-600/5 rounded-full blur-[140px] pointer-events-none" />
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col justify-between p-4 sm:p-6 lg:p-8 relative overflow-hidden selection:bg-blue-100 selection:text-blue-900">
+      {/* Sophisticated Layered Background Ambient Glow Orbs */}
+      <div className="absolute -top-28 -left-28 w-[500px] sm:w-[650px] h-[500px] sm:h-[650px] bg-[#155EEF]/10 rounded-full blur-[100px] sm:blur-[140px] pointer-events-none" />
+      <div className="absolute top-10 -right-28 w-[450px] sm:w-[550px] h-[450px] sm:h-[550px] bg-[#07152F]/8 rounded-full blur-[100px] sm:blur-[130px] pointer-events-none" />
+      <div className="absolute -bottom-24 right-[10%] w-[400px] sm:w-[500px] h-[400px] sm:h-[500px] bg-[#D4A72C]/7 rounded-full blur-[110px] sm:blur-[150px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-[#155EEF]/4 rounded-full blur-[160px] pointer-events-none" />
 
-      {/* Top Utility Header Row */}
-      <header className="max-w-5xl mx-auto w-full flex items-center justify-between py-3 border-b border-slate-200/80 relative z-10">
+      {/* Top Glass Header Row */}
+      <header className="max-w-6xl mx-auto w-full flex items-center justify-between py-3.5 px-1 sm:px-2 relative z-10 border-b border-slate-200/60">
         <Link 
           href="/" 
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 px-2 py-1"
+          className="group inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-700 hover:text-[#155EEF] px-3 py-1.5 rounded-xl border border-slate-200/80 bg-white/60 backdrop-blur-md shadow-2xs hover:bg-white hover:border-slate-300 hover:shadow-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#155EEF]/40"
         >
-          <ArrowLeft className="w-4 h-4 text-blue-600" />
+          <ArrowLeft className="w-4 h-4 text-[#155EEF] transition-transform duration-200 group-hover:-translate-x-0.5" />
           <span>Back to RCI Website</span>
         </Link>
 
-        <span className="text-xs font-bold text-slate-600 bg-slate-100 border border-slate-200 px-3 py-1 rounded-full">
-          Official Admin Portal
-        </span>
+        <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#155EEF] bg-blue-50/80 border border-blue-200/60 backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-2xs">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#155EEF]" />
+          <span>Official Admin Portal</span>
+        </div>
       </header>
 
       {/* Main Authentication Grid Container */}
-      <main className="max-w-5xl mx-auto w-full my-auto py-5 sm:py-7 relative z-10">
-        <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+      <main className="max-w-6xl mx-auto w-full my-auto py-6 sm:py-10 relative z-10">
+        <div className="grid lg:grid-cols-12 gap-8 lg:gap-14 items-center">
           
-          {/* LEFT COLUMN: RCI Admin Portal Introduction */}
-          <div className="lg:col-span-6 space-y-4 text-center lg:text-left">
+          {/* LEFT COLUMN: RCI Admin Portal Institutional Introduction */}
+          <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
             <div>
-              {/* Official RCI Logo & Eyebrow Badge */}
-              <div className="flex flex-col items-center lg:items-start gap-2.5 mb-2.5">
-                <Link href="/" className="inline-block focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-xl p-1">
+              {/* Official RCI Logo Badge & Eyebrow */}
+              <div className="flex flex-col items-center lg:items-start gap-3 mb-4">
+                <Link 
+                  href="/" 
+                  className="inline-block bg-white/90 backdrop-blur-md border border-white/80 rounded-2xl p-3 sm:p-3.5 shadow-md shadow-slate-900/5 hover:shadow-lg hover:border-blue-100 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#155EEF]"
+                >
                   <Image
                     src="/logo.png"
                     alt={`${RCIConfig.instituteName} Logo`}
@@ -95,46 +101,62 @@ export default function AdminLoginPage() {
                   />
                 </Link>
 
-                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-100/80 text-blue-700 text-[11px] font-extrabold uppercase tracking-wider shadow-2xs">
-                  <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                  RCI ADMIN PORTAL
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50/80 border border-blue-200/60 text-[#155EEF] text-[11px] font-extrabold uppercase tracking-wider shadow-2xs backdrop-blur-sm">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#155EEF]" />
+                  <span>RCI ADMIN PORTAL</span>
                 </div>
               </div>
 
-              {/* Display Heading */}
-              <h1 className="text-3xl sm:text-[38px] font-extrabold tracking-[-0.035em] text-slate-950 leading-[1.12] mb-2">
+              {/* Responsive Display Heading */}
+              <h1 className="text-3xl sm:text-4xl lg:text-[46px] font-extrabold tracking-tight text-[#07152F] leading-[1.15] mb-3">
                 Manage RCI, <br className="hidden sm:block" />
-                <span className="text-blue-600">
+                <span className="bg-gradient-to-r from-[#155EEF] via-blue-600 to-[#2563EB] bg-clip-text text-transparent">
                   All in One Place.
                 </span>
               </h1>
 
+              {/* Decorative Accent Bar */}
+              <div className="h-1 w-16 bg-gradient-to-r from-[#155EEF] to-[#2563EB] rounded-full mx-auto lg:mx-0 mb-4" />
+
               {/* Supporting Text */}
-              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed max-w-md mx-auto lg:mx-0">
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-md mx-auto lg:mx-0 font-medium">
                 Secure access to manage students, courses, certificates, admissions and institute operations.
               </p>
             </div>
 
-            {/* Admin Portal Management Capabilities Grid */}
-            <div className="bg-white/90 border border-slate-200/90 rounded-2xl p-4 sm:p-4.5 shadow-2xs max-w-md mx-auto lg:mx-0">
-              <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 mb-2.5 text-left">
-                Administrative Controls
-              </h2>
+            {/* Admin Portal Controls Glass Container */}
+            <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-2xl p-4 sm:p-5 shadow-lg shadow-slate-900/5 max-w-md mx-auto lg:mx-0">
+              <div className="flex items-center justify-between mb-3 text-left">
+                <h2 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                  Administrative Controls
+                </h2>
+                <span className="h-2 w-2 rounded-full bg-[#155EEF] animate-pulse" />
+              </div>
               
-              <div className="grid grid-cols-2 gap-2.5 text-left">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 text-left">
                 {[
-                  { title: "Student Management", icon: Users },
-                  { title: "Course & Admissions", icon: BookOpen },
-                  { title: "Certificate Verification", icon: Award },
-                  { title: "Institute Operations", icon: Building2 },
+                  { title: "Student Management", icon: Users, desc: "Records & Enrollment" },
+                  { title: "Course & Admissions", icon: BookOpen, desc: "Programs & Intake" },
+                  { title: "Certificate Verification", icon: Award, desc: "Instant Validation" },
+                  { title: "Institute Operations", icon: Building2, desc: "System Administration" },
                 ].map((feature, idx) => {
                   const Icon = feature.icon;
                   return (
-                    <div key={idx} className="flex items-center gap-2.5 bg-slate-50/70 border border-slate-100 p-2.5 rounded-xl transition-all hover:bg-white hover:border-slate-200/80">
-                      <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                        <Icon className="w-3.5 h-3.5" />
+                    <div 
+                      key={idx} 
+                      className="group min-h-[44px] flex items-center gap-3 bg-white/80 border border-slate-200/70 backdrop-blur-md p-3 rounded-xl transition-all duration-200 hover:-translate-y-[2px] hover:border-[#155EEF]/40 hover:bg-white hover:shadow-md hover:shadow-blue-500/5 cursor-pointer"
+                    >
+                      <div className="w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-lg bg-blue-50/80 border border-blue-100/80 text-[#155EEF] flex items-center justify-center shrink-0 group-hover:scale-105 group-hover:bg-[#155EEF] group-hover:text-white transition-all duration-200">
+                        <Icon className="w-4 h-4" />
                       </div>
-                      <span className="text-xs font-bold text-slate-800 leading-snug">{feature.title}</span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-slate-950 transition-colors leading-tight truncate">
+                          {feature.title}
+                        </span>
+                        <span className="text-[11px] font-medium text-slate-500 truncate">
+                          {feature.desc}
+                        </span>
+                      </div>
                     </div>
                   );
                 })}
@@ -142,41 +164,41 @@ export default function AdminLoginPage() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Premium White Login Card */}
+          {/* RIGHT COLUMN: Premium Glass Login Focal Card */}
           <div className="lg:col-span-6 max-w-md mx-auto w-full">
             <div className="relative group">
-              {/* Subtle Ambient Card Glow */}
-              <div className="absolute -inset-1 bg-blue-600/10 rounded-[2rem] blur-xl opacity-75 transition-all duration-500 pointer-events-none" />
+              {/* Soft Ambient Outer Card Glow */}
+              <div className="absolute -inset-1.5 bg-gradient-to-r from-[#155EEF]/20 via-blue-600/10 to-[#07152F]/10 rounded-[32px] blur-2xl opacity-75 group-hover:opacity-100 transition-all duration-500 pointer-events-none" />
 
-              {/* Main White Card Surface */}
-              <div className="relative bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-950/5 p-6 sm:p-8 overflow-hidden">
-                {/* RCI Blue Top Accent Bar */}
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-blue-600" />
+              {/* Main Translucent Glass Surface */}
+              <div className="relative bg-white/80 backdrop-blur-xl rounded-[28px] border border-white/80 shadow-[0_20px_60px_rgba(7,21,47,0.10)] p-6 sm:p-8 overflow-hidden">
+                {/* Royal Blue Top Accent Bar */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#155EEF] via-blue-500 to-[#155EEF]" />
 
                 {/* Card Header */}
-                <div className="border-b border-slate-100 pb-4 mb-4.5">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-[10.5px] font-extrabold uppercase tracking-wider mb-2">
-                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                <div className="border-b border-slate-200/60 pb-4 sm:pb-5 mb-5">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50/80 border border-blue-200/60 text-[#155EEF] text-[10.5px] font-extrabold uppercase tracking-wider mb-2.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#155EEF]" />
                     SECURE ADMIN LOGIN
                   </div>
-                  <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-950 tracking-tight">
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-[#07152F] tracking-tight">
                     Welcome back
                   </h2>
-                  <p className="text-slate-500 text-xs sm:text-sm mt-1">
+                  <p className="text-slate-500 text-xs sm:text-sm mt-1 font-medium">
                     Sign in to access the RCI administration portal.
                   </p>
                 </div>
 
                 {/* Inline Error Alert */}
                 {error && (
-                  <div className="flex items-center gap-2.5 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold mb-4.5">
+                  <div className="flex items-center gap-3 bg-red-50/90 border border-red-200/90 text-red-700 px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold mb-5 shadow-xs animate-in fade-in duration-200">
                     <AlertCircle className="w-4.5 h-4.5 shrink-0 text-red-600" />
                     <span>{error}</span>
                   </div>
                 )}
 
-                {/* Form */}
-                <form onSubmit={handleLogin} noValidate className="space-y-4">
+                {/* Authentication Form */}
+                <form onSubmit={handleLogin} noValidate className="space-y-4 sm:space-y-4.5">
                   {/* Email Field */}
                   <div>
                     <label htmlFor="admin_email" className="block text-xs sm:text-sm font-extrabold text-slate-800 mb-1.5">
@@ -196,7 +218,7 @@ export default function AdminLoginPage() {
                         placeholder="admin@rciknp.com"
                         aria-required="true"
                         required
-                        className="w-full h-12 pl-11 pr-4 border border-slate-200/90 rounded-xl text-slate-900 placeholder-slate-400 text-sm font-medium bg-slate-50/40 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all"
+                        className="w-full h-12 pl-11 pr-4 border border-slate-200/90 rounded-xl text-slate-900 placeholder-slate-400 text-sm font-medium bg-white/60 backdrop-blur-md focus:bg-white focus:border-[#155EEF] focus:ring-4 focus:ring-[#155EEF]/15 transition-all outline-none"
                       />
                     </div>
                   </div>
@@ -220,13 +242,13 @@ export default function AdminLoginPage() {
                         placeholder="Enter your admin password"
                         aria-required="true"
                         required
-                        className="w-full h-12 pl-11 pr-11 border border-slate-200/90 rounded-xl text-slate-900 placeholder-slate-400 text-sm font-medium bg-slate-50/40 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 transition-all"
+                        className="w-full h-12 pl-11 pr-11 border border-slate-200/90 rounded-xl text-slate-900 placeholder-slate-400 text-sm font-medium bg-white/60 backdrop-blur-md focus:bg-white focus:border-[#155EEF] focus:ring-4 focus:ring-[#155EEF]/15 transition-all outline-none"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         aria-label={showPassword ? "Hide password" : "Show password"}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-md focus:outline-none focus:ring-2 focus:ring-[#155EEF]/30"
                       >
                         {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
                       </button>
@@ -237,12 +259,12 @@ export default function AdminLoginPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-12 inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-extrabold text-sm sm:text-base transition-all shadow-md shadow-blue-500/20 active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-blue-500/30"
+                    className="w-full h-12 sm:h-12.5 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#155EEF] to-[#2563EB] hover:from-[#1151ce] hover:to-[#1d4ed8] text-white rounded-xl font-extrabold text-sm sm:text-base transition-all duration-200 shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/35 hover:-translate-y-[1px] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 focus:outline-none focus:ring-4 focus:ring-[#155EEF]/30"
                   >
                     {loading ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>Signing In...</span>
+                        <span>Signing in...</span>
                       </>
                     ) : (
                       <>
@@ -252,11 +274,15 @@ export default function AdminLoginPage() {
                     )}
                   </button>
 
-                  {/* Security Trust Signal */}
-                  <div className="pt-2 text-center text-[11.5px] font-medium text-slate-500 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600 shrink-0 inline-block" />
-                    <span className="font-bold text-slate-700">Authorized RCI personnel only.</span>
-                    <span className="text-slate-500">Administrative access is securely protected.</span>
+                  {/* Security Trust Footer */}
+                  <div className="pt-3 border-t border-slate-200/60 mt-4 text-center">
+                    <div className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-700 mb-0.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#00A86B] shrink-0" />
+                      <span>Authorized RCI personnel only</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      Administrative access is securely protected.
+                    </p>
                   </div>
                 </form>
               </div>
@@ -267,11 +293,12 @@ export default function AdminLoginPage() {
       </main>
 
       {/* Footer Copyright */}
-      <footer className="max-w-5xl mx-auto w-full text-center py-3 relative z-10 border-t border-slate-200/60">
-        <p className="text-xs text-slate-500">
+      <footer className="max-w-6xl mx-auto w-full text-center py-3.5 relative z-10 border-t border-slate-200/60">
+        <p className="text-xs text-slate-500 font-medium">
           &copy; {new Date().getFullYear()} {RCIConfig.instituteName}. Authorized personnel only.
         </p>
       </footer>
     </div>
   );
 }
+
