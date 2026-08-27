@@ -284,6 +284,7 @@ BEGIN
 END $$;
 
 ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
+ALTER TABLE public.notifications REPLICA IDENTITY FULL;
 
 -- Enable RLS for notifications table
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;

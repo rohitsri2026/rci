@@ -61,9 +61,10 @@ export function useRealtimeNotifications({
     }
   }, []);
 
-  // Set up Supabase Realtime subscription
+  // Set up Supabase Realtime subscription with explicit Auth JWT binding
   useEffect(() => {
     if (!userId && !studentId) {
+      console.warn("[RCI Realtime] Missing student identity parameters. Subscription deferred.");
       return;
     }
 
@@ -72,15 +73,30 @@ export function useRealtimeNotifications({
     let channel: ReturnType<typeof supabase.channel> | null = null;
     let reconnectTimer: NodeJS.Timeout | null = null;
 
-    const setupSubscription = () => {
+    const setupSubscription = async () => {
       if (!isMounted) return;
 
       const channelName = `student_notifications_${userId || studentId}`;
       setConnectionStatus("CONNECTING");
-      if (process.env.NODE_ENV !== "production") {
-        console.log(`[Realtime] Channel created: ${channelName}`);
+
+      // 1. Explicitly retrieve and attach Supabase Auth JWT access token to Realtime socket
+      try {
+        const { data: authSessionData } = await supabase.auth.getSession();
+        const accessToken = authSessionData.session?.access_token;
+
+        if (accessToken) {
+          supabase.realtime.setAuth(accessToken);
+          console.log("[RCI Realtime] Auth Token Set: YES (auth.uid:", authSessionData.session?.user?.id, ")");
+        } else {
+          console.warn("[RCI Realtime] Auth Token Set: NO (No active Supabase Auth session found on browser client)");
+        }
+      } catch (authErr) {
+        console.error("[RCI Realtime] Error attaching auth token to Realtime socket:", authErr);
       }
 
+      if (!isMounted) return;
+
+      console.log(`[RCI Realtime] Creating channel: ${channelName} (userId: ${userId}, studentId: ${studentId})`);
       channel = supabase.channel(channelName);
 
       // Handler for incoming INSERT payloads
@@ -88,9 +104,7 @@ export function useRealtimeNotifications({
         if (!payload || !payload.new) return;
         const newRow = payload.new;
 
-        if (process.env.NODE_ENV !== "production") {
-          console.log(`[Realtime] INSERT received notification ID: ${newRow.id}`, newRow);
-        }
+        console.log(`[RCI Realtime] INSERT RECEIVED -> ID: ${newRow.id}`, newRow);
 
         // Security / Scope Check: verify notification is meant for this student or broadcast (user_id IS NULL)
         const isForThisUser =
@@ -99,6 +113,7 @@ export function useRealtimeNotifications({
           (studentId && newRow.user_id === studentId);
 
         if (!isForThisUser) {
+          console.log(`[RCI Realtime] Notification ${newRow.id} ignored (Target user_id: ${newRow.user_id} does not match student identities)`);
           return;
         }
 
@@ -107,6 +122,7 @@ export function useRealtimeNotifications({
           (n) => n.id === newRow.id
         );
         if (alreadyExists) {
+          console.log(`[RCI Realtime] Notification ${newRow.id} deduplicated (Already exists in state)`);
           return;
         }
 
@@ -135,7 +151,7 @@ export function useRealtimeNotifications({
         setToastNotification(formattedNotif);
       };
 
-      // Subscribe to all INSERT events on notifications table (RLS enforces student security at DB level)
+      // 2. Subscribe to all INSERT events on notifications table (PostgreSQL RLS filters at DB level)
       channel = channel.on(
         "postgres_changes" as any,
         {
@@ -146,12 +162,11 @@ export function useRealtimeNotifications({
         handleInsertPayload
       );
 
-      // Subscribe & status callback handler
+      // 3. Subscribe & handle connection status lifecycle
       channel.subscribe((status: string) => {
         if (!isMounted) return;
-        if (process.env.NODE_ENV !== "production") {
-          console.log(`[Realtime] Subscription status: ${status}`);
-        }
+        console.log(`[RCI Realtime] Channel status: ${status}`);
+
         if (status === "SUBSCRIBED") {
           setConnectionStatus("SUBSCRIBED");
           // Reconcile initial state to prevent race conditions during websocket connection setup
@@ -174,13 +189,14 @@ export function useRealtimeNotifications({
     setupSubscription();
 
     return () => {
+      console.log(`[RCI Realtime] Cleaning up subscription for student: ${userId || studentId}`);
       isMounted = false;
       if (reconnectTimer) clearTimeout(reconnectTimer);
       if (channel) {
         supabase.removeChannel(channel);
       }
     };
-  }, [userId, studentId]);
+  }, [userId, studentId, refreshNotifications]);
 
   // Optimistic Mark Single as Read
   const markAsRead = useCallback(async (id: string) => {
@@ -196,7 +212,6 @@ export function useRealtimeNotifications({
         body: JSON.stringify({ notificationId: id }),
       });
       if (!res.ok) {
-        // Refresh to reconcile on error
         refreshNotifications();
       }
     } catch (err) {

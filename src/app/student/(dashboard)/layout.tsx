@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import StudentHeader from "@/components/student/StudentHeader";
 import { StudentNotificationProvider } from "@/context/StudentNotificationContext";
 import NotificationToast from "@/components/student/NotificationToast";
+import RealtimeDebugPanel from "@/components/student/RealtimeDebugPanel";
 import { AlertTriangle, LogOut } from "lucide-react";
 
 export default async function StudentDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -58,6 +59,7 @@ export default async function StudentDashboardLayout({ children }: { children: R
       initialUnreadCount={unreadNotifCount}
     >
       <NotificationToast />
+      <RealtimeDebugPanel />
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
         <StudentHeader
           studentName={student.full_name}
