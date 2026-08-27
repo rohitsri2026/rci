@@ -63,10 +63,57 @@ export default function AdminNotificationCenter() {
   const [actionUrl, setActionUrl] = useState("");
   const [publishing, setPublishing] = useState(false);
 
+  // Student loading & search state for dropdown
+  const [studentsLoading, setStudentsLoading] = useState(false);
+  const [studentsError, setStudentsError] = useState("");
+  const [studentSearchQuery, setStudentSearchQuery] = useState("");
+
   // Feedback & Search
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Dedicated Student loader to guarantee students populate cleanly in dropdown
+  const loadStudents = useCallback(async () => {
+    setStudentsLoading(true);
+    setStudentsError("");
+    try {
+      const res = await fetch("/api/students");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setStudents(
+            data.map((s: any) => ({
+              id: s.id,
+              full_name: s.full_name,
+              phone: s.phone,
+              email: s.email,
+              user_id: s.user_id,
+            }))
+          );
+          return;
+        }
+      }
+
+      // Fallback query to /api/admin/notifications/inapp
+      const fallbackRes = await fetch("/api/admin/notifications/inapp");
+      if (fallbackRes.ok) {
+        const fallbackData = await fallbackRes.json();
+        if (fallbackData.students && fallbackData.students.length > 0) {
+          setStudents(fallbackData.students);
+        } else {
+          setStudentsError("No registered students found.");
+        }
+      } else {
+        setStudentsError("Unable to load student registry.");
+      }
+    } catch (err: any) {
+      console.error("Failed to load student registry:", err);
+      setStudentsError("Network error loading student list.");
+    } finally {
+      setStudentsLoading(false);
+    }
+  }, []);
 
   const fetchInAppNotifications = useCallback(async () => {
     setLoading(true);
@@ -75,7 +122,11 @@ export default function AdminNotificationCenter() {
       const data = await res.json();
       if (res.ok && data.notifications) {
         setNotifications(data.notifications);
-        setStudents(data.students || []);
+        if (data.students && data.students.length > 0) {
+          setStudents(data.students);
+        } else {
+          loadStudents();
+        }
         setCourses(data.courses || []);
       }
     } catch (err) {
@@ -83,16 +134,33 @@ export default function AdminNotificationCenter() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loadStudents]);
 
   useEffect(() => {
     fetchInAppNotifications();
   }, [fetchInAppNotifications]);
 
+  // Eagerly trigger student loading when Create Notification modal opens
+  useEffect(() => {
+    if (showCreateModal && students.length === 0 && !studentsLoading) {
+      loadStudents();
+    }
+  }, [showCreateModal, students.length, studentsLoading, loadStudents]);
+
   const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !message.trim()) {
       setFeedback({ type: "error", text: "Please provide both title and message content." });
+      return;
+    }
+
+    if (recipientScope === "student" && !selectedStudentId) {
+      setFeedback({ type: "error", text: "Please select a specific student from the dropdown." });
+      return;
+    }
+
+    if (recipientScope === "course" && !selectedCourseId) {
+      setFeedback({ type: "error", text: "Please select a target course from the dropdown." });
       return;
     }
 
@@ -450,23 +518,75 @@ export default function AdminNotificationCenter() {
 
               {/* Specific Student Select */}
               {recipientScope === "student" && (
-                <div>
-                  <label className="block font-extrabold text-slate-800 mb-1">
-                    Select Student <span className="text-rose-500">*</span>
-                  </label>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block font-extrabold text-slate-800">
+                      Select Recipient Student <span className="text-rose-500">*</span>
+                    </label>
+                    {studentsError && (
+                      <button
+                        type="button"
+                        onClick={loadStudents}
+                        className="text-[10px] font-black text-rose-600 hover:underline flex items-center gap-1"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        <span>Retry Loading</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Search Filter Box */}
+                  <div className="relative">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      value={studentSearchQuery}
+                      onChange={(e) => setStudentSearchQuery(e.target.value)}
+                      placeholder="Type to filter student name, phone, or email..."
+                      className="w-full h-9 pl-8 pr-3 border border-slate-200 rounded-lg text-[11px] font-medium text-slate-900 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
                   <select
                     value={selectedStudentId}
                     onChange={(e) => setSelectedStudentId(e.target.value)}
                     required
-                    className="w-full h-11 px-3 border border-slate-200 rounded-xl font-bold text-slate-900 bg-white focus:ring-2 focus:ring-blue-500"
+                    disabled={studentsLoading}
+                    className="w-full h-11 px-3 border border-slate-200 rounded-xl font-bold text-slate-900 bg-white focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                   >
-                    <option value="">-- Choose Student --</option>
-                    {students.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.full_name} ({s.phone || s.email || s.id.slice(0, 6)})
-                      </option>
-                    ))}
+                    <option value="">
+                      {studentsLoading
+                        ? "⏳ Loading student registry..."
+                        : studentsError
+                        ? `⚠️ ${studentsError}`
+                        : students.length === 0
+                        ? "No registered students found"
+                        : "-- Choose Recipient Student --"}
+                    </option>
+                    {students
+                      .filter((s) => {
+                        if (!studentSearchQuery.trim()) return true;
+                        const q = studentSearchQuery.toLowerCase().trim();
+                        return (
+                          s.full_name?.toLowerCase().includes(q) ||
+                          (s.phone && s.phone.includes(q)) ||
+                          (s.email && s.email.toLowerCase().includes(q))
+                        );
+                      })
+                      .map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.full_name} {s.phone ? `— ${s.phone}` : ""} {s.email ? `(${s.email})` : ""}
+                        </option>
+                      ))}
                   </select>
+
+                  <p className="text-[10.5px] text-slate-500 font-medium">
+                    {students.length > 0 ? (
+                      <span>Found <strong>{students.length}</strong> eligible student(s) in database.</span>
+                    ) : (
+                      <span className="text-amber-600 font-bold">Checking student registry...</span>
+                    )}
+                  </p>
                 </div>
               )}
 
