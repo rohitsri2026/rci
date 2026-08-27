@@ -57,6 +57,17 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/favicon.png", type: "image/png" },
+    ],
+    shortcut: "/icon.png",
+    apple: [
+      { url: "/apple-icon.png", type: "image/png" },
+      { url: "/apple-touch-icon.png", type: "image/png" },
+    ],
+  },
 };
 
 const jsonLd = {
