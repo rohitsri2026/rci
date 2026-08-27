@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Phone, MapPin, Globe, MessageCircle, ArrowUpRight, ChevronDown } from "lucide-react";
+import { Mail, Phone, MapPin, Globe, MessageCircle, ArrowUpRight, ChevronDown, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { RCIConfig } from "@/lib/config";
@@ -73,6 +73,7 @@ export default function Footer() {
                 { label: "Courses Offered", href: "/courses" },
                 { label: "Admissions", href: "/admission" },
                 { label: "Verify Certificate", href: "/verify" },
+                { label: "Admin Login", href: "/admin/login" },
                 { label: "Contact Us", href: "/contact" },
               ].map((item, i) => (
                 <li key={i}>
@@ -167,6 +168,10 @@ export default function Footer() {
           </p>
 
           <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6">
+            <Link href="/admin/login" className="hover:text-slate-300 transition-colors flex items-center gap-1 text-slate-400">
+              <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
+              <span>Admin Portal</span>
+            </Link>
             <Link href="/contact" className="hover:text-slate-300 transition-colors">Privacy Policy</Link>
             <Link href="/contact" className="hover:text-slate-300 transition-colors">Terms of Service</Link>
             <Link href="/contact" className="hover:text-slate-300 transition-colors">Refund Policy</Link>

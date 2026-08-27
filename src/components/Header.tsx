@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { 
   Menu, X, ChevronDown, ChevronRight, BookOpen, GraduationCap, 
-  Award, Home, User, PhoneCall 
+  Award, Home, User, PhoneCall, ShieldCheck 
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -243,18 +243,27 @@ export default function Header() {
         </nav>
 
         {/* Action Buttons */}
-        <div className="hidden lg:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-2.5">
           <Link
             href="/student/login"
-            className="flex items-center gap-2 border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="flex items-center gap-1.5 border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-600"
           >
             <GraduationCap className="w-4 h-4 text-blue-600" />
-            Student Login
+            <span>Student Login</span>
+          </Link>
+
+          <Link
+            href="/admin/login"
+            className="flex items-center gap-1.5 border border-slate-200/90 bg-slate-50 hover:bg-slate-100 text-slate-800 hover:text-blue-600 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-600"
+            title="Admin Login Portal"
+          >
+            <ShieldCheck className="w-4 h-4 text-blue-600" />
+            <span>Admin Login</span>
           </Link>
 
           <Link
             href="/admission"
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-600 active:scale-98"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-600 active:scale-98"
           >
             Apply Now
           </Link>
@@ -388,20 +397,31 @@ export default function Header() {
             Contact Us
           </Link>
 
-          <div className="pt-4 border-t border-slate-100 flex flex-col gap-3 mt-2">
-            <Link
-              href="/student/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-center gap-2 border border-slate-300 text-slate-800 bg-white py-3 rounded-xl font-bold text-sm shadow-2xs"
-            >
-              <GraduationCap className="w-4 h-4 text-blue-600" />
-              Student Portal Login
-            </Link>
+          <div className="pt-4 border-t border-slate-100 flex flex-col gap-2.5 mt-2">
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href="/student/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 border border-slate-200 text-slate-800 bg-white py-3 rounded-xl font-bold text-xs shadow-2xs min-h-[44px]"
+              >
+                <GraduationCap className="w-4 h-4 text-blue-600" />
+                Student Login
+              </Link>
+
+              <Link
+                href="/admin/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 border border-slate-200 text-slate-800 bg-slate-50 py-3 rounded-xl font-bold text-xs shadow-2xs min-h-[44px]"
+              >
+                <ShieldCheck className="w-4 h-4 text-blue-600" />
+                Admin Login
+              </Link>
+            </div>
 
             <Link
               href="/admission"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-center gap-2 bg-blue-600 text-white py-3.5 rounded-xl font-bold text-sm shadow-md shadow-blue-500/20"
+              className="flex items-center justify-center gap-2 bg-blue-600 text-white py-3.5 rounded-xl font-bold text-sm shadow-md shadow-blue-500/20 min-h-[44px]"
             >
               Apply for Admission
             </Link>
