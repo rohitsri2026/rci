@@ -77,6 +77,9 @@ export function useRealtimeNotifications({
 
       const channelName = `student_notifications_${userId || studentId}`;
       setConnectionStatus("CONNECTING");
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`[Realtime] Channel created: ${channelName}`);
+      }
 
       channel = supabase.channel(channelName);
 
@@ -84,6 +87,10 @@ export function useRealtimeNotifications({
       const handleInsertPayload = (payload: any) => {
         if (!payload || !payload.new) return;
         const newRow = payload.new;
+
+        if (process.env.NODE_ENV !== "production") {
+          console.log(`[Realtime] INSERT received notification ID: ${newRow.id}`, newRow);
+        }
 
         // Security / Scope Check: verify notification is meant for this student or broadcast (user_id IS NULL)
         const isForThisUser =
@@ -128,42 +135,13 @@ export function useRealtimeNotifications({
         setToastNotification(formattedNotif);
       };
 
-      // 1. Filter for user_id = userId
-      if (userId) {
-        channel = channel.on(
-          "postgres_changes" as any,
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "notifications",
-            filter: `user_id=eq.${userId}`,
-          },
-          handleInsertPayload
-        );
-      }
-
-      // 2. Filter for studentId (if different from userId)
-      if (studentId && studentId !== userId) {
-        channel = channel.on(
-          "postgres_changes" as any,
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "notifications",
-            filter: `user_id=eq.${studentId}`,
-          },
-          handleInsertPayload
-        );
-      }
-
-      // 3. Filter for broadcast notifications (user_id IS NULL)
+      // Subscribe to all INSERT events on notifications table (RLS enforces student security at DB level)
       channel = channel.on(
         "postgres_changes" as any,
         {
           event: "INSERT",
           schema: "public",
           table: "notifications",
-          filter: `user_id=is.null`,
         },
         handleInsertPayload
       );
@@ -171,8 +149,13 @@ export function useRealtimeNotifications({
       // Subscribe & status callback handler
       channel.subscribe((status: string) => {
         if (!isMounted) return;
+        if (process.env.NODE_ENV !== "production") {
+          console.log(`[Realtime] Subscription status: ${status}`);
+        }
         if (status === "SUBSCRIBED") {
           setConnectionStatus("SUBSCRIBED");
+          // Reconcile initial state to prevent race conditions during websocket connection setup
+          refreshNotifications();
         } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
           setConnectionStatus("ERROR");
           // Attempt graceful reconnect after 4s

@@ -59,7 +59,7 @@ export async function GET(request: Request) {
       // Fallback query to existing notifications table
       let fallbackQuery = adminClient
         .from("notifications")
-        .select("*, students:user_id (full_name, phone)")
+        .select("*")
         .order("created_at", { ascending: false })
         .limit(100);
 

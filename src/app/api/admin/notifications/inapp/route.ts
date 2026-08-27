@@ -16,7 +16,7 @@ export async function GET() {
     // Fetch all in-app notifications from notifications table
     const { data: notifications, error } = await adminClient
       .from("notifications")
-      .select("*, students:user_id (full_name, phone)")
+      .select("*")
       .order("created_at", { ascending: false })
       .limit(200);
 
@@ -31,20 +31,33 @@ export async function GET() {
       adminClient.from("courses").select("id, course_name").order("course_name"),
     ]);
 
-    const formattedList = (notifications || []).map((n: any) => ({
-      id: n.id,
-      user_id: n.user_id,
-      title: n.title,
-      message: n.message,
-      type: n.metadata?.category || n.type || "NOTICE",
-      is_read: n.is_read || false,
-      status: n.status || (n.is_read ? "Read" : "Sent"),
-      created_at: n.created_at,
-      recipient_scope: n.metadata?.recipient_scope || (n.user_id ? "student" : "all"),
-      student_name: n.students?.full_name || (n.user_id ? "Specific Student" : "All Students"),
-      action_url: n.metadata?.action_url || "",
-      sent_by: n.metadata?.sent_by || "Admin",
-    }));
+    // Build quick lookup map for student names
+    const studentMap = new Map<string, string>();
+    (studentsRes.data || []).forEach((s: any) => {
+      if (s.id) studentMap.set(s.id, s.full_name);
+      if (s.user_id) studentMap.set(s.user_id, s.full_name);
+    });
+
+    const formattedList = (notifications || []).map((n: any) => {
+      const studentName = n.user_id
+        ? studentMap.get(n.user_id) || "Specific Student"
+        : "All Students";
+
+      return {
+        id: n.id,
+        user_id: n.user_id,
+        title: n.title,
+        message: n.message,
+        type: n.metadata?.category || n.type || "NOTICE",
+        is_read: n.is_read || false,
+        status: n.status || (n.is_read ? "Read" : "Sent"),
+        created_at: n.created_at,
+        recipient_scope: n.metadata?.recipient_scope || (n.user_id ? "student" : "all"),
+        student_name: studentName,
+        action_url: n.metadata?.action_url || "",
+        sent_by: n.metadata?.sent_by || "Admin",
+      };
+    });
 
     return NextResponse.json({
       success: true,
