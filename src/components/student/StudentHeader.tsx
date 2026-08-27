@@ -15,8 +15,6 @@ import {
   User,
   KeyRound,
   LogOut,
-  Menu,
-  X,
   ChevronDown,
   GraduationCap,
   FlaskConical,
@@ -52,7 +50,6 @@ export default function StudentHeader({
   const { unreadCount: realtimeUnreadCount } = useStudentNotifications();
   const displayUnreadCount = realtimeUnreadCount ?? initialUnreadCount;
   const [profileOpen, setProfileOpen] = useState(false);
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   // Close profile dropdown on outside click or Escape key
@@ -65,7 +62,6 @@ export default function StudentHeader({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setProfileOpen(false);
-        setMobileDrawerOpen(false);
       }
     };
     document.addEventListener("mousedown", handleOutsideClick);
@@ -118,8 +114,8 @@ export default function StudentHeader({
           </Link>
         </div>
 
-        {/* Center: Desktop Navigation Links */}
-        <nav className="hidden lg:flex items-center gap-1 overflow-x-auto py-1">
+        {/* Center: Desktop Navigation Links (>= 768px) */}
+        <nav className="hidden md:flex items-center gap-1 overflow-x-auto py-1">
           {navLinks.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -159,19 +155,19 @@ export default function StudentHeader({
             )}
           </Link>
 
-          {/* Desktop User Avatar Dropdown */}
-          <div className="relative hidden sm:block" ref={profileMenuRef}>
+          {/* User Avatar Dropdown */}
+          <div className="relative flex items-center" ref={profileMenuRef}>
             <button
               type="button"
               onClick={() => setProfileOpen(!profileOpen)}
-              className="min-h-[44px] flex items-center gap-2.5 p-1.5 pl-2.5 rounded-xl border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="min-h-[44px] flex items-center gap-2.5 p-1.5 pl-2 rounded-xl border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-expanded={profileOpen}
               aria-haspopup="true"
             >
               <div className="w-8 h-8 rounded-lg bg-[#155EEF] text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">
                 {getInitials(studentName)}
               </div>
-              <div className="hidden xl:block min-w-0 pr-1">
+              <div className="hidden sm:block min-w-0 pr-1">
                 <span className="block text-xs font-extrabold text-white truncate max-w-[120px] leading-tight">
                   {studentName}
                 </span>
@@ -221,132 +217,8 @@ export default function StudentHeader({
               </div>
             )}
           </div>
-
-          {/* Mobile Drawer Hamburger Trigger (Min touch target 44px x 44px) */}
-          <button
-            type="button"
-            onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
-            className="lg:hidden min-w-[44px] min-h-[44px] rounded-xl bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label="Toggle Mobile Menu"
-          >
-            {mobileDrawerOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
         </div>
       </div>
-
-      {/* Mobile Navigation Drawer */}
-      {mobileDrawerOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs animate-in fade-in"
-            onClick={() => setMobileDrawerOpen(false)}
-          />
-
-          {/* Drawer Container */}
-          <div className="relative w-4/5 max-w-xs bg-[#07152F] text-white h-full shadow-2xl flex flex-col justify-between p-5 z-10 border-r border-slate-800 animate-in slide-in-from-left duration-250">
-            <div className="space-y-6">
-              {/* Drawer Top Branding */}
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                <Link href="/student/dashboard" onClick={() => setMobileDrawerOpen(false)} className="flex items-center gap-2.5">
-                  <div className="bg-white rounded-xl p-1.5 shrink-0 border border-slate-700/50">
-                    <Image
-                      src="/logo.png"
-                      alt="Rohit Computer Institute Logo"
-                      width={32}
-                      height={32}
-                      className="w-7 h-7 object-contain"
-                      priority
-                    />
-                  </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-extrabold text-white tracking-tight leading-tight truncate">
-                      Rohit Computer Institute
-                    </span>
-                    <span className="text-[10px] font-extrabold text-blue-400 uppercase tracking-wider leading-none mt-0.5">
-                      Student Portal
-                    </span>
-                  </div>
-                </Link>
-                <button
-                  onClick={() => setMobileDrawerOpen(false)}
-                  className="min-w-[44px] min-h-[44px] rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 flex items-center justify-center"
-                  aria-label="Close Mobile Drawer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Mobile Student Profile Brief */}
-              <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-3.5 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#155EEF] text-white font-extrabold text-sm flex items-center justify-center shrink-0">
-                  {getInitials(studentName)}
-                </div>
-                <div className="min-w-0">
-                  <p className="font-extrabold text-xs text-white truncate">{studentName}</p>
-                  <p className="text-[10px] text-slate-400 font-medium truncate">{studentEmail}</p>
-                </div>
-              </div>
-
-              {/* Mobile Links */}
-              <nav className="space-y-1">
-                {navLinks.map((item) => {
-                  const isActive =
-                    pathname === item.href ||
-                    (item.href !== "/student/dashboard" && pathname.startsWith(item.href));
-                  const Icon = item.icon;
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileDrawerOpen(false)}
-                      className={`min-h-[44px] flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-extrabold transition-colors ${
-                        isActive
-                          ? "bg-[#155EEF] text-white"
-                          : "text-slate-300 hover:bg-slate-800 hover:text-white"
-                      }`}
-                    >
-                      <Icon className="w-4.5 h-4.5 shrink-0" />
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </nav>
-            </div>
-
-            {/* Mobile Footer Profile Actions */}
-            <div className="border-t border-slate-800 pt-4 space-y-1">
-              <Link
-                href="/student/profile"
-                onClick={() => setMobileDrawerOpen(false)}
-                className="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold text-slate-300 hover:bg-slate-800 rounded-xl"
-              >
-                <User className="w-4.5 h-4.5 text-blue-400" />
-                <span>My Profile</span>
-              </Link>
-
-              <Link
-                href="/student/change-password"
-                onClick={() => setMobileDrawerOpen(false)}
-                className="min-h-[44px] flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold text-slate-300 hover:bg-slate-800 rounded-xl"
-              >
-                <KeyRound className="w-4.5 h-4.5 text-purple-400" />
-                <span>Change Password</span>
-              </Link>
-
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="min-h-[44px] w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold text-rose-400 hover:bg-rose-950/40 rounded-xl text-left"
-              >
-                <LogOut className="w-4.5 h-4.5 text-rose-400" />
-                <span>Logout</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </header>
   );
 }

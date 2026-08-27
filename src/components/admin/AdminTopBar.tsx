@@ -32,28 +32,18 @@ export default function AdminTopBar({ userEmail, onMenuToggle }: AdminTopBarProp
   return (
     <header className="bg-white border-b border-slate-200/90 px-4 sm:px-6 py-3.5 sticky top-0 z-30 shadow-2xs">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-        {/* Left Side: Mobile Menu Button + Page Title Hierarchy */}
-        <div className="flex items-center gap-3">
-          {onMenuToggle && (
-            <button
-              onClick={onMenuToggle}
-              className="md:hidden p-2 rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600"
-              aria-label="Toggle navigation menu"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          )}
-
-          <div>
-            <div className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-blue-600">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>ADMIN PANEL</span>
+          {/* Left Side: Page Title Hierarchy */}
+          <div className="flex items-center gap-3">
+            <div>
+              <div className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-blue-600">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>ADMIN PANEL</span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-950 tracking-tight leading-tight font-display">
+                {title}
+              </h1>
             </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-950 tracking-tight leading-tight font-display">
-              {title}
-            </h1>
           </div>
-        </div>
 
         {/* Right Side: Quick Action Utilities & Admin Profile Pill */}
         <div className="flex items-center gap-2.5">

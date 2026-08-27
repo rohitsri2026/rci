@@ -3,6 +3,7 @@
 import { useState } from "react";
 import AdminSidebar from "./AdminSidebar";
 import AdminTopBar from "./AdminTopBar";
+import AdminMobileBottomNav from "./AdminMobileBottomNav";
 
 interface AdminLayoutWrapperProps {
   userEmail: string;
@@ -14,7 +15,7 @@ export default function AdminLayoutWrapper({ userEmail, children }: AdminLayoutW
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col md:flex-row font-sans selection:bg-blue-600 selection:text-white">
-      {/* Sidebar Component (Handles fixed desktop & sliding mobile drawer) */}
+      {/* Sidebar Component (Handles fixed desktop & optional mobile drawer) */}
       <AdminSidebar 
         userEmail={userEmail} 
         mobileOpen={mobileOpen} 
@@ -28,10 +29,14 @@ export default function AdminLayoutWrapper({ userEmail, children }: AdminLayoutW
           onMenuToggle={() => setMobileOpen(!mobileOpen)} 
         />
         
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-[calc(84px+env(safe-area-inset-bottom))] md:pb-8">
           {children}
         </main>
       </div>
+
+      {/* Fixed Mobile Bottom Navigation Bar */}
+      <AdminMobileBottomNav userEmail={userEmail} />
     </div>
   );
 }
+

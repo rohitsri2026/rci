@@ -1,6 +1,7 @@
 import { getStudentSession } from "@/lib/student-auth";
 import { redirect } from "next/navigation";
 import StudentHeader from "@/components/student/StudentHeader";
+import StudentMobileBottomNav from "@/components/student/StudentMobileBottomNav";
 import { StudentNotificationProvider } from "@/context/StudentNotificationContext";
 import NotificationToast from "@/components/student/NotificationToast";
 import RealtimeDebugPanel from "@/components/student/RealtimeDebugPanel";
@@ -67,9 +68,10 @@ export default async function StudentDashboardLayout({ children }: { children: R
           studentId={student.id ? `RCI-STU-${student.id.slice(0, 6).toUpperCase()}` : undefined}
           unreadCount={unreadNotifCount}
         />
-        <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8 pb-[calc(84px+env(safe-area-inset-bottom))] md:pb-8">
           {children}
         </main>
+        <StudentMobileBottomNav studentEmail={student.email ?? user.email ?? ""} />
       </div>
     </StudentNotificationProvider>
   );
