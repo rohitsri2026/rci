@@ -2,17 +2,20 @@
 
 import React from "react";
 import { Calendar, GraduationCap, Sparkles } from "lucide-react";
+import StudentAvatar from "@/components/student/StudentAvatar";
 
 interface DashboardWelcomeProps {
   studentName: string;
   courseName?: string;
   studentId: string;
+  photoUrl?: string | null;
 }
 
 export default function DashboardWelcome({
   studentName,
   courseName = "Computer Application Program",
   studentId,
+  photoUrl,
 }: DashboardWelcomeProps) {
   // Format date in Indian format: e.g. "27 August 2026"
   const formattedDate = new Date().toLocaleDateString("en-IN", {
@@ -30,28 +33,38 @@ export default function DashboardWelcome({
       <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
       
       <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          {/* Date & Status Badge */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-blue-200">
-              <Calendar className="w-3.5 h-3.5" />
-              <span>{formattedDate}</span>
+        <div className="flex items-center gap-5">
+          <StudentAvatar
+            photoUrl={photoUrl}
+            studentName={studentName}
+            size="xl"
+            border={true}
+            className="ring-4 ring-white/20 shadow-lg shrink-0"
+          />
+
+          <div className="space-y-1.5 min-w-0">
+            {/* Date & Status Badge */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-blue-200">
+                <Calendar className="w-3.5 h-3.5" />
+                <span>{formattedDate}</span>
+              </div>
+
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-xs font-extrabold text-emerald-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Active Student</span>
+              </div>
             </div>
 
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-xs font-extrabold text-emerald-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Active Student</span>
-            </div>
+            {/* Heading */}
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-display text-white truncate">
+              Welcome back, {studentName}! 👋
+            </h1>
+
+            <p className="text-blue-100/90 text-xs sm:text-sm font-medium max-w-xl leading-relaxed truncate">
+              {courseName} · Student Control Center
+            </p>
           </div>
-
-          {/* Heading */}
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight font-display">
-            Welcome back, {studentName}! 👋
-          </h1>
-
-          <p className="text-blue-100/90 text-xs sm:text-sm font-medium max-w-xl leading-relaxed">
-            {courseName} · Student Control Center
-          </p>
         </div>
 
         {/* Student ID Card Badge */}

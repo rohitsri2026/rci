@@ -12,6 +12,7 @@ import CertificateTemplate from "./certificates/CertificateTemplate";
 import DownloadButton from "./certificates/DownloadButton";
 import PrintButton from "./certificates/PrintButton";
 import { RCIConfig } from "@/lib/config";
+import StudentAvatar from "./student/StudentAvatar";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function CertificateCard({ cert, searchId }: { cert?: any; searchId?: string }) {
@@ -115,6 +116,7 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
   const issueDate = cert.issue_date;
   const fatherName = cert.students?.address || undefined;
   const expiryDate = cert.expiration_date || cert.expiry_date;
+  const photoUrl = cert.students?.photo_url || null;
 
   // ----------------------------------------------------
   // 2. REVOKED STATE
@@ -398,6 +400,36 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
                 <span className="text-xs font-extrabold text-[#00A86B] bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full shrink-0">
                   Active &amp; Valid
                 </span>
+              </div>
+
+              {/* Student Identity Card Section */}
+              <div className="flex items-center gap-4 bg-slate-50/90 border border-slate-200/80 rounded-2xl p-4 mb-5 shadow-2xs">
+                <StudentAvatar
+                  photoUrl={photoUrl}
+                  studentName={studentName}
+                  size="2xl"
+                  border={true}
+                  className="ring-4 ring-white shadow-md shrink-0"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10.5px] font-extrabold uppercase tracking-widest text-[#155EEF]">
+                    VERIFIED STUDENT IDENTITY
+                  </p>
+                  <h3 className="text-lg sm:text-xl font-black text-slate-950 font-display mt-0.5 truncate">
+                    {studentName}
+                  </h3>
+                  <p className="text-xs font-bold text-slate-600 mt-0.5 truncate">
+                    {courseName}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <span className="font-mono text-[11px] font-extrabold text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-md">
+                      {certificateNumber}
+                    </span>
+                    <span className="text-[10.5px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-md">
+                      Status: {cert.status}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Certificate Info List (Mobile: Single Column List; Desktop: 2-Column Grid) */}

@@ -9,6 +9,7 @@ export interface StudentInfo {
   phone: string | null;
   address: string | null;
   course_id: string | null;
+  photo_url?: string | null;
   created_at: string;
 }
 

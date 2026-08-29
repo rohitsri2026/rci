@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import StudentProfileDrawer from "./StudentProfileDrawer";
 import ActionDropdown from "@/components/ui/ActionDropdown";
+import StudentAvatar from "@/components/student/StudentAvatar";
 
 interface Student {
   id: string;
@@ -16,6 +17,7 @@ interface Student {
   email: string | null;
   phone: string | null;
   address: string | null;
+  photo_url?: string | null;
   created_at: string;
   course_id: string | null;
   courses?: {
@@ -35,6 +37,13 @@ interface StudentListClientProps {
 
 export default function StudentListClient({ initialStudents, courses }: StudentListClientProps) {
   const router = useRouter();
+
+  // Local state for students
+  const [students, setStudents] = useState<Student[]>(initialStudents);
+
+  useEffect(() => {
+    setStudents(initialStudents);
+  }, [initialStudents]);
 
   // Search & Filter State
   const [search, setSearch] = useState("");
@@ -61,7 +70,7 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
 
   // Filtered & Sorted Students
   const filteredStudents = useMemo(() => {
-    return initialStudents
+    return students
       .filter((s) => {
         const query = search.toLowerCase().trim();
         const matchesName = s.full_name?.toLowerCase().includes(query);
@@ -86,7 +95,7 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
         }
         return 0;
       });
-  }, [initialStudents, search, selectedCourse, sortOrder]);
+  }, [students, search, selectedCourse, sortOrder]);
 
   const handleCopy = (text: string, fieldKey: string) => {
     navigator.clipboard.writeText(text);
@@ -226,9 +235,11 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
                       {/* STUDENT NAME: font-extrabold text-slate-950 (Visually Strongest) */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 font-extrabold text-xs flex items-center justify-center shrink-0">
-                            {initials}
-                          </div>
+                          <StudentAvatar
+                            photoUrl={student.photo_url}
+                            studentName={student.full_name}
+                            size="sm"
+                          />
                           <div>
                             <p className="font-extrabold text-slate-950 text-sm leading-snug">{student.full_name}</p>
                             {student.address && (
@@ -362,9 +373,11 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
                 {/* Header Row */}
                 <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 font-extrabold text-xs flex items-center justify-center shrink-0">
-                      {initials}
-                    </div>
+                    <StudentAvatar
+                      photoUrl={student.photo_url}
+                      studentName={student.full_name}
+                      size="md"
+                    />
                     <div className="min-w-0">
                       <h3 className="font-extrabold text-slate-950 text-sm leading-snug truncate">{student.full_name}</h3>
                       <p className="text-[11px] font-bold text-blue-600 truncate">{student.courses?.course_name || "No Course"}</p>
@@ -472,6 +485,14 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
       <StudentProfileDrawer
         student={viewingStudent}
         onClose={() => setViewingStudent(null)}
+        onPhotoUpdated={(studentId, photoUrl) => {
+          setStudents((prev) =>
+            prev.map((s) => (s.id === studentId ? { ...s, photo_url: photoUrl } : s))
+          );
+          if (viewingStudent && viewingStudent.id === studentId) {
+            setViewingStudent({ ...viewingStudent, photo_url: photoUrl });
+          }
+        }}
       />
 
       {/* DELETE CONFIRMATION DIALOG MODAL */}

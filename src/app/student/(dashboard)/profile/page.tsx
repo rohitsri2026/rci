@@ -2,6 +2,7 @@ import { getStudentSession } from "@/lib/student-auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { User, BookOpen, Phone, Mail, MapPin, Calendar, Hash, ShieldCheck, KeyRound } from "lucide-react";
+import StudentAvatar from "@/components/student/StudentAvatar";
 
 export default async function StudentProfilePage() {
   const { student, user } = await getStudentSession();
@@ -42,9 +43,13 @@ export default async function StudentProfilePage() {
       {/* Avatar Banner */}
       <div className="bg-gradient-to-r from-[#07152F] via-[#0B224D] to-[#155EEF] rounded-3xl p-6 sm:p-8 text-white shadow-xl flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-5">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white font-extrabold text-2xl sm:text-3xl shadow-lg shrink-0">
-            {student.full_name.charAt(0).toUpperCase()}
-          </div>
+          <StudentAvatar
+            photoUrl={student.photo_url}
+            studentName={student.full_name}
+            size="2xl"
+            border={true}
+            className="ring-4 ring-white/20 shadow-xl shrink-0"
+          />
           <div>
             <h2 className="text-xl sm:text-2xl font-extrabold font-display">{student.full_name}</h2>
             <p className="text-blue-100/80 text-xs sm:text-sm mt-0.5">{student.email ?? user.email}</p>

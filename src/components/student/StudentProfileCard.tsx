@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { User, Phone, Mail, BookOpen, Calendar, CheckCircle2 } from "lucide-react";
+import StudentAvatar from "@/components/student/StudentAvatar";
 
 interface StudentProfileCardProps {
   student: {
@@ -10,6 +11,7 @@ interface StudentProfileCardProps {
     full_name: string;
     phone?: string | null;
     email?: string | null;
+    photo_url?: string | null;
     created_at?: string | null;
     courses?: {
       course_name?: string;
@@ -35,20 +37,16 @@ export default function StudentProfileCard({ student, userEmail }: StudentProfil
   const courseName = student.courses?.course_name || "General Computer Program";
   const displayEmail = student.email || userEmail || "Not provided";
 
-  const getInitials = (name: string) => {
-    if (!name) return "ST";
-    const parts = name.trim().split(" ");
-    return parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : name.slice(0, 2).toUpperCase();
-  };
-
   return (
     <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xs p-5 sm:p-6 flex flex-col justify-between space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-12 h-12 rounded-2xl bg-[#155EEF] text-white font-extrabold text-lg flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
-            {getInitials(student.full_name)}
-          </div>
+          <StudentAvatar
+            photoUrl={student.photo_url}
+            studentName={student.full_name}
+            size="lg"
+          />
           <div className="min-w-0">
             <h3 className="font-extrabold text-slate-950 text-base sm:text-lg leading-tight font-display truncate">
               {student.full_name}

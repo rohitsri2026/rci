@@ -40,9 +40,7 @@ export default async function VerifyCertificateIdPage({ params }: Props) {
       students:student_id (
         id,
         full_name,
-        email,
-        phone,
-        address
+        photo_url
       ),
       courses:course_id (
         id,

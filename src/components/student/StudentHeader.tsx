@@ -21,10 +21,13 @@ import {
   BookMarked
 } from "lucide-react";
 
+import StudentAvatar from "@/components/student/StudentAvatar";
+
 interface StudentHeaderProps {
   studentName: string;
   studentEmail: string;
   studentId?: string;
+  photoUrl?: string | null;
   unreadCount?: number;
 }
 
@@ -43,6 +46,7 @@ export default function StudentHeader({
   studentName,
   studentEmail,
   studentId,
+  photoUrl,
   unreadCount: initialUnreadCount = 0,
 }: StudentHeaderProps) {
   const pathname = usePathname();
@@ -164,9 +168,7 @@ export default function StudentHeader({
               aria-expanded={profileOpen}
               aria-haspopup="true"
             >
-              <div className="w-8 h-8 rounded-lg bg-[#155EEF] text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">
-                {getInitials(studentName)}
-              </div>
+              <StudentAvatar photoUrl={photoUrl} studentName={studentName} size="sm" />
               <div className="hidden sm:block min-w-0 pr-1">
                 <span className="block text-xs font-extrabold text-white truncate max-w-[120px] leading-tight">
                   {studentName}

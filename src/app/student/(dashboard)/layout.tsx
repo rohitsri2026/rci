@@ -66,6 +66,7 @@ export default async function StudentDashboardLayout({ children }: { children: R
           studentName={student.full_name}
           studentEmail={student.email ?? user.email ?? ""}
           studentId={student.id ? `RCI-STU-${student.id.slice(0, 6).toUpperCase()}` : undefined}
+          photoUrl={student.photo_url}
           unreadCount={unreadNotifCount}
         />
         <main className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8 pb-[calc(84px+env(safe-area-inset-bottom))] md:pb-8">

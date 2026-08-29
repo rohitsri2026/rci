@@ -95,6 +95,7 @@ export default async function StudentDashboardPage() {
         studentName={student.full_name}
         courseName={course?.course_name}
         studentId={student.id}
+        photoUrl={student.photo_url}
       />
 
       {/* 3. Attention / Dashboard Notification Summary Panel */}
