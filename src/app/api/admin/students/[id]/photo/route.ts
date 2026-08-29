@@ -76,27 +76,59 @@ export async function POST(
 
     const client = getClient(supabase);
 
-    // Perform student lookup using maybeSingle()
-    const { data: existingStudent, error: studentFetchErr } = await client
+    // 1. Perform student lookup with maybeSingle()
+    let existingStudent: { id: string; full_name?: string; photo_url?: string | null } | null = null;
+
+    const { data: fetchResult, error: studentFetchErr } = await client
       .from("students")
       .select("id, full_name, photo_url")
       .eq("id", id)
       .maybeSingle();
 
-    if (studentFetchErr) {
-      console.error("[student-photo] Database error during student lookup (POST)", {
+    existingStudent = fetchResult;
+
+    // Handle missing column schema error (Postgres error 42703)
+    if (studentFetchErr && (studentFetchErr.code === "42703" || studentFetchErr.message?.includes("photo_url"))) {
+      console.error("[student-photo] 'photo_url' column missing in database schema", {
         studentId: id,
-        error: studentFetchErr.message,
         code: studentFetchErr.code,
+        message: studentFetchErr.message,
+      });
+
+      // Fallback check to verify student existence
+      const { data: fallbackStudent } = await client
+        .from("students")
+        .select("id, full_name")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (fallbackStudent) {
+        return NextResponse.json(
+          {
+            error:
+              "Database migration required: 'photo_url' column is missing in the students table. Please execute migration_student_photos.sql in Supabase SQL Editor.",
+          },
+          { status: 500 }
+        );
+      }
+    }
+
+    if (studentFetchErr) {
+      console.error("[student-photo] Student lookup failed", {
+        studentId: id,
+        code: studentFetchErr.code,
+        message: studentFetchErr.message,
+        details: studentFetchErr.details,
+        hint: studentFetchErr.hint,
       });
       return NextResponse.json(
-        { error: "Unable to access student record." },
+        { error: `Unable to access student record: ${studentFetchErr.message}` },
         { status: 500 }
       );
     }
 
     if (!existingStudent) {
-      console.warn("[student-photo] Student record not found (POST)", { studentId: id });
+      console.warn("[student-photo] Student record not found (404)", { studentId: id });
       return NextResponse.json(
         { error: "Student record not found." },
         { status: 404 }
@@ -111,7 +143,7 @@ export async function POST(
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 1. Upload new image to Supabase Storage bucket 'student-photos'
+    // 2. Upload new image to Supabase Storage bucket 'student-photos'
     const { error: uploadError } = await client.storage
       .from("student-photos")
       .upload(storagePath, buffer, {
@@ -127,19 +159,19 @@ export async function POST(
         error: uploadError.message,
       });
       return NextResponse.json(
-        { error: "Storage upload failed. Please try again." },
+        { error: `Unable to upload student photo: ${uploadError.message}` },
         { status: 500 }
       );
     }
 
-    // 2. Get public URL for the newly stored object
+    // 3. Get public URL for the newly stored object
     const { data: publicUrlData } = client.storage
       .from("student-photos")
       .getPublicUrl(storagePath);
 
     const newPhotoUrl = publicUrlData.publicUrl;
 
-    // 3. Update students table record with new photo_url
+    // 4. Update students table record with new photo_url
     const { error: updateError } = await client
       .from("students")
       .update({ photo_url: newPhotoUrl })
@@ -155,12 +187,12 @@ export async function POST(
         console.error("[student-photo] Storage rollback failed", err);
       });
       return NextResponse.json(
-        { error: "Unable to update student photo in database." },
+        { error: `Unable to save student photo: ${updateError.message}` },
         { status: 500 }
       );
     }
 
-    // 4. ONLY AFTER successful DB update, remove the previous photo object if present
+    // 5. ONLY AFTER successful DB update, remove the previous photo object if present
     if (existingStudent.photo_url) {
       const oldStoragePath = extractStoragePath(existingStudent.photo_url);
       if (oldStoragePath && oldStoragePath !== storagePath) {
@@ -210,14 +242,26 @@ export async function DELETE(
       .eq("id", id)
       .maybeSingle();
 
+    if (studentFetchErr && (studentFetchErr.code === "42703" || studentFetchErr.message?.includes("photo_url"))) {
+      return NextResponse.json(
+        {
+          error:
+            "Database migration required: 'photo_url' column is missing in the students table. Please execute migration_student_photos.sql in Supabase SQL Editor.",
+        },
+        { status: 500 }
+      );
+    }
+
     if (studentFetchErr) {
       console.error("[student-photo] Database error during student lookup (DELETE)", {
         studentId: id,
-        error: studentFetchErr.message,
         code: studentFetchErr.code,
+        message: studentFetchErr.message,
+        details: studentFetchErr.details,
+        hint: studentFetchErr.hint,
       });
       return NextResponse.json(
-        { error: "Unable to access student record." },
+        { error: `Unable to access student record: ${studentFetchErr.message}` },
         { status: 500 }
       );
     }
@@ -244,7 +288,7 @@ export async function DELETE(
         error: updateError.message,
       });
       return NextResponse.json(
-        { error: "Unable to update student photo in database." },
+        { error: `Unable to save student record: ${updateError.message}` },
         { status: 500 }
       );
     }
