@@ -1,12 +1,24 @@
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient, hasAdminKey } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 import { verifyRole } from "@/lib/auth";
 import { ALLOWED_PHOTO_TYPES, MAX_PHOTO_SIZE_BYTES } from "@/lib/image-utils";
 
 /**
+ * Helper to select the appropriate Supabase client for database & storage operations.
+ * Uses service-role client if service key exists, or the authenticated server client
+ * carrying the logged-in Admin's session cookies.
+ */
+function getClient(serverSupabase: any) {
+  if (hasAdminKey()) {
+    return createAdminClient();
+  }
+  return serverSupabase;
+}
+
+/**
  * Extracts storage relative path from a Supabase storage public URL.
- * Example URL: .../storage/v1/object/public/student-photos/STU123/1690000000-abc.webp
+ * Example: .../storage/v1/object/public/student-photos/STU123/1690000000-abc.webp
  * Returns: STU123/1690000000-abc.webp
  */
 function extractStoragePath(publicUrl: string): string | null {
@@ -35,7 +47,7 @@ export async function POST(
 
   try {
     const { id } = await params;
-    if (!id) {
+    if (!id || id.trim() === "") {
       return NextResponse.json({ error: "Student ID is required." }, { status: 400 });
     }
 
@@ -62,17 +74,33 @@ export async function POST(
       );
     }
 
-    const adminClient = createAdminClient();
+    const client = getClient(supabase);
 
-    // Check existing student record
-    const { data: existingStudent, error: studentFetchErr } = await adminClient
+    // Perform student lookup using maybeSingle()
+    const { data: existingStudent, error: studentFetchErr } = await client
       .from("students")
-      .select("id, photo_url")
+      .select("id, full_name, photo_url")
       .eq("id", id)
-      .single();
+      .maybeSingle();
 
-    if (studentFetchErr || !existingStudent) {
-      return NextResponse.json({ error: "Student record not found." }, { status: 404 });
+    if (studentFetchErr) {
+      console.error("[student-photo] Database error during student lookup (POST)", {
+        studentId: id,
+        error: studentFetchErr.message,
+        code: studentFetchErr.code,
+      });
+      return NextResponse.json(
+        { error: "Unable to access student record." },
+        { status: 500 }
+      );
+    }
+
+    if (!existingStudent) {
+      console.warn("[student-photo] Student record not found (POST)", { studentId: id });
+      return NextResponse.json(
+        { error: "Student record not found." },
+        { status: 404 }
+      );
     }
 
     // Construct unique cache-busting storage path
@@ -83,8 +111,8 @@ export async function POST(
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Upload to Supabase Storage bucket 'student-photos'
-    const { error: uploadError } = await adminClient.storage
+    // 1. Upload new image to Supabase Storage bucket 'student-photos'
+    const { error: uploadError } = await client.storage
       .from("student-photos")
       .upload(storagePath, buffer, {
         contentType: fileType,
@@ -93,42 +121,51 @@ export async function POST(
       });
 
     if (uploadError) {
-      console.error("Storage upload error:", uploadError);
+      console.error("[student-photo] Storage upload failed", {
+        studentId: id,
+        storagePath,
+        error: uploadError.message,
+      });
       return NextResponse.json(
-        { error: `Storage upload failed: ${uploadError.message}` },
+        { error: "Storage upload failed. Please try again." },
         { status: 500 }
       );
     }
 
-    // Get public URL for the newly stored object
-    const { data: publicUrlData } = adminClient.storage
+    // 2. Get public URL for the newly stored object
+    const { data: publicUrlData } = client.storage
       .from("student-photos")
       .getPublicUrl(storagePath);
 
     const newPhotoUrl = publicUrlData.publicUrl;
 
-    // Update students table record
-    const { error: updateError } = await adminClient
+    // 3. Update students table record with new photo_url
+    const { error: updateError } = await client
       .from("students")
       .update({ photo_url: newPhotoUrl })
       .eq("id", id);
 
     if (updateError) {
-      // Rollback newly uploaded storage object
-      await adminClient.storage.from("student-photos").remove([storagePath]);
-      console.error("Database update error:", updateError);
+      console.error("[student-photo] Database update failed after storage upload", {
+        studentId: id,
+        error: updateError.message,
+      });
+      // Rollback newly uploaded storage object to prevent orphan file
+      await client.storage.from("student-photos").remove([storagePath]).catch((err: any) => {
+        console.error("[student-photo] Storage rollback failed", err);
+      });
       return NextResponse.json(
-        { error: `Database update failed: ${updateError.message}` },
+        { error: "Unable to update student photo in database." },
         { status: 500 }
       );
     }
 
-    // Safely cleanup old photo file if one existed previously
+    // 4. ONLY AFTER successful DB update, remove the previous photo object if present
     if (existingStudent.photo_url) {
       const oldStoragePath = extractStoragePath(existingStudent.photo_url);
       if (oldStoragePath && oldStoragePath !== storagePath) {
-        adminClient.storage.from("student-photos").remove([oldStoragePath]).catch(() => {
-          // Non-blocking cleanup log
+        client.storage.from("student-photos").remove([oldStoragePath]).catch((err: any) => {
+          console.error("[student-photo] Previous photo storage removal warning", err);
         });
       }
     }
@@ -139,7 +176,7 @@ export async function POST(
       message: "Student photo updated successfully.",
     });
   } catch (err: any) {
-    console.error("Upload photo API error:", err);
+    console.error("[student-photo] Unexpected error during photo upload", err);
     return NextResponse.json(
       { error: err.message || "An unexpected error occurred during photo upload." },
       { status: 500 }
@@ -160,34 +197,54 @@ export async function DELETE(
 
   try {
     const { id } = await params;
-    if (!id) {
+    if (!id || id.trim() === "") {
       return NextResponse.json({ error: "Student ID is required." }, { status: 400 });
     }
 
-    const adminClient = createAdminClient();
+    const client = getClient(supabase);
 
-    // Fetch existing student record
-    const { data: existingStudent, error: studentFetchErr } = await adminClient
+    // Perform student lookup using maybeSingle()
+    const { data: existingStudent, error: studentFetchErr } = await client
       .from("students")
-      .select("id, photo_url")
+      .select("id, full_name, photo_url")
       .eq("id", id)
-      .single();
+      .maybeSingle();
 
-    if (studentFetchErr || !existingStudent) {
-      return NextResponse.json({ error: "Student record not found." }, { status: 404 });
+    if (studentFetchErr) {
+      console.error("[student-photo] Database error during student lookup (DELETE)", {
+        studentId: id,
+        error: studentFetchErr.message,
+        code: studentFetchErr.code,
+      });
+      return NextResponse.json(
+        { error: "Unable to access student record." },
+        { status: 500 }
+      );
+    }
+
+    if (!existingStudent) {
+      console.warn("[student-photo] Student record not found (DELETE)", { studentId: id });
+      return NextResponse.json(
+        { error: "Student record not found." },
+        { status: 404 }
+      );
     }
 
     const oldPhotoUrl = existingStudent.photo_url;
 
     // Reset photo_url in students table
-    const { error: updateError } = await adminClient
+    const { error: updateError } = await client
       .from("students")
       .update({ photo_url: null })
       .eq("id", id);
 
     if (updateError) {
+      console.error("[student-photo] Database update failed (DELETE)", {
+        studentId: id,
+        error: updateError.message,
+      });
       return NextResponse.json(
-        { error: `Database update failed: ${updateError.message}` },
+        { error: "Unable to update student photo in database." },
         { status: 500 }
       );
     }
@@ -196,7 +253,9 @@ export async function DELETE(
     if (oldPhotoUrl) {
       const oldStoragePath = extractStoragePath(oldPhotoUrl);
       if (oldStoragePath) {
-        await adminClient.storage.from("student-photos").remove([oldStoragePath]);
+        client.storage.from("student-photos").remove([oldStoragePath]).catch((err: any) => {
+          console.error("[student-photo] Storage removal warning during photo delete", err);
+        });
       }
     }
 
@@ -205,7 +264,7 @@ export async function DELETE(
       message: "Student photo removed successfully.",
     });
   } catch (err: any) {
-    console.error("Delete photo API error:", err);
+    console.error("[student-photo] Unexpected error during photo delete", err);
     return NextResponse.json(
       { error: err.message || "An unexpected error occurred while deleting student photo." },
       { status: 500 }
