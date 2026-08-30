@@ -28,8 +28,27 @@ function AdmissionFormContent() {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ student_name?: string; phone?: string; email?: string; selected_course?: string }>({});
 
+  const [siteSettings, setSiteSettings] = useState({ short_name: RCIConfig.shortName, site_name: RCIConfig.instituteName });
+  const [contactSettings, setContactSettings] = useState({ whatsapp: RCIConfig.whatsappNumber, phone: RCIConfig.phoneFormatted, phoneRaw: RCIConfig.phoneRaw, email: RCIConfig.email });
+
   useEffect(() => {
     const supabase = createClient();
+
+    supabase.from("site_settings").select("short_name, site_name").eq("id", "default").single().then(({ data }) => {
+      if (data) setSiteSettings({ short_name: data.short_name || RCIConfig.shortName, site_name: data.site_name || RCIConfig.instituteName });
+    });
+
+    supabase.from("contact_settings").select("whatsapp, phone, email").eq("id", "default").single().then(({ data }) => {
+      if (data) {
+        setContactSettings({
+          whatsapp: data.whatsapp ? data.whatsapp.replace(/\D/g, "") : RCIConfig.whatsappNumber,
+          phone: data.phone || RCIConfig.phoneFormatted,
+          phoneRaw: data.phone ? data.phone.replace(/\s+/g, "") : RCIConfig.phoneRaw,
+          email: data.email || RCIConfig.email,
+        });
+      }
+    });
+
     supabase
       .from("courses")
       .select("id, course_name, slug")
@@ -117,9 +136,9 @@ function AdmissionFormContent() {
     }
   };
 
-  const whatsappUrl = RCIConfig.getWhatsAppUrl(
+  const whatsappUrl = `https://wa.me/${contactSettings.whatsapp}?text=${encodeURIComponent(
     `Hello RCI, I have submitted an online application for ${form.selected_course || "a computer course"}${submittedRef ? ` (Ref: #${submittedRef})` : ""}. Please guide me on batch timings and fees.`
-  );
+  )}`;
 
   return (
     <div className="relative group">
@@ -154,7 +173,7 @@ function AdmissionFormContent() {
               )}
 
               <p className="text-slate-600 text-sm sm:text-base max-w-md mx-auto mb-8 leading-relaxed">
-                Thank you for applying to {RCIConfig.shortName}. Our admissions counseling team will contact you shortly to confirm your course schedule, installment fees, and lab batch timing.
+                Thank you for applying to {siteSettings.short_name}. Our admissions counseling team will contact you shortly to confirm your course schedule, installment fees, and lab batch timing.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -390,7 +409,7 @@ function AdmissionFormContent() {
               {/* Form Card Security Footer */}
               <div className="pt-2 border-t border-slate-100 flex items-center justify-center gap-1.5 text-center text-[11.5px] text-slate-500">
                 <Lock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span>Your information is securely submitted to {RCIConfig.shortName} for admission counselling.</span>
+                <span>Your information is securely submitted to {siteSettings.short_name} for admission counselling.</span>
               </div>
             </motion.form>
           )}
@@ -401,9 +420,20 @@ function AdmissionFormContent() {
 }
 
 export default function AdmissionPage() {
-  const counselingWhatsappUrl = RCIConfig.getWhatsAppUrl(
-    "Hello RCI, I need help choosing the right computer course program for my career."
-  );
+  const [contact, setContact] = useState({ phone: RCIConfig.phoneFormatted, phoneRaw: RCIConfig.phoneRaw, email: RCIConfig.email });
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.from("contact_settings").select("phone, email").eq("id", "default").single().then(({ data }) => {
+      if (data) {
+        setContact({
+          phone: data.phone || RCIConfig.phoneFormatted,
+          phoneRaw: data.phone ? data.phone.replace(/\s+/g, "") : RCIConfig.phoneRaw,
+          email: data.email || RCIConfig.email,
+        });
+      }
+    });
+  }, []);
 
   return (
     <>
@@ -572,12 +602,12 @@ export default function AdmissionPage() {
           {/* 5. Contact Help Line Direct Contact */}
           <div className="mt-10 text-center text-xs text-slate-500">
             Have questions before applying? Call RCI Admissions at{" "}
-            <a href={`tel:${RCIConfig.phoneRaw}`} className="text-slate-900 font-bold hover:underline">
-              {RCIConfig.phoneFormatted}
+            <a href={`tel:${contact.phoneRaw}`} className="text-slate-900 font-bold hover:underline">
+              {contact.phone}
             </a>{" "}
             or email{" "}
-            <a href={`mailto:${RCIConfig.email}`} className="text-slate-900 font-bold hover:underline">
-              {RCIConfig.email}
+            <a href={`mailto:${contact.email}`} className="text-slate-900 font-bold hover:underline">
+              {contact.email}
             </a>
             .
           </div>

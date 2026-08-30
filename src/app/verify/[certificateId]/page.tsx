@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import CertificateCard from "@/components/CertificateCard";
 import type { Metadata } from "next";
 import React from "react";
-import { RCIConfig } from "@/lib/config";
+import { getSeoSettings, getSiteSettings } from "@/lib/cms";
 
 export const revalidate = 0;
 export const dynamic = "force-dynamic";
@@ -15,17 +15,21 @@ type Props = { params: Promise<{ certificateId: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { certificateId } = await params;
   const cleanId = certificateId.toUpperCase();
+  const site = await getSiteSettings();
+  const seo = await getSeoSettings();
+  const siteUrl = seo.canonical_url || "https://rciknp.vercel.app";
+
   return {
-    title: `Verify Certificate ${cleanId} | ${RCIConfig.instituteName}`,
-    description: `Verify the authenticity of Rohit Computer Institute certificate ${cleanId}`,
+    title: `Verify Certificate ${cleanId} | ${site.site_name}`,
+    description: `Verify the authenticity of ${site.site_name} certificate ${cleanId}`,
     alternates: {
-      canonical: `${RCIConfig.siteUrl}/verify/${cleanId}`,
+      canonical: `${siteUrl}/verify/${cleanId}`,
     },
     openGraph: {
-      title: `Verify Certificate ${cleanId} | ${RCIConfig.instituteName}`,
+      title: `Verify Certificate ${cleanId} | ${site.site_name}`,
       description: `Official online certificate verification record for ${cleanId}.`,
-      url: `${RCIConfig.siteUrl}/verify/${cleanId}`,
-      siteName: RCIConfig.instituteName,
+      url: `${siteUrl}/verify/${cleanId}`,
+      siteName: site.site_name,
       type: "website",
     },
   };

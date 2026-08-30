@@ -35,6 +35,22 @@ async function logCmsActivity(action: string, details: string, userEmail: string
   }
 }
 
+// Central helper to revalidate all website pages after CMS updates
+async function revalidateAllWebsitePages() {
+  try {
+    revalidatePath("/", "layout");
+    revalidatePath("/");
+    revalidatePath("/about");
+    revalidatePath("/courses");
+    revalidatePath("/contact");
+    revalidatePath("/verify");
+    revalidatePath("/admission");
+    revalidatePath("/admin/cms");
+  } catch (err) {
+    console.error("Failed to revalidate paths:", err);
+  }
+}
+
 // 1. UPDATE BRANDING & SITE SETTINGS
 export async function updateSiteSettingsAction(data: Partial<SiteSettings>) {
   const supabase = await createClient();
@@ -54,8 +70,7 @@ export async function updateSiteSettingsAction(data: Partial<SiteSettings>) {
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_UPDATE_BRANDING", "Updated site branding & colors", authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Branding settings saved successfully!" };
 }
 
@@ -78,10 +93,7 @@ export async function updateDirectorProfileAction(data: Partial<DirectorProfile>
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_UPDATE_DIRECTOR", "Updated director & institute profile", authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/");
-  revalidatePath("/about");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Director profile saved successfully!" };
 }
 
@@ -104,8 +116,7 @@ export async function updateHomepageSettingsAction(data: Partial<HomepageSetting
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_UPDATE_HERO", "Updated homepage hero content", authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Homepage hero content saved successfully!" };
 }
 
@@ -142,8 +153,7 @@ export async function saveBannerAction(banner: Partial<HomepageBanner>) {
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_SAVE_BANNER", `Saved homepage banner: ${banner.title}`, authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Homepage banner saved successfully!" };
 }
 
@@ -159,8 +169,7 @@ export async function deleteBannerAction(id: string) {
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_DELETE_BANNER", `Deleted homepage banner id: ${id}`, authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Banner deleted successfully!" };
 }
 
@@ -183,8 +192,7 @@ export async function updateAnnouncementSettingsAction(data: Partial<Announcemen
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_UPDATE_ANNOUNCEMENT", "Updated announcement bar settings", authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Announcement bar saved successfully!" };
 }
 
@@ -206,8 +214,7 @@ export async function updateAboutSectionAction(data: Partial<AboutSection>) {
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_UPDATE_ABOUT", `Updated about section: ${data.section_key}`, authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "About section saved successfully!" };
 }
 
@@ -238,8 +245,7 @@ export async function saveFeatureAction(feature: Partial<HomepageFeature>) {
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_SAVE_FEATURE", `Saved feature card: ${feature.title}`, authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Feature card saved successfully!" };
 }
 
@@ -254,8 +260,7 @@ export async function deleteFeatureAction(id: string) {
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_DELETE_FEATURE", `Deleted feature card id: ${id}`, authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Feature card deleted successfully!" };
 }
 
@@ -286,8 +291,7 @@ export async function saveStatAction(stat: Partial<HomepageStat>) {
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_SAVE_STAT", `Saved stat: ${stat.label}`, authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Statistic item saved successfully!" };
 }
 
@@ -302,8 +306,7 @@ export async function deleteStatAction(id: string) {
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_DELETE_STAT", `Deleted stat id: ${id}`, authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Statistic deleted successfully!" };
 }
 
@@ -326,8 +329,7 @@ export async function updateContactSettingsAction(data: Partial<ContactSettings>
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_UPDATE_CONTACT", "Updated contact settings", authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Contact information saved successfully!" };
 }
 
@@ -357,8 +359,7 @@ export async function saveSocialLinkAction(social: Partial<SocialLink>) {
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_SAVE_SOCIAL", `Saved social link: ${social.platform}`, authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Social media link saved!" };
 }
 
@@ -373,8 +374,7 @@ export async function deleteSocialLinkAction(id: string) {
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_DELETE_SOCIAL", `Deleted social link id: ${id}`, authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Social link deleted!" };
 }
 
@@ -407,8 +407,7 @@ export async function saveNavigationLinkAction(nav: Partial<NavigationLink>) {
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_SAVE_NAV", `Saved nav link: ${nav.label} (${nav.location})`, authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Navigation link saved successfully!" };
 }
 
@@ -429,8 +428,7 @@ export async function deleteNavigationLinkAction(id: string) {
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_DELETE_NAV", `Deleted nav link id: ${id}`, authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "Navigation link deleted!" };
 }
 
@@ -453,8 +451,7 @@ export async function updateSeoSettingsAction(data: Partial<SeoSettings>) {
   if (error) return { success: false, error: error.message };
 
   await logCmsActivity("CMS_UPDATE_SEO", "Updated SEO & Meta tags", authResult.user.email ?? "");
-  revalidatePath("/", "layout");
-  revalidatePath("/admin/cms");
+  await revalidateAllWebsitePages();
   return { success: true, message: "SEO settings saved successfully!" };
 }
 

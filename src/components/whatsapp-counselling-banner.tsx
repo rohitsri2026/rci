@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { MessageCircle, HelpCircle } from "lucide-react";
 import { RCIConfig } from "@/lib/config";
+import { createClient } from "@/lib/supabase/client";
 
 export interface WhatsAppCounsellingBannerProps {
   badge?: string;
@@ -25,7 +26,23 @@ export default function WhatsAppCounsellingBanner({
   maxWidthClass = "max-w-4xl",
   variant = "auto",
 }: WhatsAppCounsellingBannerProps) {
-  const whatsappUrl = RCIConfig.getWhatsAppUrl(customMessage);
+  const [whatsappNum, setWhatsappNum] = useState(RCIConfig.whatsappNumber);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("contact_settings")
+      .select("whatsapp")
+      .eq("id", "default")
+      .single()
+      .then(({ data }) => {
+        if (data?.whatsapp) {
+          setWhatsappNum(data.whatsapp.replace(/\D/g, ""));
+        }
+      });
+  }, []);
+
+  const whatsappUrl = `https://wa.me/${whatsappNum}?text=${encodeURIComponent(customMessage)}`;
   const isCompact = variant === "compact";
 
   return (

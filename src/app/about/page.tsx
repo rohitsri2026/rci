@@ -9,32 +9,41 @@ import WhyRCI from "@/components/WhyRCI";
 import AboutStudentPortal from "@/components/about-student-portal";
 import AboutCertTrust from "@/components/about-cert-trust";
 import Stats from "@/components/StatsSection";
-import { RCIConfig } from "@/lib/config";
+import { getSeoSettings, getSiteSettings } from "@/lib/cms";
 import WhatsAppCounsellingBanner from "@/components/whatsapp-counselling-banner";
 
-export const metadata: Metadata = {
-  title: `About Us | ${RCIConfig.instituteName}`,
-  description: `Learn about Rohit Computer Institute (RCI), our leadership, mission, vision, practical computer training methodology, and student digital ecosystem.`,
-  alternates: {
-    canonical: `${RCIConfig.siteUrl}/about`,
-  },
-  openGraph: {
-    title: `About Us | ${RCIConfig.instituteName}`,
-    description: `Empowering careers through practical computer education, recognized certifications, and digital student portal support.`,
-    url: `${RCIConfig.siteUrl}/about`,
-    siteName: RCIConfig.instituteName,
-    images: [
-      {
-        url: `${RCIConfig.siteUrl}/banner.png`,
-        width: 1200,
-        height: 630,
-        alt: `${RCIConfig.instituteName} Campus & Training Banner`,
-      },
-    ],
-    locale: "en_IN",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getSeoSettings();
+  const site = await getSiteSettings();
+
+  const title = `About Us | ${site.site_name}`;
+  const description = `Learn about ${site.site_name}, our leadership, mission, vision, practical computer training methodology, and student digital ecosystem.`;
+  const siteUrl = seo.canonical_url || "https://rciknp.vercel.app";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${siteUrl}/about`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${siteUrl}/about`,
+      siteName: site.site_name,
+      images: [
+        {
+          url: seo.og_image_url || site.logo_url || `${siteUrl}/banner.png`,
+          width: 1200,
+          height: 630,
+          alt: `${site.site_name} Banner`,
+        },
+      ],
+      locale: "en_IN",
+      type: "website",
+    },
+  };
+}
 
 export default function AboutPage() {
   return (

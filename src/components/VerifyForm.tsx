@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   Search, Award, ShieldCheck, QrCode, ArrowRight, Sparkles, 
@@ -9,12 +9,28 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { RCIConfig } from "@/lib/config";
+import { createClient } from "@/lib/supabase/client";
 import WhatsAppCounsellingBanner from "@/components/whatsapp-counselling-banner";
 
 export default function VerifyForm() {
   const router = useRouter();
   const [certId, setCertId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [whatsappNum, setWhatsappNum] = useState(RCIConfig.whatsappNumber);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("contact_settings")
+      .select("whatsapp")
+      .eq("id", "default")
+      .single()
+      .then(({ data }) => {
+        if (data?.whatsapp) {
+          setWhatsappNum(data.whatsapp.replace(/\D/g, ""));
+        }
+      });
+  }, []);
 
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,9 +41,7 @@ export default function VerifyForm() {
     router.push(`/verify/${cleanId}`);
   };
 
-  const whatsappUrl = RCIConfig.getWhatsAppUrl(
-    "Hello RCI, I am having trouble verifying my certificate online. Please assist me."
-  );
+  const whatsappUrl = `https://wa.me/${whatsappNum}?text=${encodeURIComponent("Hello RCI, I am having trouble verifying my certificate online. Please assist me.")}`;
 
   return (
     <main className="min-h-screen bg-slate-50 pt-28 sm:pt-32 pb-16">

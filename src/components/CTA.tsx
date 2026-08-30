@@ -1,13 +1,37 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, MessageCircle, PhoneCall } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { RCIConfig } from "@/lib/config";
+import { createClient } from "@/lib/supabase/client";
 
 export default function CTA() {
-  const whatsappUrl = RCIConfig.getWhatsAppUrl("Hello RCI, I am interested in joining a computer course. Please share admission details.");
+  const [contactInfo, setContactInfo] = useState({
+    whatsapp: RCIConfig.whatsappNumber,
+    phone: RCIConfig.phoneRaw,
+  });
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("contact_settings")
+      .select("whatsapp, phone")
+      .eq("id", "default")
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setContactInfo({
+            whatsapp: data.whatsapp ? data.whatsapp.replace(/\D/g, "") : RCIConfig.whatsappNumber,
+            phone: data.phone ? data.phone.replace(/\s+/g, "") : RCIConfig.phoneRaw,
+          });
+        }
+      });
+  }, []);
+
+  const whatsappUrl = `https://wa.me/${contactInfo.whatsapp}?text=${encodeURIComponent("Hello RCI, I am interested in joining a computer course. Please share admission details.")}`;
 
   return (
     <section className="py-18 relative overflow-hidden bg-slate-900 text-white">
@@ -74,7 +98,7 @@ export default function CTA() {
             </a>
 
             <a
-              href={`tel:${RCIConfig.phoneRaw}`}
+              href={`tel:${contactInfo.phone}`}
               className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 px-7 py-4 rounded-2xl font-bold text-base transition-all backdrop-blur-xs active:scale-98"
             >
               <PhoneCall className="w-5 h-5 text-blue-300" />

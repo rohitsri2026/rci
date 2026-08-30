@@ -1,11 +1,29 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { MessageCircle, GraduationCap } from "lucide-react";
 import { RCIConfig } from "@/lib/config";
+import { createClient } from "@/lib/supabase/client";
 
 export default function MobileStickyCTA() {
-  const whatsappUrl = RCIConfig.getWhatsAppUrl("Hello RCI, I want to apply for admission.");
+  const [whatsappNum, setWhatsappNum] = useState(RCIConfig.whatsappNumber);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("contact_settings")
+      .select("whatsapp")
+      .eq("id", "default")
+      .single()
+      .then(({ data }) => {
+        if (data?.whatsapp) {
+          setWhatsappNum(data.whatsapp.replace(/\D/g, ""));
+        }
+      });
+  }, []);
+
+  const whatsappUrl = `https://wa.me/${whatsappNum}?text=${encodeURIComponent("Hello RCI, I want to apply for admission.")}`;
 
   return (
     <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 p-2.5 shadow-2xl">

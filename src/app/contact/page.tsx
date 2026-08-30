@@ -5,28 +5,39 @@ import {
   MapPin, Phone, Mail, Clock, MessageCircle, Navigation, 
   ExternalLink
 } from "lucide-react";
-import { RCIConfig } from "@/lib/config";
+import { getContactSettings, getSiteSettings, getSeoSettings } from "@/lib/cms";
 import WhatsAppCounsellingBanner from "@/components/whatsapp-counselling-banner";
 
-export const metadata: Metadata = {
-  title: `Contact Us | ${RCIConfig.instituteName}`,
-  description: `Contact ${RCIConfig.instituteName}, Kanpur for course enquiries, admissions, fees, batch timings and computer training information.`,
-  alternates: {
-    canonical: `${RCIConfig.siteUrl}/contact`,
-  },
-  openGraph: {
-    title: `Contact Us | ${RCIConfig.instituteName}`,
-    description: `Get in touch with ${RCIConfig.instituteName}, Kanpur for admissions, course details, and batch timings.`,
-    url: `${RCIConfig.siteUrl}/contact`,
-    siteName: RCIConfig.instituteName,
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getSeoSettings();
+  const site = await getSiteSettings();
 
-export default function ContactPage() {
-  const whatsappUrl = RCIConfig.getWhatsAppUrl(
-    "Hello RCI, I would like to get more information about your computer courses."
-  );
+  const title = `Contact Us | ${site.site_name}`;
+  const description = `Contact ${site.site_name} for course enquiries, admissions, fees, batch timings and computer training information.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${seo.canonical_url || "https://rciknp.vercel.app"}/contact`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${seo.canonical_url || "https://rciknp.vercel.app"}/contact`,
+      siteName: site.site_name,
+      type: "website",
+    },
+  };
+}
+
+export default async function ContactPage() {
+  const contact = await getContactSettings();
+  const site = await getSiteSettings();
+
+  const cleanWhatsapp = contact.whatsapp ? contact.whatsapp.replace(/\D/g, "") : "917376893097";
+  const cleanPhone = contact.phone ? contact.phone.replace(/\s+/g, "") : "+917376893097";
+  const whatsappUrl = `https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent("Hello RCI, I would like to get more information about your computer courses.")}`;
 
   return (
     <>
@@ -42,11 +53,11 @@ export default function ContactPage() {
             </span>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-black font-display text-slate-900 mb-3 leading-tight tracking-tight">
-              Contact Rohit Computer Institute
+              Contact {site.site_name}
             </h1>
             
             <p className="text-slate-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
-              Have questions about courses, fees, batch timings or admission? Reach out to RCI and our team will help you with the next step.
+              Have questions about courses, fees, batch timings or admission? Reach out to {site.short_name} and our team will help you with the next step.
             </p>
           </div>
 
@@ -60,23 +71,23 @@ export default function ContactPage() {
                 className="w-full sm:w-auto flex-1 h-12 inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-md shadow-emerald-600/20 active:scale-98"
               >
                 <MessageCircle className="w-4 h-4" />
-                WhatsApp RCI
+                WhatsApp {site.short_name}
               </a>
 
               <a
-                href={`tel:${RCIConfig.phoneRaw}`}
+                href={`tel:${cleanPhone}`}
                 className="w-full sm:w-auto flex-1 h-12 inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-md shadow-blue-500/20 active:scale-98"
               >
                 <Phone className="w-4 h-4" />
-                Call RCI
+                Call {site.short_name}
               </a>
 
               <a
-                href={`mailto:${RCIConfig.email}`}
+                href={`mailto:${contact.email}`}
                 className="w-full sm:w-auto flex-1 h-12 inline-flex items-center justify-center gap-2 bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-100 hover:text-slate-900 rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-2xs active:scale-98"
               >
                 <Mail className="w-4 h-4 text-purple-600" />
-                Email RCI
+                Email {site.short_name}
               </a>
             </div>
           </div>
@@ -94,14 +105,14 @@ export default function ContactPage() {
                     <MapPin className="w-5.5 h-5.5" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-1">Visit RCI</h3>
-                    <p className="text-slate-900 font-extrabold text-sm leading-snug">{RCIConfig.address}</p>
+                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-1">Visit {site.short_name}</h3>
+                    <p className="text-slate-900 font-extrabold text-sm leading-snug">{contact.address}</p>
                   </div>
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end">
                   <a
-                    href={RCIConfig.mapsUrl}
+                    href={contact.maps_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-xs font-extrabold text-blue-600 hover:text-blue-700 transition-colors"
@@ -119,15 +130,15 @@ export default function ContactPage() {
                     <Phone className="w-5.5 h-5.5" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-1">Call RCI</h3>
-                    <p className="text-slate-900 font-extrabold text-base leading-snug font-mono">{RCIConfig.phoneFormatted}</p>
+                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-1">Call {site.short_name}</h3>
+                    <p className="text-slate-900 font-extrabold text-base leading-snug font-mono">{contact.phone}</p>
                     <p className="text-[11px] text-slate-500 mt-0.5">Direct Institute Helpline</p>
                   </div>
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end">
                   <a
-                    href={`tel:${RCIConfig.phoneRaw}`}
+                    href={`tel:${cleanPhone}`}
                     className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-700 hover:text-emerald-800 transition-colors"
                   >
                     <Phone className="w-3.5 h-3.5" />
@@ -143,15 +154,15 @@ export default function ContactPage() {
                     <Mail className="w-5.5 h-5.5" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-1">Email RCI</h3>
-                    <p className="text-slate-900 font-extrabold text-sm leading-snug font-mono">{RCIConfig.email}</p>
+                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-1">Email {site.short_name}</h3>
+                    <p className="text-slate-900 font-extrabold text-sm leading-snug font-mono">{contact.email}</p>
                     <p className="text-[11px] text-slate-500 mt-0.5">Official Desk Email</p>
                   </div>
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end">
                   <a
-                    href={`mailto:${RCIConfig.email}`}
+                    href={`mailto:${contact.email}`}
                     className="inline-flex items-center gap-1.5 text-xs font-extrabold text-purple-700 hover:text-purple-800 transition-colors"
                   >
                     <Mail className="w-3.5 h-3.5" />
@@ -168,8 +179,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-1">Working Hours</h3>
-                    <p className="text-slate-900 font-extrabold text-sm leading-snug">Monday to Saturday</p>
-                    <p className="text-slate-600 text-xs font-mono font-semibold mt-0.5">8:00 AM – 8:00 PM</p>
+                    <p className="text-slate-900 font-extrabold text-sm leading-snug">{contact.office_hours || "Monday to Saturday"}</p>
                   </div>
                 </div>
               </div>
@@ -184,10 +194,10 @@ export default function ContactPage() {
                 <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-blue-600" />
-                    <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">FIND RCI</span>
+                    <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">FIND {site.short_name}</span>
                   </div>
                   <a
-                    href={RCIConfig.mapsUrl}
+                    href={contact.maps_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 text-[11px] font-extrabold text-blue-600 hover:text-blue-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 shadow-2xs"
@@ -200,7 +210,7 @@ export default function ContactPage() {
                 {/* Map Iframe Container */}
                 <div className="relative flex-1 min-h-[380px] bg-slate-100">
                   <iframe
-                    title="Rohit Computer Institute (RCI) Location Map"
+                    title={`${site.site_name} Location Map`}
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3571.234!2d80.3319!3d26.4499!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjbCsDI2JzU5LjYiTiA4MMKwMTknNTQuOSJF!5e0!3m2!1sen!2sin!4v1678000000000"
                     width="100%"
                     height="100%"
@@ -213,7 +223,7 @@ export default function ContactPage() {
 
                 {/* Map Footer Banner */}
                 <div className="p-3 bg-slate-900 text-white text-[11.5px] px-4 flex items-center justify-between">
-                  <span className="font-semibold text-slate-300">Sanjay Nagar Cantt, Kanpur, UP</span>
+                  <span className="font-semibold text-slate-300">{contact.address}</span>
                   <span className="text-amber-400 font-extrabold text-[10.5px] uppercase tracking-wider">OFFICIAL CAMPUS</span>
                 </div>
               </div>
@@ -225,9 +235,9 @@ export default function ContactPage() {
           <WhatsAppCounsellingBanner
             badge="Admission Counseling"
             title="Need help choosing a course?"
-            description="Talk directly with an RCI admissions counselor about courses, fees and batch timings."
-            buttonText="Chat with RCI on WhatsApp"
-            customMessage="Hello RCI, I would like to get guidance regarding course selection, fees, and batch timings."
+            description={`Talk directly with an ${site.short_name} admissions counselor about courses, fees and batch timings.`}
+            buttonText={`Chat with ${site.short_name} on WhatsApp`}
+            customMessage={`Hello ${site.short_name}, I would like to get guidance regarding course selection, fees, and batch timings.`}
             variant="horizontal"
           />
 

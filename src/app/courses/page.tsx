@@ -7,25 +7,34 @@ import {
   GraduationCap, Code2, Calculator, Keyboard, CheckCircle2,
   Layers
 } from "lucide-react";
+import { getSeoSettings, getSiteSettings } from "@/lib/cms";
 import { createClient } from "@/lib/supabase/server";
-import { RCIConfig } from "@/lib/config";
 import WhatsAppCounsellingBanner from "@/components/whatsapp-counselling-banner";
 import CoursesCatalogClient from "@/components/courses/CoursesCatalogClient";
 
-export const metadata: Metadata = {
-  title: `Courses & Programs | ${RCIConfig.instituteName}`,
-  description: `Explore computer courses & programs offered by ${RCIConfig.instituteName}, Kanpur including CCC, DCA, Tally Prime, Python, and Typing with practical lab training.`,
-  alternates: {
-    canonical: `${RCIConfig.siteUrl}/courses`,
-  },
-  openGraph: {
-    title: `Courses & Programs | ${RCIConfig.instituteName}`,
-    description: `Explore computer courses and skill development programs at ${RCIConfig.instituteName}, Kanpur.`,
-    url: `${RCIConfig.siteUrl}/courses`,
-    siteName: RCIConfig.instituteName,
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getSeoSettings();
+  const site = await getSiteSettings();
+
+  const title = `Courses & Programs | ${site.site_name}`;
+  const description = `Explore computer courses & programs offered by ${site.site_name}, Kanpur including CCC, DCA, Tally Prime, Python, and Typing with practical lab training.`;
+  const siteUrl = seo.canonical_url || "https://rciknp.vercel.app";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${siteUrl}/courses`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${siteUrl}/courses`,
+      siteName: site.site_name,
+      type: "website",
+    },
+  };
+}
 
 function toSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");

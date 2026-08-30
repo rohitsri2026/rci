@@ -32,6 +32,7 @@ export default function Header() {
     logo_url: "/logo.png",
   });
   const [announcement, setAnnouncement] = useState<any>(null);
+  const [headerNavLinks, setHeaderNavLinks] = useState<{ id?: string; label: string; url: string; open_new_tab?: boolean }[]>([]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -68,6 +69,19 @@ export default function Header() {
       .single()
       .then(({ data }) => {
         if (data) setAnnouncement(data);
+      });
+
+    // Fetch navigation links
+    supabase
+      .from("navigation_links")
+      .select("*")
+      .eq("location", "header")
+      .eq("is_active", true)
+      .order("display_order")
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setHeaderNavLinks(data);
+        }
       });
 
     // Fetch courses
