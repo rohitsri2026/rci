@@ -1,10 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, hasAdminKey } from "@/lib/supabase/admin";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CertificateCard from "@/components/CertificateCard";
 import type { Metadata } from "next";
 import React from "react";
 import { RCIConfig } from "@/lib/config";
+
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ certificateId: string }> };
 
@@ -32,25 +36,43 @@ export default async function VerifyCertificateIdPage({ params }: Props) {
   const cleanId = certificateId.toUpperCase();
   const supabase = await createClient();
 
-  // Query by certificate_number, joining students and courses.
-  const { data: cert } = await supabase
-    .from("certificates")
-    .select(`
-      *,
-      students:student_id (
-        id,
-        full_name,
-        photo_url
-      ),
-      courses:course_id (
-        id,
-        course_name,
-        duration,
-        fees
-      )
-    `)
-    .eq("certificate_number", cleanId)
-    .maybeSingle();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let cert: any = null;
+
+  // 1. Primary: Use secure SECURITY DEFINER RPC function (get_public_certificate_verification)
+  const { data: rpcData, error: rpcError } = await supabase.rpc(
+    "get_public_certificate_verification",
+    { p_certificate_id: cleanId }
+  );
+
+  if (!rpcError && Array.isArray(rpcData) && rpcData.length > 0) {
+    cert = rpcData[0];
+  } else {
+    // 2. Fallback: If RPC is not available in DB, use server client with explicit safe field selection
+    const client = hasAdminKey() ? createAdminClient() : supabase;
+    const { data: directCert } = await client
+      .from("certificates")
+      .select(`
+        *,
+        students:student_id (
+          id,
+          full_name,
+          photo_url
+        ),
+        courses:course_id (
+          id,
+          course_name,
+          duration,
+          fees
+        )
+      `)
+      .eq("certificate_number", cleanId)
+      .maybeSingle();
+
+    if (directCert) {
+      cert = directCert;
+    }
+  }
 
   return (
     <>
@@ -72,3 +94,4 @@ export default async function VerifyCertificateIdPage({ params }: Props) {
     </>
   );
 }
+

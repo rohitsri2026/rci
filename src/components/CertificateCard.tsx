@@ -107,16 +107,21 @@ export default function CertificateCard({ cert, searchId }: { cert?: any; search
     );
   }
 
+  // Safely normalize student relation data (handles object, array, or null)
+  const studentData = Array.isArray(cert?.students)
+    ? cert.students[0]
+    : cert?.students;
+
   const certificateNumber = cert.certificate_number || cert.certificate_id || searchId || "—";
-  const studentName = cert.student_name || cert.students?.full_name || "—";
+  const studentName = cert.student_name || studentData?.full_name || "—";
   const courseName = cert.course_name || cert.courses?.course_name || "—";
   const duration = cert.courses?.duration || "6 Months";
   const grade = cert.grade || "A+";
   const completionDate = cert.completion_date || cert.issue_date;
   const issueDate = cert.issue_date;
-  const fatherName = cert.students?.address || undefined;
+  const fatherName = studentData?.address || undefined;
   const expiryDate = cert.expiration_date || cert.expiry_date;
-  const photoUrl = cert.students?.photo_url || null;
+  const photoUrl = studentData?.photo_url || null;
 
   // ----------------------------------------------------
   // 2. REVOKED STATE

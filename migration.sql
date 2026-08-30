@@ -191,6 +191,7 @@ CREATE POLICY "Allow authenticated users all access to courses" ON public.course
   FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- Students policies
+DROP POLICY IF EXISTS "Allow public read access to students" ON public.students;
 DROP POLICY IF EXISTS "Allow authenticated users select access to students" ON public.students;
 CREATE POLICY "Allow authenticated users select access to students" ON public.students
   FOR SELECT TO authenticated USING (true);
