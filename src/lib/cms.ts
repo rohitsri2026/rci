@@ -12,6 +12,7 @@ import {
   SocialLink,
   NavigationLink,
   SeoSettings,
+  AnnouncementItem,
   CmsFullData,
 } from "@/types/cms";
 import {
@@ -19,6 +20,7 @@ import {
   DEFAULT_DIRECTOR_PROFILE,
   DEFAULT_HOMEPAGE_SETTINGS,
   DEFAULT_ANNOUNCEMENT_SETTINGS,
+  DEFAULT_ANNOUNCEMENTS,
   DEFAULT_CONTACT_SETTINGS,
   DEFAULT_SEO_SETTINGS,
   DEFAULT_ABOUT_SECTIONS,
@@ -230,6 +232,50 @@ export async function getSeoSettings(): Promise<SeoSettings> {
 }
 
 /**
+ * Fetch All Announcements (for CMS Manager)
+ */
+export async function getAnnouncements(): Promise<AnnouncementItem[]> {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("website_announcements")
+      .select("*")
+      .order("display_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    if (data && data.length > 0) return data;
+  } catch (e) {
+    console.warn("CMS: Failed to fetch website_announcements", e);
+  }
+  return DEFAULT_ANNOUNCEMENTS as any[];
+}
+
+/**
+ * Fetch Active Announcements (for Website Header)
+ */
+export async function getActiveAnnouncements(): Promise<AnnouncementItem[]> {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("website_announcements")
+      .select("*")
+      .eq("is_enabled", true)
+      .order("display_order", { ascending: true });
+    
+    if (data && data.length > 0) {
+      const now = new Date();
+      return data.filter((item) => {
+        if (item.start_at && new Date(item.start_at) > now) return false;
+        if (item.end_at && new Date(item.end_at) < now) return false;
+        return true;
+      });
+    }
+  } catch (e) {
+    console.warn("CMS: Failed to fetch active website_announcements", e);
+  }
+  return DEFAULT_ANNOUNCEMENTS as any[];
+}
+
+/**
  * Fetch All CMS Data at once
  */
 export async function getAllCmsData(): Promise<CmsFullData> {
@@ -239,6 +285,7 @@ export async function getAllCmsData(): Promise<CmsFullData> {
     homepageSettings,
     banners,
     announcement,
+    announcements,
     aboutSections,
     features,
     stats,
@@ -252,6 +299,7 @@ export async function getAllCmsData(): Promise<CmsFullData> {
     getHomepageSettings(),
     getHomepageBanners(),
     getAnnouncementSettings(),
+    getAnnouncements(),
     getAboutSections(),
     getHomepageFeatures(),
     getHomepageStats(),
@@ -267,6 +315,7 @@ export async function getAllCmsData(): Promise<CmsFullData> {
     homepageSettings,
     banners,
     announcement,
+    announcements,
     aboutSections,
     features,
     stats,

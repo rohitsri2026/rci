@@ -62,6 +62,23 @@ export const DEFAULT_ANNOUNCEMENT_SETTINGS: AnnouncementSettings = {
   end_at: null,
 };
 
+export const DEFAULT_ANNOUNCEMENTS = [
+  {
+    id: "default-announcement-1",
+    title: "Admissions Open 2026",
+    message: "Admissions Open for New Batches 2026! Enroll today for DCA, ADCA & Tally Prime.",
+    announcement_type: "admission" as const,
+    priority: "important" as const,
+    is_enabled: true,
+    start_at: new Date().toISOString(),
+    end_at: null,
+    button_text: "Apply Now",
+    button_url: "/admission",
+    display_order: 1,
+    is_dismissible: true,
+  },
+];
+
 export const DEFAULT_CONTACT_SETTINGS: ContactSettings = {
   id: "default",
   phone: RCIConfig.phoneFormatted,

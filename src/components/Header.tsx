@@ -32,6 +32,7 @@ export default function Header() {
     logo_url: "/logo.png",
   });
   const [announcement, setAnnouncement] = useState<any>(null);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
   const [headerNavLinks, setHeaderNavLinks] = useState<{ id?: string; label: string; url: string; open_new_tab?: boolean }[]>([]);
 
   useEffect(() => {
@@ -61,7 +62,17 @@ export default function Header() {
         }
       });
 
-    // Fetch announcement settings
+    // Fetch active website announcements
+    supabase
+      .from("website_announcements")
+      .select("*")
+      .eq("is_enabled", true)
+      .order("display_order", { ascending: true })
+      .then(({ data }) => {
+        if (data && data.length > 0) setAnnouncements(data);
+      });
+
+    // Fetch announcement settings fallback
     supabase
       .from("announcement_settings")
       .select("*")
@@ -127,7 +138,7 @@ export default function Header() {
 
   return (
     <>
-      <AnnouncementBar settings={announcement} />
+      <AnnouncementBar notices={announcements} settings={announcement} />
       <header
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
           isScrolled

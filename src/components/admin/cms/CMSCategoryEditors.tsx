@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import ImageUploader from "./ImageUploader";
 import { useCMSFeedback } from "./CMSFeedbackProvider";
+import AnnouncementManager from "./AnnouncementManager";
 import {
   updateSiteSettingsAction,
   updateDirectorProfileAction,
@@ -95,6 +96,10 @@ export function BrandingEditor({ initialData, onRefresh }: EditorProps<SiteSetti
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const { showSuccess, showError, showSaving } = useCMSFeedback();
 
+  useEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (saving) return;
@@ -106,6 +111,7 @@ export function BrandingEditor({ initialData, onRefresh }: EditorProps<SiteSetti
       const res = await updateSiteSettingsAction(formData);
       console.log("[CMS] Branding save response:", res);
       if (res.success) {
+        if (res.data) setFormData(res.data);
         const msg = res.message || "Branding settings saved successfully.";
         setMessage({ type: "success", text: msg });
         showSuccess(msg, "Branding");
@@ -307,6 +313,10 @@ export function DirectorEditor({ initialData, onRefresh }: EditorProps<DirectorP
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const { showSuccess, showError, showSaving } = useCMSFeedback();
 
+  useEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (saving) return;
@@ -318,6 +328,7 @@ export function DirectorEditor({ initialData, onRefresh }: EditorProps<DirectorP
       const res = await updateDirectorProfileAction(formData);
       console.log("[CMS] Director save response:", res);
       if (res.success) {
+        if (res.data) setFormData(res.data);
         const msg = res.message || "Director profile saved successfully.";
         setMessage({ type: "success", text: msg });
         showSuccess(msg, "Director Profile");
@@ -438,17 +449,22 @@ export function HomepageHeroEditor({ initialData, onRefresh }: EditorProps<Homep
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const { showSuccess, showError, showSaving } = useCMSFeedback();
 
+  useEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (saving) return;
     setSaving(true);
     setMessage(null);
-    showSaving("Saving homepage hero settings to remote database...");
+    showSaving("Saving homepage hero settings...");
     console.log("[CMS] Saving homepage hero...", formData);
     try {
       const res = await updateHomepageSettingsAction(formData);
       console.log("[CMS] Hero save response:", res);
       if (res.success) {
+        if (res.data) setFormData(res.data);
         const msg = res.message || "Homepage hero settings saved successfully.";
         setMessage({ type: "success", text: msg });
         showSuccess(msg, "Homepage Hero");
@@ -622,6 +638,10 @@ export function HomepageBannersManager({ initialData, onRefresh }: EditorProps<H
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const { showSuccess, showError, showSaving } = useCMSFeedback();
+
+  useEffect(() => {
+    setBanners(initialData);
+  }, [initialData]);
 
   const handleSaveBanner = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -886,142 +906,13 @@ export function HomepageBannersManager({ initialData, onRefresh }: EditorProps<H
 }
 
 // ----------------------------------------------------
-// 5. ANNOUNCEMENT BAR EDITOR
+// 5. ANNOUNCEMENT BAR & NOTICE MANAGER
 // ----------------------------------------------------
-export function AnnouncementEditor({ initialData, onRefresh }: EditorProps<AnnouncementSettings>) {
-  const [formData, setFormData] = useState<AnnouncementSettings>(initialData);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const { showSuccess, showError, showSaving } = useCMSFeedback();
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (saving) return;
-    setSaving(true);
-    setMessage(null);
-    showSaving("Saving announcement settings...");
-    console.log("[CMS] Saving announcement...", formData);
-    try {
-      const res = await updateAnnouncementSettingsAction(formData);
-      console.log("[CMS] Announcement save response:", res);
-      if (res.success) {
-        const msg = res.message || "Announcement settings saved successfully.";
-        setMessage({ type: "success", text: msg });
-        showSuccess(msg, "Announcement Bar");
-        if (onRefresh) onRefresh();
-      } else {
-        const err = res.error || "Failed to save announcement settings.";
-        setMessage({ type: "error", text: err });
-        showError(err);
-      }
-    } catch (err) {
-      console.error("[CMS] Save announcement exception:", err);
-      const errMsg = "An unexpected error occurred while saving announcement.";
-      setMessage({ type: "error", text: errMsg });
-      showError(errMsg);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSave} className="space-y-6">
-      <FeedbackBanner message={message} onClose={() => setMessage(null)} />
-
-      <div className="bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-            <span>📢 Announcement Bar Settings</span>
-          </h3>
-
-          <label className="flex items-center gap-2 cursor-pointer bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
-            <input
-              type="checkbox"
-              checked={formData.is_enabled}
-              onChange={(e) => setFormData((prev) => ({ ...prev, is_enabled: e.target.checked }))}
-              className="w-4 h-4 text-blue-600 rounded"
-            />
-            <span className="text-xs font-bold text-slate-800">
-              {formData.is_enabled ? "Bar Enabled" : "Bar Disabled"}
-            </span>
-          </label>
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">Announcement Message</label>
-          <input
-            type="text"
-            value={formData.message}
-            onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-sm font-semibold focus:bg-white focus:ring-2 focus:ring-blue-600 focus:outline-none"
-            placeholder="e.g. Admissions Open for 2026 Batch! Register today."
-            required
-          />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Button / Link Text</label>
-            <input
-              type="text"
-              value={formData.link_text}
-              onChange={(e) => setFormData((prev) => ({ ...prev, link_text: e.target.value }))}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold"
-              placeholder="e.g. Apply Now"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Button Target Link</label>
-            <input
-              type="text"
-              value={formData.link_url}
-              onChange={(e) => setFormData((prev) => ({ ...prev, link_url: e.target.value }))}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold"
-              placeholder="e.g. /admission"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Start Date (Optional)</label>
-            <input
-              type="datetime-local"
-              value={formData.start_at ? formData.start_at.slice(0, 16) : ""}
-              onChange={(e) => setFormData((prev) => ({ ...prev, start_at: e.target.value ? new Date(e.target.value).toISOString() : null }))}
-              className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">End Date (Optional)</label>
-            <input
-              type="datetime-local"
-              value={formData.end_at ? formData.end_at.slice(0, 16) : ""}
-              onChange={(e) => setFormData((prev) => ({ ...prev, end_at: e.target.value ? new Date(e.target.value).toISOString() : null }))}
-              className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-medium"
-            />
-          </div>
-        </div>
-      </div>
-
-      <FeedbackBanner message={message} onClose={() => setMessage(null)} />
-
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={saving}
-          className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
-        >
-          {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          <span>{saving ? "Saving..." : "Save Announcement Settings"}</span>
-        </button>
-      </div>
-    </form>
-  );
+export function AnnouncementEditor(props: any) {
+  const items = Array.isArray(props.initialData)
+    ? props.initialData
+    : props.initialData?.announcements || [];
+  return <AnnouncementManager initialData={items} onRefresh={props.onRefresh} />;
 }
 
 // ----------------------------------------------------
@@ -1033,6 +924,10 @@ export function AboutContentEditor({ initialData, onRefresh }: EditorProps<About
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const { showSuccess, showError, showSaving } = useCMSFeedback();
+
+  useEffect(() => {
+    setSections(initialData);
+  }, [initialData]);
 
   const activeSection = sections.find((s) => s.section_key === selectedKey) || sections[0];
 
@@ -1172,6 +1067,10 @@ export function FeaturesManager({ initialData, onRefresh }: EditorProps<Homepage
   const [editingFeature, setEditingFeature] = useState<Partial<HomepageFeature> | null>(null);
   const [saving, setSaving] = useState(false);
   const { showSuccess, showError, showSaving } = useCMSFeedback();
+
+  useEffect(() => {
+    setFeatures(initialData);
+  }, [initialData]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1356,6 +1255,10 @@ export function StatsManager({ initialData, onRefresh }: EditorProps<HomepageSta
   const [saving, setSaving] = useState(false);
   const { showSuccess, showError, showSaving } = useCMSFeedback();
 
+  useEffect(() => {
+    setStats(initialData);
+  }, [initialData]);
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingStat || saving) return;
@@ -1538,6 +1441,10 @@ export function ContactEditor({ initialData, onRefresh }: EditorProps<ContactSet
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const { showSuccess, showError, showSaving } = useCMSFeedback();
 
+  useEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (saving) return;
@@ -1549,6 +1456,7 @@ export function ContactEditor({ initialData, onRefresh }: EditorProps<ContactSet
       const res = await updateContactSettingsAction(formData);
       console.log("[CMS] Contact save response:", res);
       if (res.success) {
+        if (res.data) setFormData(res.data);
         const msg = res.message || "Contact information saved successfully.";
         setMessage({ type: "success", text: msg });
         showSuccess(msg, "Contact Info");
@@ -1675,6 +1583,10 @@ export function SocialLinksManager({ initialData, onRefresh }: EditorProps<Socia
   const [editingSocial, setEditingSocial] = useState<Partial<SocialLink> | null>(null);
   const [saving, setSaving] = useState(false);
   const { showSuccess, showError, showSaving } = useCMSFeedback();
+
+  useEffect(() => {
+    setSocials(initialData);
+  }, [initialData]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1848,6 +1760,10 @@ export function NavigationManager({ initialData, onRefresh }: EditorProps<Naviga
   const [editingLink, setEditingLink] = useState<Partial<NavigationLink> | null>(null);
   const [saving, setSaving] = useState(false);
   const { showSuccess, showError, showSaving } = useCMSFeedback();
+
+  useEffect(() => {
+    setLinks(initialData);
+  }, [initialData]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -2100,6 +2016,10 @@ export function SeoEditor({ initialData, onRefresh }: EditorProps<SeoSettings>) 
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const { showSuccess, showError, showSaving } = useCMSFeedback();
 
+  useEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (saving) return;
@@ -2111,6 +2031,7 @@ export function SeoEditor({ initialData, onRefresh }: EditorProps<SeoSettings>) 
       const res = await updateSeoSettingsAction(formData);
       console.log("[CMS] SEO save response:", res);
       if (res.success) {
+        if (res.data) setFormData(res.data);
         const msg = res.message || "SEO settings saved successfully.";
         setMessage({ type: "success", text: msg });
         showSuccess(msg, "SEO & Metadata");

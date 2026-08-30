@@ -284,7 +284,7 @@ function AdminCmsContent() {
                 <HomepageBannersManager initialData={cmsData.banners} onRefresh={loadData} />
               )}
               {activeCategory === "announcement" && (
-                <AnnouncementEditor initialData={cmsData.announcement} onRefresh={loadData} />
+                <AnnouncementEditor initialData={cmsData.announcements || []} onRefresh={loadData} />
               )}
               {activeCategory === "about" && (
                 <AboutContentEditor initialData={cmsData.aboutSections} onRefresh={loadData} />

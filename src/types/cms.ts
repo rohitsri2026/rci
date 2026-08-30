@@ -152,12 +152,44 @@ export interface CmsMediaItem {
   created_at: string;
 }
 
+export type AnnouncementType =
+  | "notice"
+  | "important"
+  | "admission"
+  | "exam"
+  | "fee"
+  | "event"
+  | "update"
+  | "certificate"
+  | "material";
+
+export type AnnouncementPriority = "normal" | "important" | "urgent";
+
+export interface AnnouncementItem {
+  id: string;
+  title: string;
+  message: string;
+  announcement_type: AnnouncementType;
+  priority: AnnouncementPriority;
+  is_enabled: boolean;
+  start_at: string;
+  end_at: string | null;
+  button_text: string | null;
+  button_url: string | null;
+  display_order: number;
+  is_dismissible: boolean;
+  created_at?: string;
+  updated_at?: string;
+  created_by?: string | null;
+}
+
 export interface CmsFullData {
   siteSettings: SiteSettings;
   directorProfile: DirectorProfile;
   homepageSettings: HomepageSettings;
   banners: HomepageBanner[];
   announcement: AnnouncementSettings;
+  announcements?: AnnouncementItem[];
   aboutSections: AboutSection[];
   features: HomepageFeature[];
   stats: HomepageStat[];
