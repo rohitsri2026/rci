@@ -24,6 +24,8 @@ import {
   SeoEditor,
 } from "@/components/admin/cms/CMSCategoryEditors";
 
+import { CMSFeedbackProvider } from "@/components/admin/cms/CMSFeedbackProvider";
+
 type CmsCategory =
   | "branding"
   | "director"
@@ -54,24 +56,32 @@ const CATEGORIES: { id: CmsCategory; label: string; icon: React.ElementType; des
 ];
 
 export default function AdminCmsPage() {
+  return (
+    <CMSFeedbackProvider>
+      <AdminCmsContent />
+    </CMSFeedbackProvider>
+  );
+}
+
+function AdminCmsContent() {
   const [activeCategory, setActiveCategory] = useState<CmsCategory>("branding");
   const [cmsData, setCmsData] = useState<CmsFullData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (isInitial = false) => {
+    if (isInitial) setLoading(true);
     try {
       const data = await getAllCmsDataClient();
       setCmsData(data);
     } catch (e) {
       console.error("Failed to load CMS data:", e);
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
+    loadData(true);
   }, []);
 
   // Calculate actual setup completion score dynamically

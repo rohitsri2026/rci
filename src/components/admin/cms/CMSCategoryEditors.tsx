@@ -9,6 +9,7 @@ import {
   Phone, Mail, MapPin, Clock, Lock, X
 } from "lucide-react";
 import ImageUploader from "./ImageUploader";
+import { useCMSFeedback } from "./CMSFeedbackProvider";
 import {
   updateSiteSettingsAction,
   updateDirectorProfileAction,
@@ -92,18 +93,35 @@ export function BrandingEditor({ initialData, onRefresh }: EditorProps<SiteSetti
   const [formData, setFormData] = useState<SiteSettings>(initialData);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const { showSuccess, showError, showSaving } = useCMSFeedback();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
     setSaving(true);
     setMessage(null);
-    const res = await updateSiteSettingsAction(formData);
-    setSaving(false);
-    if (res.success) {
-      setMessage({ type: "success", text: res.message || "Saved successfully!" });
-      if (onRefresh) onRefresh();
-    } else {
-      setMessage({ type: "error", text: res.error || "Failed to save branding settings." });
+    showSaving("Saving branding settings to remote database...");
+    console.log("[CMS] Saving branding settings...", formData);
+    try {
+      const res = await updateSiteSettingsAction(formData);
+      console.log("[CMS] Branding save response:", res);
+      if (res.success) {
+        const msg = res.message || "Branding settings saved successfully.";
+        setMessage({ type: "success", text: msg });
+        showSuccess(msg, "Branding");
+        if (onRefresh) onRefresh();
+      } else {
+        const err = res.error || "Failed to save branding settings.";
+        setMessage({ type: "error", text: err });
+        showError(err);
+      }
+    } catch (err) {
+      console.error("[CMS] Save branding exception:", err);
+      const errMsg = "An unexpected error occurred while saving branding settings.";
+      setMessage({ type: "error", text: errMsg });
+      showError(errMsg);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -287,18 +305,35 @@ export function DirectorEditor({ initialData, onRefresh }: EditorProps<DirectorP
   const [formData, setFormData] = useState<DirectorProfile>(initialData);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const { showSuccess, showError, showSaving } = useCMSFeedback();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
     setSaving(true);
     setMessage(null);
-    const res = await updateDirectorProfileAction(formData);
-    setSaving(false);
-    if (res.success) {
-      setMessage({ type: "success", text: res.message || "Director profile saved!" });
-      if (onRefresh) onRefresh();
-    } else {
-      setMessage({ type: "error", text: res.error || "Failed to save profile." });
+    showSaving("Saving director profile to remote database...");
+    console.log("[CMS] Saving director profile...", formData);
+    try {
+      const res = await updateDirectorProfileAction(formData);
+      console.log("[CMS] Director save response:", res);
+      if (res.success) {
+        const msg = res.message || "Director profile saved successfully.";
+        setMessage({ type: "success", text: msg });
+        showSuccess(msg, "Director Profile");
+        if (onRefresh) onRefresh();
+      } else {
+        const err = res.error || "Failed to save director profile.";
+        setMessage({ type: "error", text: err });
+        showError(err);
+      }
+    } catch (err) {
+      console.error("[CMS] Save director exception:", err);
+      const errMsg = "An unexpected error occurred while saving director profile.";
+      setMessage({ type: "error", text: errMsg });
+      showError(errMsg);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -401,18 +436,35 @@ export function HomepageHeroEditor({ initialData, onRefresh }: EditorProps<Homep
   const [formData, setFormData] = useState<HomepageSettings>(initialData);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const { showSuccess, showError, showSaving } = useCMSFeedback();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
     setSaving(true);
     setMessage(null);
-    const res = await updateHomepageSettingsAction(formData);
-    setSaving(false);
-    if (res.success) {
-      setMessage({ type: "success", text: res.message || "Homepage hero updated!" });
-      if (onRefresh) onRefresh();
-    } else {
-      setMessage({ type: "error", text: res.error || "Failed to save." });
+    showSaving("Saving homepage hero settings to remote database...");
+    console.log("[CMS] Saving homepage hero...", formData);
+    try {
+      const res = await updateHomepageSettingsAction(formData);
+      console.log("[CMS] Hero save response:", res);
+      if (res.success) {
+        const msg = res.message || "Homepage hero settings saved successfully.";
+        setMessage({ type: "success", text: msg });
+        showSuccess(msg, "Homepage Hero");
+        if (onRefresh) onRefresh();
+      } else {
+        const err = res.error || "Failed to save homepage hero settings.";
+        setMessage({ type: "error", text: err });
+        showError(err);
+      }
+    } catch (err) {
+      console.error("[CMS] Save hero exception:", err);
+      const errMsg = "An unexpected error occurred while saving homepage hero.";
+      setMessage({ type: "error", text: errMsg });
+      showError(errMsg);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -569,32 +621,51 @@ export function HomepageBannersManager({ initialData, onRefresh }: EditorProps<H
   const [editingBanner, setEditingBanner] = useState<Partial<HomepageBanner> | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const { showSuccess, showError, showSaving } = useCMSFeedback();
 
   const handleSaveBanner = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingBanner) return;
+    if (!editingBanner || saving) return;
 
     setSaving(true);
     setMessage(null);
-    const res = await saveBannerAction(editingBanner);
-    setSaving(false);
-
-    if (res.success) {
-      setMessage({ type: "success", text: res.message || "Banner saved!" });
-      setEditingBanner(null);
-      if (onRefresh) onRefresh();
-    } else {
-      setMessage({ type: "error", text: res.error || "Failed to save banner." });
+    showSaving("Saving homepage banner...");
+    console.log("[CMS] Saving banner...", editingBanner);
+    try {
+      const res = await saveBannerAction(editingBanner);
+      console.log("[CMS] Banner save response:", res);
+      if (res.success) {
+        const msg = res.message || "Homepage banner saved successfully.";
+        setMessage({ type: "success", text: msg });
+        showSuccess(msg, "Banner Slider");
+        setEditingBanner(null);
+        if (onRefresh) onRefresh();
+      } else {
+        const err = res.error || "Failed to save banner.";
+        setMessage({ type: "error", text: err });
+        showError(err);
+      }
+    } catch (err) {
+      console.error("[CMS] Save banner exception:", err);
+      showError("An unexpected error occurred while saving banner.");
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleDeleteBanner = async (id: string) => {
     if (!confirm("Are you sure you want to delete this banner?")) return;
-    const res = await deleteBannerAction(id);
-    if (res.success) {
-      if (onRefresh) onRefresh();
-    } else {
-      alert(res.error || "Failed to delete banner");
+    showSaving("Deleting banner...");
+    try {
+      const res = await deleteBannerAction(id);
+      if (res.success) {
+        showSuccess("Banner deleted successfully.", "Banner Slider");
+        if (onRefresh) onRefresh();
+      } else {
+        showError(res.error || "Failed to delete banner");
+      }
+    } catch (err) {
+      showError("An error occurred while deleting banner.");
     }
   };
 
@@ -821,18 +892,35 @@ export function AnnouncementEditor({ initialData, onRefresh }: EditorProps<Annou
   const [formData, setFormData] = useState<AnnouncementSettings>(initialData);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const { showSuccess, showError, showSaving } = useCMSFeedback();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
     setSaving(true);
     setMessage(null);
-    const res = await updateAnnouncementSettingsAction(formData);
-    setSaving(false);
-    if (res.success) {
-      setMessage({ type: "success", text: res.message || "Announcement bar saved!" });
-      if (onRefresh) onRefresh();
-    } else {
-      setMessage({ type: "error", text: res.error || "Failed to save." });
+    showSaving("Saving announcement settings...");
+    console.log("[CMS] Saving announcement...", formData);
+    try {
+      const res = await updateAnnouncementSettingsAction(formData);
+      console.log("[CMS] Announcement save response:", res);
+      if (res.success) {
+        const msg = res.message || "Announcement settings saved successfully.";
+        setMessage({ type: "success", text: msg });
+        showSuccess(msg, "Announcement Bar");
+        if (onRefresh) onRefresh();
+      } else {
+        const err = res.error || "Failed to save announcement settings.";
+        setMessage({ type: "error", text: err });
+        showError(err);
+      }
+    } catch (err) {
+      console.error("[CMS] Save announcement exception:", err);
+      const errMsg = "An unexpected error occurred while saving announcement.";
+      setMessage({ type: "error", text: errMsg });
+      showError(errMsg);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -944,6 +1032,7 @@ export function AboutContentEditor({ initialData, onRefresh }: EditorProps<About
   const [selectedKey, setSelectedKey] = useState<string>(initialData[0]?.section_key || "about_rci");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const { showSuccess, showError, showSaving } = useCMSFeedback();
 
   const activeSection = sections.find((s) => s.section_key === selectedKey) || sections[0];
 
@@ -955,16 +1044,31 @@ export function AboutContentEditor({ initialData, onRefresh }: EditorProps<About
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeSection) return;
+    if (!activeSection || saving) return;
     setSaving(true);
     setMessage(null);
-    const res = await updateAboutSectionAction(activeSection);
-    setSaving(false);
-    if (res.success) {
-      setMessage({ type: "success", text: res.message || "Section updated!" });
-      if (onRefresh) onRefresh();
-    } else {
-      setMessage({ type: "error", text: res.error || "Failed to save section." });
+    showSaving("Saving about content section...");
+    console.log("[CMS] Saving about section...", activeSection);
+    try {
+      const res = await updateAboutSectionAction(activeSection);
+      console.log("[CMS] About section save response:", res);
+      if (res.success) {
+        const msg = res.message || "About content saved successfully.";
+        setMessage({ type: "success", text: msg });
+        showSuccess(msg, "About & Content");
+        if (onRefresh) onRefresh();
+      } else {
+        const err = res.error || "Failed to save section.";
+        setMessage({ type: "error", text: err });
+        showError(err);
+      }
+    } catch (err) {
+      console.error("[CMS] Save about section exception:", err);
+      const errMsg = "An unexpected error occurred while saving section.";
+      setMessage({ type: "error", text: errMsg });
+      showError(errMsg);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -1067,25 +1171,46 @@ export function FeaturesManager({ initialData, onRefresh }: EditorProps<Homepage
   const [features, setFeatures] = useState<HomepageFeature[]>(initialData);
   const [editingFeature, setEditingFeature] = useState<Partial<HomepageFeature> | null>(null);
   const [saving, setSaving] = useState(false);
+  const { showSuccess, showError, showSaving } = useCMSFeedback();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingFeature) return;
+    if (!editingFeature || saving) return;
     setSaving(true);
-    const res = await saveFeatureAction(editingFeature);
-    setSaving(false);
-    if (res.success) {
-      setEditingFeature(null);
-      if (onRefresh) onRefresh();
-    } else {
-      alert(res.error || "Failed to save feature");
+    showSaving("Saving feature card...");
+    console.log("[CMS] Saving feature card...", editingFeature);
+    try {
+      const res = await saveFeatureAction(editingFeature);
+      console.log("[CMS] Feature save response:", res);
+      if (res.success) {
+        showSuccess(res.message || "Feature saved successfully.", "Why Choose RCI");
+        setEditingFeature(null);
+        if (onRefresh) onRefresh();
+      } else {
+        showError(res.error || "Failed to save feature.");
+      }
+    } catch (err) {
+      console.error("[CMS] Save feature exception:", err);
+      showError("An error occurred while saving feature.");
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this feature card?")) return;
-    const res = await deleteFeatureAction(id);
-    if (res.success && onRefresh) onRefresh();
+    showSaving("Deleting feature card...");
+    try {
+      const res = await deleteFeatureAction(id);
+      if (res.success) {
+        showSuccess("Feature card deleted successfully.", "Why Choose RCI");
+        if (onRefresh) onRefresh();
+      } else {
+        showError(res.error || "Failed to delete feature card");
+      }
+    } catch (err) {
+      showError("An error occurred while deleting feature card.");
+    }
   };
 
   return (
@@ -1208,9 +1333,10 @@ export function FeaturesManager({ initialData, onRefresh }: EditorProps<Homepage
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-extrabold cursor-pointer"
+                  className="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-extrabold cursor-pointer flex items-center gap-1.5"
                 >
-                  {saving ? "Saving..." : "Save Feature"}
+                  {saving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{saving ? "Saving..." : "Save Feature"}</span>
                 </button>
               </div>
             </form>
@@ -1228,25 +1354,46 @@ export function StatsManager({ initialData, onRefresh }: EditorProps<HomepageSta
   const [stats, setStats] = useState<HomepageStat[]>(initialData);
   const [editingStat, setEditingStat] = useState<Partial<HomepageStat> | null>(null);
   const [saving, setSaving] = useState(false);
+  const { showSuccess, showError, showSaving } = useCMSFeedback();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingStat) return;
+    if (!editingStat || saving) return;
     setSaving(true);
-    const res = await saveStatAction(editingStat);
-    setSaving(false);
-    if (res.success) {
-      setEditingStat(null);
-      if (onRefresh) onRefresh();
-    } else {
-      alert(res.error || "Failed to save stat");
+    showSaving("Saving statistic counter...");
+    console.log("[CMS] Saving statistic...", editingStat);
+    try {
+      const res = await saveStatAction(editingStat);
+      console.log("[CMS] Stat save response:", res);
+      if (res.success) {
+        showSuccess(res.message || "Statistics updated successfully.", "Statistics");
+        setEditingStat(null);
+        if (onRefresh) onRefresh();
+      } else {
+        showError(res.error || "Failed to save statistic.");
+      }
+    } catch (err) {
+      console.error("[CMS] Save stat exception:", err);
+      showError("An error occurred while saving statistic.");
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete statistic counter?")) return;
-    const res = await deleteStatAction(id);
-    if (res.success && onRefresh) onRefresh();
+    showSaving("Deleting statistic...");
+    try {
+      const res = await deleteStatAction(id);
+      if (res.success) {
+        showSuccess("Statistic item deleted successfully.", "Statistics");
+        if (onRefresh) onRefresh();
+      } else {
+        showError(res.error || "Failed to delete statistic");
+      }
+    } catch (err) {
+      showError("An error occurred while deleting statistic.");
+    }
   };
 
   return (
@@ -1368,9 +1515,10 @@ export function StatsManager({ initialData, onRefresh }: EditorProps<HomepageSta
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-extrabold cursor-pointer"
+                  className="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-extrabold cursor-pointer flex items-center gap-1.5"
                 >
-                  {saving ? "Saving..." : "Save Statistic"}
+                  {saving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{saving ? "Saving..." : "Save Statistic"}</span>
                 </button>
               </div>
             </form>
@@ -1388,18 +1536,35 @@ export function ContactEditor({ initialData, onRefresh }: EditorProps<ContactSet
   const [formData, setFormData] = useState<ContactSettings>(initialData);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const { showSuccess, showError, showSaving } = useCMSFeedback();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
     setSaving(true);
     setMessage(null);
-    const res = await updateContactSettingsAction(formData);
-    setSaving(false);
-    if (res.success) {
-      setMessage({ type: "success", text: res.message || "Contact info updated!" });
-      if (onRefresh) onRefresh();
-    } else {
-      setMessage({ type: "error", text: res.error || "Failed to save contact info." });
+    showSaving("Saving contact information...");
+    console.log("[CMS] Saving contact info...", formData);
+    try {
+      const res = await updateContactSettingsAction(formData);
+      console.log("[CMS] Contact save response:", res);
+      if (res.success) {
+        const msg = res.message || "Contact information saved successfully.";
+        setMessage({ type: "success", text: msg });
+        showSuccess(msg, "Contact Info");
+        if (onRefresh) onRefresh();
+      } else {
+        const err = res.error || "Failed to save contact information.";
+        setMessage({ type: "error", text: err });
+        showError(err);
+      }
+    } catch (err) {
+      console.error("[CMS] Save contact exception:", err);
+      const errMsg = "An unexpected error occurred while saving contact information.";
+      setMessage({ type: "error", text: errMsg });
+      showError(errMsg);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -1509,25 +1674,46 @@ export function SocialLinksManager({ initialData, onRefresh }: EditorProps<Socia
   const [socials, setSocials] = useState<SocialLink[]>(initialData);
   const [editingSocial, setEditingSocial] = useState<Partial<SocialLink> | null>(null);
   const [saving, setSaving] = useState(false);
+  const { showSuccess, showError, showSaving } = useCMSFeedback();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingSocial) return;
+    if (!editingSocial || saving) return;
     setSaving(true);
-    const res = await saveSocialLinkAction(editingSocial);
-    setSaving(false);
-    if (res.success) {
-      setEditingSocial(null);
-      if (onRefresh) onRefresh();
-    } else {
-      alert(res.error || "Failed to save social link");
+    showSaving("Saving social media link...");
+    console.log("[CMS] Saving social link...", editingSocial);
+    try {
+      const res = await saveSocialLinkAction(editingSocial);
+      console.log("[CMS] Social save response:", res);
+      if (res.success) {
+        showSuccess(res.message || "Social links saved successfully.", "Social Media Links");
+        setEditingSocial(null);
+        if (onRefresh) onRefresh();
+      } else {
+        showError(res.error || "Failed to save social link.");
+      }
+    } catch (err) {
+      console.error("[CMS] Save social link exception:", err);
+      showError("An error occurred while saving social link.");
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete social media link?")) return;
-    const res = await deleteSocialLinkAction(id);
-    if (res.success && onRefresh) onRefresh();
+    showSaving("Deleting social media link...");
+    try {
+      const res = await deleteSocialLinkAction(id);
+      if (res.success) {
+        showSuccess("Social link deleted successfully.", "Social Media Links");
+        if (onRefresh) onRefresh();
+      } else {
+        showError(res.error || "Failed to delete social link.");
+      }
+    } catch (err) {
+      showError("An error occurred while deleting social link.");
+    }
   };
 
   return (
@@ -1640,9 +1826,10 @@ export function SocialLinksManager({ initialData, onRefresh }: EditorProps<Socia
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-extrabold cursor-pointer"
+                  className="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-extrabold cursor-pointer flex items-center gap-1.5"
                 >
-                  {saving ? "Saving..." : "Save Link"}
+                  {saving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{saving ? "Saving..." : "Save Link"}</span>
                 </button>
               </div>
             </form>
@@ -1660,10 +1847,11 @@ export function NavigationManager({ initialData, onRefresh }: EditorProps<Naviga
   const [links, setLinks] = useState<NavigationLink[]>(initialData);
   const [editingLink, setEditingLink] = useState<Partial<NavigationLink> | null>(null);
   const [saving, setSaving] = useState(false);
+  const { showSuccess, showError, showSaving } = useCMSFeedback();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingLink) return;
+    if (!editingLink || saving) return;
 
     if (editingLink.is_system && editingLink.is_active === false) {
       if (!confirm("⚠️ Warning: Disabling critical system routes like Verify Certificate or Login may prevent users from accessing key portal features. Continue?")) {
@@ -1672,27 +1860,45 @@ export function NavigationManager({ initialData, onRefresh }: EditorProps<Naviga
     }
 
     setSaving(true);
-    const res = await saveNavigationLinkAction(editingLink);
-    setSaving(false);
-
-    if (res.success) {
-      setEditingLink(null);
-      if (onRefresh) onRefresh();
-    } else {
-      alert(res.error || "Failed to save link");
+    showSaving("Saving navigation link...");
+    console.log("[CMS] Saving nav link...", editingLink);
+    try {
+      const res = await saveNavigationLinkAction(editingLink);
+      console.log("[CMS] Nav link save response:", res);
+      if (res.success) {
+        showSuccess(res.message || "Navigation links saved successfully.", "Navigation Links");
+        setEditingLink(null);
+        if (onRefresh) onRefresh();
+      } else {
+        showError(res.error || "Failed to save navigation link.");
+      }
+    } catch (err) {
+      console.error("[CMS] Save nav link exception:", err);
+      showError("An error occurred while saving navigation link.");
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
     const link = links.find((l) => l.id === id);
     if (link?.is_system) {
-      alert(`⚠️ Protected System Route: "${link.label}" cannot be deleted.`);
+      showError(`Protected System Route: "${link.label}" cannot be deleted.`);
       return;
     }
     if (!confirm("Delete navigation link?")) return;
-    const res = await deleteNavigationLinkAction(id);
-    if (res.success && onRefresh) onRefresh();
-    else if (res.error) alert(res.error);
+    showSaving("Deleting navigation link...");
+    try {
+      const res = await deleteNavigationLinkAction(id);
+      if (res.success) {
+        showSuccess("Navigation link deleted successfully.", "Navigation Links");
+        if (onRefresh) onRefresh();
+      } else {
+        showError(res.error || "Failed to delete navigation link.");
+      }
+    } catch (err) {
+      showError("An error occurred while deleting navigation link.");
+    }
   };
 
   return (
@@ -1871,9 +2077,10 @@ export function NavigationManager({ initialData, onRefresh }: EditorProps<Naviga
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-extrabold cursor-pointer"
+                  className="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-extrabold cursor-pointer flex items-center gap-1.5"
                 >
-                  {saving ? "Saving..." : "Save Link"}
+                  {saving && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{saving ? "Saving..." : "Save Link"}</span>
                 </button>
               </div>
             </form>
@@ -1891,18 +2098,35 @@ export function SeoEditor({ initialData, onRefresh }: EditorProps<SeoSettings>) 
   const [formData, setFormData] = useState<SeoSettings>(initialData);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const { showSuccess, showError, showSaving } = useCMSFeedback();
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
     setSaving(true);
     setMessage(null);
-    const res = await updateSeoSettingsAction(formData);
-    setSaving(false);
-    if (res.success) {
-      setMessage({ type: "success", text: res.message || "SEO settings saved!" });
-      if (onRefresh) onRefresh();
-    } else {
-      setMessage({ type: "error", text: res.error || "Failed to save SEO settings." });
+    showSaving("Saving SEO & metadata settings...");
+    console.log("[CMS] Saving SEO settings...", formData);
+    try {
+      const res = await updateSeoSettingsAction(formData);
+      console.log("[CMS] SEO save response:", res);
+      if (res.success) {
+        const msg = res.message || "SEO settings saved successfully.";
+        setMessage({ type: "success", text: msg });
+        showSuccess(msg, "SEO & Metadata");
+        if (onRefresh) onRefresh();
+      } else {
+        const err = res.error || "Failed to save SEO settings.";
+        setMessage({ type: "error", text: err });
+        showError(err);
+      }
+    } catch (err) {
+      console.error("[CMS] Save SEO exception:", err);
+      const errMsg = "An unexpected error occurred while saving SEO settings.";
+      setMessage({ type: "error", text: errMsg });
+      showError(errMsg);
+    } finally {
+      setSaving(false);
     }
   };
 
