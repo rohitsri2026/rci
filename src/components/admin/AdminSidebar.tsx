@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/client";
+import { createAdminBrowserClient } from "@/lib/supabase/client-admin";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -75,7 +75,7 @@ export default function AdminSidebar({ userEmail, mobileOpen, setMobileOpen }: A
   }, [pathname, setMobileOpen]);
 
   const handleLogout = async () => {
-    const supabase = createClient();
+    const supabase = createAdminBrowserClient();
     await supabase.auth.signOut();
     router.push("/admin/login");
     router.refresh();

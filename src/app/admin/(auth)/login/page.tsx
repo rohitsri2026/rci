@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createAdminBrowserClient } from "@/lib/supabase/client-admin";
 import { 
   Lock, Mail, AlertCircle, Eye, EyeOff, 
   ArrowRight, ShieldCheck, ArrowLeft, Loader2,
@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
     }
 
     try {
-      const supabase = createClient();
+      const supabase = createAdminBrowserClient();
       const { error: authError } = await supabase.auth.signInWithPassword({ 
         email: cleanEmail, 
         password 

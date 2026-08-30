@@ -12,8 +12,8 @@ import StudyMaterialsSummaryCard from "@/components/student/StudyMaterialsSummar
 import AttentionPanel from "@/components/student/AttentionPanel";
 
 export const metadata: Metadata = {
-  title: "Student Dashboard | Rohit Computer Institute",
-  description: "RCI Student Portal Dashboard & Control Center",
+  title: "Student Dashboard",
+  description: "Student Portal Dashboard & Control Center",
 };
 
 export default async function StudentDashboardPage() {

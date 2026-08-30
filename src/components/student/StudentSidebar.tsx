@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createStudentBrowserClient } from "@/lib/supabase/client-student";
 import { useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -42,7 +42,7 @@ export default function StudentSidebar({ studentName, studentEmail }: { studentN
   const router = useRouter();
 
   const handleLogout = async () => {
-    const supabase = createClient();
+    const supabase = createStudentBrowserClient();
     await supabase.auth.signOut();
     router.push("/student/login");
     router.refresh();

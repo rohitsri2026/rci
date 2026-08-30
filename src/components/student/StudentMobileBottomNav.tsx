@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createStudentBrowserClient } from "@/lib/supabase/client-student";
 import {
   LayoutDashboard,
   BookOpen,
@@ -30,7 +30,7 @@ export default function StudentMobileBottomNav({ studentEmail }: StudentMobileBo
   const { unreadCount } = useStudentNotifications();
 
   const handleLogout = async () => {
-    const supabase = createClient();
+    const supabase = createStudentBrowserClient();
     await supabase.auth.signOut();
     router.push("/student/login");
     router.refresh();

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import StudentNotificationsList from "@/components/student/StudentNotificationsList";
 
 export const metadata: Metadata = {
-  title: "Notifications Center | Rohit Computer Institute",
+  title: "Notifications",
   description: "View important notices, fee alerts, exam marks, and study material notifications.",
 };
 

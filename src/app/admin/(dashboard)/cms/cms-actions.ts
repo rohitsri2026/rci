@@ -39,6 +39,8 @@ async function logCmsActivity(action: string, details: string, userEmail: string
 async function revalidateAllWebsitePages() {
   try {
     revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    revalidatePath("/student", "layout");
     revalidatePath("/");
     revalidatePath("/about");
     revalidatePath("/courses");

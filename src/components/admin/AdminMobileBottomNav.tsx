@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createAdminBrowserClient } from "@/lib/supabase/client-admin";
 import {
   LayoutDashboard,
   Users,
@@ -31,7 +31,7 @@ export default function AdminMobileBottomNav({ userEmail }: AdminMobileBottomNav
   const [moreSheetOpen, setMoreSheetOpen] = useState(false);
 
   const handleLogout = async () => {
-    const supabase = createClient();
+    const supabase = createAdminBrowserClient();
     await supabase.auth.signOut();
     router.push("/admin/login");
     router.refresh();

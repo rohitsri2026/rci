@@ -20,23 +20,26 @@ export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSeoSettings();
   const site = await getSiteSettings();
 
-  const title = seo.site_title || site.browser_title;
+  const defaultTitle = site.browser_title || `${site.site_name} | ${site.tagline}`;
   const description = seo.meta_description;
   const keywords = seo.keywords
     ? seo.keywords.split(",").map((k) => k.trim())
-    : ["Rohit Computer Institute", "RCI Kanpur", "DCA Course"];
+    : [site.site_name, site.short_name, "Computer Institute", "DCA Course"];
   const ogImage = seo.og_image_url || site.logo_url || "/banner.png";
   const favicon = site.favicon_url || "/favicon.png";
   const siteUrl = seo.canonical_url || "https://rciknp.vercel.app";
 
   return {
     metadataBase: new URL(siteUrl),
-    title,
+    title: {
+      default: defaultTitle,
+      template: `%s | ${site.site_name}`,
+    },
     description,
     keywords,
     authors: [{ name: site.site_name }],
     openGraph: {
-      title: seo.og_title || title,
+      title: seo.og_title || defaultTitle,
       description: seo.og_description || description,
       url: siteUrl,
       siteName: site.site_name,
@@ -53,7 +56,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: seo.twitter_title || title,
+      title: seo.twitter_title || defaultTitle,
       description: seo.twitter_description || description,
       images: [seo.twitter_image_url || ogImage],
     },

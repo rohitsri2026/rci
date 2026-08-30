@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createStudentBrowserClient } from "@/lib/supabase/client-student";
 import { RCIConfig } from "@/lib/config";
 import {
   LayoutDashboard,
@@ -77,7 +77,7 @@ export default function StudentHeader({
   }, []);
 
   const handleLogout = async () => {
-    const supabase = createClient();
+    const supabase = createStudentBrowserClient();
     await supabase.auth.signOut();
     router.push("/student/login");
     router.refresh();

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createStudentServerClient } from "@/lib/supabase/server-student";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizePhone } from "@/lib/utils";
 
@@ -7,7 +7,7 @@ import { normalizePhone } from "@/lib/utils";
  * Enforces strict ownership & data isolation: only returns data for the authenticated user's own student record.
  */
 export async function getStudentSession() {
-  const supabase = await createClient();
+  const supabase = await createStudentServerClient();
   const {
     data: { user },
     error: userError,

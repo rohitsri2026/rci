@@ -3,11 +3,19 @@ import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
+  const pathname = request.nextUrl.pathname;
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+  // ----------------------------------------------------
+  // 1. ADMIN AUTHENTICATION SESSION ISOLATION
+  // ----------------------------------------------------
+  if (pathname.startsWith("/admin")) {
+    const adminSupabase = createServerClient(url, key, {
+      cookieOptions: {
+        name: "rci-admin-auth",
+      },
       cookies: {
         getAll() {
           return request.cookies.getAll();
@@ -22,39 +30,64 @@ export async function proxy(request: NextRequest) {
           );
         },
       },
+    });
+
+    const {
+      data: { user: adminUser },
+    } = await adminSupabase.auth.getUser();
+
+    // Protect /admin routes except /admin/login
+    if (!pathname.startsWith("/admin/login") && !adminUser) {
+      return NextResponse.redirect(new URL("/admin/login", request.url));
     }
-  );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    // Redirect away from admin login if already logged in as Admin
+    if (pathname === "/admin/login" && adminUser) {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
 
-  // Protect all /admin routes except /admin/login
-  if (
-    request.nextUrl.pathname.startsWith("/admin") &&
-    !request.nextUrl.pathname.startsWith("/admin/login") &&
-    !user
-  ) {
-    return NextResponse.redirect(new URL("/admin/login", request.url));
+    return supabaseResponse;
   }
 
-  // If already logged in, redirect away from admin login page
-  if (request.nextUrl.pathname === "/admin/login" && user) {
-    return NextResponse.redirect(new URL("/admin", request.url));
-  }
+  // ----------------------------------------------------
+  // 2. STUDENT AUTHENTICATION SESSION ISOLATION
+  // ----------------------------------------------------
+  if (pathname.startsWith("/student")) {
+    const studentSupabase = createServerClient(url, key, {
+      cookieOptions: {
+        name: "rci-student-auth",
+      },
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          supabaseResponse = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
+      },
+    });
 
-  // Protect all /student routes except /student/login
-  if (
-    request.nextUrl.pathname.startsWith("/student") &&
-    !request.nextUrl.pathname.startsWith("/student/login") &&
-    !user
-  ) {
-    return NextResponse.redirect(new URL("/student/login", request.url));
-  }
+    const {
+      data: { user: studentUser },
+    } = await studentSupabase.auth.getUser();
 
-  // If already logged in, redirect away from student login page
-  if (request.nextUrl.pathname === "/student/login" && user) {
-    return NextResponse.redirect(new URL("/student", request.url));
+    // Protect /student routes except /student/login
+    if (!pathname.startsWith("/student/login") && !studentUser) {
+      return NextResponse.redirect(new URL("/student/login", request.url));
+    }
+
+    // Redirect away from student login if already logged in as Student
+    if (pathname === "/student/login" && studentUser) {
+      return NextResponse.redirect(new URL("/student/dashboard", request.url));
+    }
+
+    return supabaseResponse;
   }
 
   return supabaseResponse;

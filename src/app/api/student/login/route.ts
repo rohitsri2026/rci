@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createStudentServerClient } from "@/lib/supabase/server-student";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizePhone } from "@/lib/utils";
 import { NextResponse } from "next/server";
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     }
 
     const adminClient = createAdminClient();
-    const supabase = await createClient();
+    const supabase = await createStudentServerClient();
 
     // 1. Query students table for existing columns only (id, full_name, email, phone)
     const { data: allStudents, error: studentQueryErr } = await adminClient
