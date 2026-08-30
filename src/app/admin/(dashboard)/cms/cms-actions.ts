@@ -79,6 +79,8 @@ export async function updateDirectorProfileAction(data: Partial<DirectorProfile>
 
   await logCmsActivity("CMS_UPDATE_DIRECTOR", "Updated director & institute profile", authResult.user.email ?? "");
   revalidatePath("/", "layout");
+  revalidatePath("/");
+  revalidatePath("/about");
   revalidatePath("/admin/cms");
   return { success: true, message: "Director profile saved successfully!" };
 }

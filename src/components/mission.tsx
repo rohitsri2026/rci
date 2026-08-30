@@ -1,6 +1,35 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import { Eye, Target } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { DEFAULT_ABOUT_SECTIONS } from "@/lib/cms-defaults";
+import { AboutSection } from "@/types/cms";
 
 export default function Mission() {
+  const [missionSec, setMissionSec] = useState<AboutSection>(
+    DEFAULT_ABOUT_SECTIONS.find((s) => s.section_key === "mission") || DEFAULT_ABOUT_SECTIONS[1]
+  );
+  const [visionSec, setVisionSec] = useState<AboutSection>(
+    DEFAULT_ABOUT_SECTIONS.find((s) => s.section_key === "vision") || DEFAULT_ABOUT_SECTIONS[2]
+  );
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("about_sections")
+      .select("*")
+      .in("section_key", ["mission", "vision"])
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          const m = data.find((item) => item.section_key === "mission");
+          const v = data.find((item) => item.section_key === "vision");
+          if (m) setMissionSec(m);
+          if (v) setVisionSec(v);
+        }
+      });
+  }, []);
+
   return (
     <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-slate-50 border-b border-slate-200">
       <div className="max-w-6xl mx-auto">
@@ -9,7 +38,7 @@ export default function Mission() {
             Core Philosophy
           </span>
           <h2 className="text-3xl font-black font-display text-slate-900 mt-3">
-            Our Vision & Mission
+            Our Vision &amp; Mission
           </h2>
         </div>
 
@@ -21,11 +50,10 @@ export default function Mission() {
                 <Eye className="w-6 h-6" />
               </div>
               <h3 className="text-2xl font-black font-display text-slate-900 mb-3">
-                Our Vision
+                {visionSec.heading}
               </h3>
               <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                To become one of the most trusted and recognized computer education institutes by delivering high-quality technical training, 
-                fostering digital literacy, and empowering students with career-oriented IT skills.
+                {visionSec.content}
               </p>
             </div>
           </div>
@@ -37,11 +65,10 @@ export default function Mission() {
                 <Target className="w-6 h-6" />
               </div>
               <h3 className="text-2xl font-black font-display text-slate-900 mb-3">
-                Our Mission
+                {missionSec.heading}
               </h3>
               <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                To provide accessible, affordable, and practical computer education that bridges the gap between academic learning and real-world 
-                industry software requirements for every student.
+                {missionSec.content}
               </p>
             </div>
           </div>

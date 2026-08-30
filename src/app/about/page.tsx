@@ -5,10 +5,10 @@ import AboutHero from "@/components/about-hero";
 import MDMessage from "@/components/md-message";
 import Mission from "@/components/mission";
 import LearningApproach from "@/components/learning-approach";
-import WhyRCI from "@/components/why-rci";
+import WhyRCI from "@/components/WhyRCI";
 import AboutStudentPortal from "@/components/about-student-portal";
 import AboutCertTrust from "@/components/about-cert-trust";
-import Stats from "@/components/stats";
+import Stats from "@/components/StatsSection";
 import { RCIConfig } from "@/lib/config";
 import WhatsAppCounsellingBanner from "@/components/whatsapp-counselling-banner";
 

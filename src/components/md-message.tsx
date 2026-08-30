@@ -1,8 +1,31 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Quote, Building2 } from "lucide-react";
-import { RCIConfig } from "@/lib/config";
+import { createClient } from "@/lib/supabase/client";
+import { DEFAULT_DIRECTOR_PROFILE } from "@/lib/cms-defaults";
+import { DirectorProfile } from "@/types/cms";
 
-export default function MDMessage() {
+interface MDMessageProps {
+  initialDirector?: DirectorProfile;
+}
+
+export default function MDMessage({ initialDirector }: MDMessageProps) {
+  const [director, setDirector] = useState<DirectorProfile>(initialDirector || DEFAULT_DIRECTOR_PROFILE);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("director_profile")
+      .select("*")
+      .eq("id", "default")
+      .single()
+      .then(({ data }) => {
+        if (data) setDirector((prev) => ({ ...prev, ...data }));
+      });
+  }, []);
+
   return (
     <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
@@ -14,11 +37,12 @@ export default function MDMessage() {
           <div className="relative bg-white border border-slate-200/90 rounded-3xl p-3 shadow-xl">
             <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100">
               <Image
-                src="/md-photo.png"
-                alt={`${RCIConfig.directorName} - ${RCIConfig.directorTitle}`}
+                src={director.photo_url || "/md-photo.png"}
+                alt={`${director.name} - ${director.designation}`}
                 fill
                 sizes="(max-width: 768px) 100vw, 400px"
                 className="object-cover"
+                unoptimized
               />
             </div>
 
@@ -27,8 +51,8 @@ export default function MDMessage() {
                 <Building2 className="w-4.5 h-4.5" />
               </div>
               <div>
-                <h4 className="text-sm font-extrabold text-slate-900">{RCIConfig.directorName}</h4>
-                <p className="text-xs text-blue-600 font-bold">{RCIConfig.directorTitle}</p>
+                <h4 className="text-sm font-extrabold text-slate-900">{director.name}</h4>
+                <p className="text-xs text-blue-600 font-bold">{director.designation}</p>
               </div>
             </div>
           </div>
@@ -44,26 +68,34 @@ export default function MDMessage() {
             Empowering Students Through Practical IT Excellence
           </h2>
 
-          <p className="text-slate-600 leading-relaxed text-base sm:text-lg mb-5">
-            At Rohit Computer Institute (RCI), our core commitment is to provide practical, hands-on computer training 
-            that empowers every student with real-world digital competence. We bridge the gap between classroom theory and workplace skills.
-          </p>
-
           <div className="bg-slate-50 border-l-4 border-blue-600 p-5 sm:p-6 rounded-r-2xl border-y border-r border-slate-200/80 shadow-2xs mb-6 relative">
             <Quote className="w-8 h-8 text-blue-100 absolute top-3 right-4 pointer-events-none" />
             <p className="text-slate-800 italic text-sm sm:text-base leading-relaxed font-medium relative z-10">
-              &ldquo;Our focus is building genuine confidence in our students. We believe technology education is not just about passing exams, 
-              but mastering practical computer skills that unlock long-term career opportunities.&rdquo;
+              &ldquo;{director.message}&rdquo;
             </p>
           </div>
 
-          <div className="pt-2 border-t border-slate-100">
-            <h3 className="text-lg font-extrabold text-slate-900">
-              {RCIConfig.directorName}
-            </h3>
-            <p className="text-blue-600 font-bold text-xs uppercase tracking-wider mt-0.5">
-              {RCIConfig.directorTitle}
-            </p>
+          <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-extrabold text-slate-900">
+                {director.name}
+              </h3>
+              <p className="text-blue-600 font-bold text-xs uppercase tracking-wider mt-0.5">
+                {director.designation} (Est. {director.established_year})
+              </p>
+            </div>
+
+            {director.signature_url && (
+              <div className="relative h-12 w-36">
+                <Image
+                  src={director.signature_url}
+                  alt={`${director.name} Signature`}
+                  fill
+                  className="object-contain"
+                  unoptimized
+                />
+              </div>
+            )}
           </div>
         </div>
 

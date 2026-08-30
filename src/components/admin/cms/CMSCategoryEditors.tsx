@@ -6,7 +6,7 @@ import Link from "next/link";
 import {
   Save, RefreshCw, CheckCircle, AlertTriangle, Plus, Trash2, Edit3, Eye,
   ArrowUp, ArrowDown, ExternalLink, ShieldAlert, Sparkles, Globe, Share2, Search,
-  Phone, Mail, MapPin, Clock, Lock
+  Phone, Mail, MapPin, Clock, Lock, X
 } from "lucide-react";
 import ImageUploader from "./ImageUploader";
 import {
@@ -48,6 +48,43 @@ interface EditorProps<T> {
   onRefresh?: () => void;
 }
 
+function FeedbackBanner({
+  message,
+  onClose,
+}: {
+  message: { type: "success" | "error"; text: string } | null;
+  onClose: () => void;
+}) {
+  if (!message) return null;
+
+  return (
+    <div
+      className={`p-4 rounded-2xl text-xs font-extrabold flex items-center justify-between gap-3 shadow-md border transition-all animate-in fade-in slide-in-from-top-2 ${
+        message.type === "success"
+          ? "bg-emerald-600 text-white border-emerald-500 shadow-emerald-500/20"
+          : "bg-red-600 text-white border-red-500 shadow-red-500/20"
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        {message.type === "success" ? (
+          <CheckCircle className="w-5 h-5 shrink-0 text-emerald-100" />
+        ) : (
+          <AlertTriangle className="w-5 h-5 shrink-0 text-red-100" />
+        )}
+        <span className="text-sm tracking-tight font-semibold">{message.text}</span>
+      </div>
+      <button
+        type="button"
+        onClick={onClose}
+        className="p-1 hover:bg-white/20 rounded-lg transition-colors cursor-pointer text-white"
+        aria-label="Close notification"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
 // ----------------------------------------------------
 // 1. BRANDING EDITOR
 // ----------------------------------------------------
@@ -81,6 +118,8 @@ export function BrandingEditor({ initialData, onRefresh }: EditorProps<SiteSetti
 
   return (
     <form onSubmit={handleSave} className="space-y-6">
+      <FeedbackBanner message={message} onClose={() => setMessage(null)} />
+
       <div className="bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
         <h3 className="text-base font-extrabold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
           <span>🎨 Institute Branding & Visual Identity</span>
@@ -161,7 +200,7 @@ export function BrandingEditor({ initialData, onRefresh }: EditorProps<SiteSetti
             <button
               type="button"
               onClick={resetColors}
-              className="text-xs text-blue-600 font-bold hover:underline"
+              className="text-xs text-blue-600 font-bold hover:underline cursor-pointer"
             >
               Reset to RCI Defaults
             </button>
@@ -225,25 +264,16 @@ export function BrandingEditor({ initialData, onRefresh }: EditorProps<SiteSetti
         </div>
       </div>
 
-      {message && (
-        <div
-          className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 ${
-            message.type === "success" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-red-50 text-red-800 border border-red-200"
-          }`}
-        >
-          {message.type === "success" ? <CheckCircle className="w-4 h-4 shrink-0 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 shrink-0 text-red-600" />}
-          <span>{message.text}</span>
-        </div>
-      )}
+      <FeedbackBanner message={message} onClose={() => setMessage(null)} />
 
       <div className="flex justify-end">
         <button
           type="submit"
           disabled={saving}
-          className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer"
+          className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
         >
           {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          <span>{saving ? "Saving Changes..." : "Save Branding Changes"}</span>
+          <span>{saving ? "Saving..." : "Save Branding Changes"}</span>
         </button>
       </div>
     </form>
@@ -274,6 +304,8 @@ export function DirectorEditor({ initialData, onRefresh }: EditorProps<DirectorP
 
   return (
     <form onSubmit={handleSave} className="space-y-6">
+      <FeedbackBanner message={message} onClose={() => setMessage(null)} />
+
       <div className="bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
         <h3 className="text-base font-extrabold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
           <span>👤 Director & Institute Leadership Profile</span>
@@ -346,22 +378,13 @@ export function DirectorEditor({ initialData, onRefresh }: EditorProps<DirectorP
         </div>
       </div>
 
-      {message && (
-        <div
-          className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 ${
-            message.type === "success" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-red-50 text-red-800 border border-red-200"
-          }`}
-        >
-          {message.type === "success" ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-red-600" />}
-          <span>{message.text}</span>
-        </div>
-      )}
+      <FeedbackBanner message={message} onClose={() => setMessage(null)} />
 
       <div className="flex justify-end">
         <button
           type="submit"
           disabled={saving}
-          className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer"
+          className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
         >
           {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           <span>{saving ? "Saving..." : "Save Director Profile"}</span>
@@ -395,6 +418,8 @@ export function HomepageHeroEditor({ initialData, onRefresh }: EditorProps<Homep
 
   return (
     <form onSubmit={handleSave} className="space-y-6">
+      <FeedbackBanner message={message} onClose={() => setMessage(null)} />
+
       <div className="bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
         <h3 className="text-base font-extrabold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
           <span>🏠 Homepage Hero Section Editor</span>
@@ -520,22 +545,13 @@ export function HomepageHeroEditor({ initialData, onRefresh }: EditorProps<Homep
         </div>
       </div>
 
-      {message && (
-        <div
-          className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 ${
-            message.type === "success" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-red-50 text-red-800 border border-red-200"
-          }`}
-        >
-          {message.type === "success" ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-red-600" />}
-          <span>{message.text}</span>
-        </div>
-      )}
+      <FeedbackBanner message={message} onClose={() => setMessage(null)} />
 
       <div className="flex justify-end">
         <button
           type="submit"
           disabled={saving}
-          className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer"
+          className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
         >
           {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           <span>{saving ? "Saving..." : "Save Hero Settings"}</span>
@@ -822,6 +838,8 @@ export function AnnouncementEditor({ initialData, onRefresh }: EditorProps<Annou
 
   return (
     <form onSubmit={handleSave} className="space-y-6">
+      <FeedbackBanner message={message} onClose={() => setMessage(null)} />
+
       <div className="bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
@@ -902,22 +920,13 @@ export function AnnouncementEditor({ initialData, onRefresh }: EditorProps<Annou
         </div>
       </div>
 
-      {message && (
-        <div
-          className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 ${
-            message.type === "success" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-red-50 text-red-800 border border-red-200"
-          }`}
-        >
-          {message.type === "success" ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-red-600" />}
-          <span>{message.text}</span>
-        </div>
-      )}
+      <FeedbackBanner message={message} onClose={() => setMessage(null)} />
 
       <div className="flex justify-end">
         <button
           type="submit"
           disabled={saving}
-          className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer"
+          className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
         >
           {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           <span>{saving ? "Saving..." : "Save Announcement Settings"}</span>
@@ -984,6 +993,8 @@ export function AboutContentEditor({ initialData, onRefresh }: EditorProps<About
 
       {activeSection && (
         <form onSubmit={handleSave} className="space-y-6">
+          <FeedbackBanner message={message} onClose={() => setMessage(null)} />
+
           <div className="bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
             <h3 className="text-base font-extrabold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
               <span>📚 Section Content: {activeSection.heading}</span>
@@ -1031,22 +1042,13 @@ export function AboutContentEditor({ initialData, onRefresh }: EditorProps<About
             />
           </div>
 
-          {message && (
-            <div
-              className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 ${
-                message.type === "success" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-red-50 text-red-800 border border-red-200"
-              }`}
-            >
-              {message.type === "success" ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-red-600" />}
-              <span>{message.text}</span>
-            </div>
-          )}
+          <FeedbackBanner message={message} onClose={() => setMessage(null)} />
 
           <div className="flex justify-end">
             <button
               type="submit"
               disabled={saving}
-              className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer"
+              className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
             >
               {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               <span>{saving ? "Saving..." : "Save About Content"}</span>
@@ -1403,6 +1405,8 @@ export function ContactEditor({ initialData, onRefresh }: EditorProps<ContactSet
 
   return (
     <form onSubmit={handleSave} className="space-y-6">
+      <FeedbackBanner message={message} onClose={() => setMessage(null)} />
+
       <div className="bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
         <h3 className="text-base font-extrabold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
           <span>📞 Centralized Contact Settings</span>
@@ -1482,22 +1486,13 @@ export function ContactEditor({ initialData, onRefresh }: EditorProps<ContactSet
         </div>
       </div>
 
-      {message && (
-        <div
-          className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 ${
-            message.type === "success" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-red-50 text-red-800 border border-red-200"
-          }`}
-        >
-          {message.type === "success" ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-red-600" />}
-          <span>{message.text}</span>
-        </div>
-      )}
+      <FeedbackBanner message={message} onClose={() => setMessage(null)} />
 
       <div className="flex justify-end">
         <button
           type="submit"
           disabled={saving}
-          className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer"
+          className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
         >
           {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           <span>{saving ? "Saving..." : "Save Contact Info"}</span>
@@ -1916,6 +1911,8 @@ export function SeoEditor({ initialData, onRefresh }: EditorProps<SeoSettings>) 
 
   return (
     <form onSubmit={handleSave} className="space-y-6">
+      <FeedbackBanner message={message} onClose={() => setMessage(null)} />
+
       <div className="bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
         <h3 className="text-base font-extrabold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
           <span>🔍 SEO & Search Engine Optimization Editor</span>
@@ -2021,22 +2018,13 @@ export function SeoEditor({ initialData, onRefresh }: EditorProps<SeoSettings>) 
         </div>
       </div>
 
-      {message && (
-        <div
-          className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 ${
-            message.type === "success" ? "bg-emerald-50 text-emerald-800 border border-emerald-200" : "bg-red-50 text-red-800 border border-red-200"
-          }`}
-        >
-          {message.type === "success" ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-red-600" />}
-          <span>{message.text}</span>
-        </div>
-      )}
+      <FeedbackBanner message={message} onClose={() => setMessage(null)} />
 
       <div className="flex justify-end">
         <button
           type="submit"
           disabled={saving}
-          className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer"
+          className="min-h-[44px] px-6 py-2.5 bg-[#155EEF] hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl text-xs font-extrabold shadow-md shadow-blue-500/20 transition-all flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
         >
           {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           <span>{saving ? "Saving..." : "Save SEO Settings"}</span>
