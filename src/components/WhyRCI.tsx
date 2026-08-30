@@ -1,42 +1,41 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Monitor, Cpu, Code2, Users, Compass, Award } from "lucide-react";
+import { Monitor, Cpu, Code2, Users, Compass, Award, Laptop, BadgeCheck, Briefcase, Server, GraduationCap } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { DEFAULT_FEATURES } from "@/lib/cms-defaults";
+import { HomepageFeature } from "@/types/cms";
 
-const featureCards = [
-  {
-    title: "Modern Computer Labs",
-    description: "Equipped with high-performance desktop systems, fast internet, and practical software environments.",
-    icon: Monitor,
-  },
-  {
-    title: "Industry-Oriented Curriculum",
-    description: "Updated course modules covering software tools, accounting standards, and modern programming.",
-    icon: Cpu,
-  },
-  {
-    title: "Hands-on Training",
-    description: "Daily practical sessions focused on building real-world software skills and portfolio projects.",
-    icon: Code2,
-  },
-  {
-    title: "Expert Faculty",
-    description: "Learn directly from experienced instructors with years of domain expertise in IT and computer applications.",
-    icon: Users,
-  },
-  {
-    title: "Career Guidance",
-    description: "Personalized assistance including resume building, interview practice, and employment guidance.",
-    icon: Compass,
-  },
-  {
-    title: "Verified Certification",
-    description: "Earn QR-enabled certificates registered with MSME standards that employers can instantly verify.",
-    icon: Award,
-  },
-];
+const ICON_MAP: Record<string, any> = {
+  Monitor,
+  Cpu,
+  Code2,
+  Users,
+  Compass,
+  Award,
+  Laptop,
+  BadgeCheck,
+  Briefcase,
+  Server,
+  GraduationCap,
+};
 
 export default function WhyRCI() {
+  const [features, setFeatures] = useState<HomepageFeature[]>(DEFAULT_FEATURES);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("homepage_features")
+      .select("*")
+      .eq("is_active", true)
+      .order("display_order", { ascending: true })
+      .then(({ data }) => {
+        if (data && data.length > 0) setFeatures(data);
+      });
+  }, []);
+
   return (
     <section id="why-rci" className="py-18 bg-slate-50 relative border-b border-slate-200">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -53,28 +52,31 @@ export default function WhyRCI() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {featureCards.map((card, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.08 }}
-              viewport={{ once: true }}
-              className="bg-white border border-slate-200/80 rounded-2xl p-8 shadow-xs hover:shadow-xl hover:border-blue-300 transition-all duration-300 group flex flex-col justify-between"
-            >
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                  <card.icon className="w-6 h-6" />
+          {features.map((card, index) => {
+            const IconComp = ICON_MAP[card.icon] || GraduationCap;
+            return (
+              <motion.div
+                key={card.id || index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                viewport={{ once: true }}
+                className="bg-white border border-slate-200/80 rounded-2xl p-8 shadow-xs hover:shadow-xl hover:border-blue-300 transition-all duration-300 group flex flex-col justify-between"
+              >
+                <div>
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                    <IconComp className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors">
+                    {card.title}
+                  </h3>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    {card.description}
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors">
-                  {card.title}
-                </h3>
-                <p className="text-slate-600 text-sm leading-relaxed">
-                  {card.description}
-                </p>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

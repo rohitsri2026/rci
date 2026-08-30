@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Outfit, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { getSeoSettings, getSiteSettings } from "@/lib/cms";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -15,60 +16,64 @@ const outfit = Outfit({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://rciknp.vercel.app"),
-  title: "Rohit Computer Institute (RCI) | Practical IT & Computer Education",
-  description: "Rohit Computer Institute (RCI) provides practical computer training, DCA diploma, Tally Prime accounting, Web Development, Python, and QR-verifiable certificates.",
-  keywords: [
-    "Rohit Computer Institute",
-    "RCI Kanpur",
-    "Computer Institute Kanpur",
-    "DCA Course",
-    "Tally Prime GST Course",
-    "Web Development Training",
-    "Python Programming",
-    "Certificate Verification RCI",
-    "Computer Lab Kanpur"
-  ],
-  authors: [{ name: "Rohit Computer Institute" }],
-  openGraph: {
-    title: "Rohit Computer Institute (RCI) | Practical IT & Computer Education",
-    description: "Build career-oriented computer skills with expert faculty, modern labs, and verifiable certificates.",
-    url: "https://rciknp.vercel.app",
-    siteName: "Rohit Computer Institute",
-    images: [
-      {
-        url: "/banner.png",
-        width: 1200,
-        height: 600,
-        alt: "Rohit Computer Institute Campus & Training Banner",
-      },
-    ],
-    locale: "en_IN",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Rohit Computer Institute (RCI) | Practical IT Education",
-    description: "Build skills and build your career with RCI computer courses and verifiable certifications.",
-    images: ["/banner.png"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  icons: {
-    icon: [
-      { url: "/icon.png", type: "image/png" },
-      { url: "/favicon.png", type: "image/png" },
-    ],
-    shortcut: "/icon.png",
-    apple: [
-      { url: "/apple-icon.png", type: "image/png" },
-      { url: "/apple-touch-icon.png", type: "image/png" },
-    ],
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await getSeoSettings();
+  const site = await getSiteSettings();
+
+  const title = seo.site_title || site.browser_title;
+  const description = seo.meta_description;
+  const keywords = seo.keywords
+    ? seo.keywords.split(",").map((k) => k.trim())
+    : ["Rohit Computer Institute", "RCI Kanpur", "DCA Course"];
+  const ogImage = seo.og_image_url || site.logo_url || "/banner.png";
+  const favicon = site.favicon_url || "/favicon.png";
+  const siteUrl = seo.canonical_url || "https://rciknp.vercel.app";
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title,
+    description,
+    keywords,
+    authors: [{ name: site.site_name }],
+    openGraph: {
+      title: seo.og_title || title,
+      description: seo.og_description || description,
+      url: siteUrl,
+      siteName: site.site_name,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: `${site.site_name} Banner`,
+        },
+      ],
+      locale: "en_IN",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: seo.twitter_title || title,
+      description: seo.twitter_description || description,
+      images: [seo.twitter_image_url || ogImage],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+    icons: {
+      icon: [
+        { url: favicon, type: "image/png" },
+        { url: "/icon.png", type: "image/png" },
+      ],
+      shortcut: favicon,
+      apple: [
+        { url: favicon, type: "image/png" },
+        { url: "/apple-icon.png", type: "image/png" },
+      ],
+    },
+  };
+}
 
 const jsonLd = {
   "@context": "https://schema.org",

@@ -22,7 +22,8 @@ import {
   FilePlus,
   X,
   UserCheck,
-  MessageSquare
+  MessageSquare,
+  Globe
 } from "lucide-react";
 import { RCIConfig } from "@/lib/config";
 
@@ -37,6 +38,7 @@ const mainNavGroup = [
 ];
 
 const managementNavGroup = [
+  { label: "Website CMS", href: "/admin/cms", icon: Globe },
   { label: "Students", href: "/admin/students", icon: Users },
   { label: "Admissions", href: "/admin/admissions", icon: FileText },
   { label: "Courses", href: "/admin/courses", icon: BookOpen },

@@ -9,6 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import AnnouncementBar from "@/components/AnnouncementBar";
 
 function toSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -24,6 +25,14 @@ export default function Header() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [siteSettings, setSiteSettings] = useState({
+    site_name: "Rohit Computer Institute",
+    short_name: "RCI",
+    tagline: "Empowering Digital Careers",
+    logo_url: "/logo.png",
+  });
+  const [announcement, setAnnouncement] = useState<any>(null);
+
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
@@ -32,6 +41,36 @@ export default function Header() {
 
   useEffect(() => {
     const supabase = createClient();
+
+    // Fetch site settings
+    supabase
+      .from("site_settings")
+      .select("site_name, short_name, tagline, logo_url")
+      .eq("id", "default")
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setSiteSettings((prev) => ({
+            ...prev,
+            site_name: data.site_name || prev.site_name,
+            short_name: data.short_name || prev.short_name,
+            tagline: data.tagline || prev.tagline,
+            logo_url: data.logo_url || prev.logo_url,
+          }));
+        }
+      });
+
+    // Fetch announcement settings
+    supabase
+      .from("announcement_settings")
+      .select("*")
+      .eq("id", "default")
+      .single()
+      .then(({ data }) => {
+        if (data) setAnnouncement(data);
+      });
+
+    // Fetch courses
     supabase
       .from("courses")
       .select("id, course_name, slug")
@@ -73,33 +112,36 @@ export default function Header() {
   };
 
   return (
-    <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-white/95 backdrop-blur-md border-b border-slate-200/80 py-3 shadow-xs"
-          : "bg-white/90 backdrop-blur-sm border-b border-slate-100 py-4.5"
-      }`}
-    >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 sm:gap-3 group focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-xl p-1 max-w-[72%] sm:max-w-none">
-          <Image
-            src="/logo.png"
-            alt="Rohit Computer Institute Logo"
-            width={160}
-            height={60}
-            className="object-contain h-8 sm:h-12 w-auto shrink-0 transition-transform group-hover:scale-105"
-            priority
-          />
-          <div className="flex flex-col min-w-0">
-            <span className="text-xs sm:text-xl lg:text-2xl font-black text-slate-900 tracking-tight leading-tight truncate sm:whitespace-normal group-hover:text-blue-600 transition-colors">
-              Rohit Computer Institute
-            </span>
-            <span className="text-[9px] sm:text-[10.5px] font-bold text-blue-600 tracking-widest uppercase mt-0.5 truncate hidden sm:block">
-              Empowering Digital Careers
-            </span>
-          </div>
-        </Link>
+    <>
+      <AnnouncementBar settings={announcement} />
+      <header
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+          isScrolled
+            ? "bg-white/95 backdrop-blur-md border-b border-slate-200/80 py-3 shadow-xs"
+            : "bg-white/90 backdrop-blur-sm border-b border-slate-100 py-4.5"
+        }`}
+      >
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 group focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-xl p-1 max-w-[72%] sm:max-w-none">
+            <Image
+              src={siteSettings.logo_url || "/logo.png"}
+              alt={siteSettings.site_name}
+              width={160}
+              height={60}
+              className="object-contain h-8 sm:h-12 w-auto shrink-0 transition-transform group-hover:scale-105"
+              priority
+              unoptimized
+            />
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs sm:text-xl lg:text-2xl font-black text-slate-900 tracking-tight leading-tight truncate sm:whitespace-normal group-hover:text-blue-600 transition-colors">
+                {siteSettings.site_name}
+              </span>
+              <span className="text-[9px] sm:text-[10.5px] font-bold text-blue-600 tracking-widest uppercase mt-0.5 truncate hidden sm:block">
+                {siteSettings.tagline}
+              </span>
+            </div>
+          </Link>
 
         {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center gap-6">
@@ -429,5 +471,6 @@ export default function Header() {
         </div>
       )}
     </header>
+    </>
   );
 }

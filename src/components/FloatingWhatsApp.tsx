@@ -1,10 +1,28 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { MessageCircle } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import { RCIConfig } from "@/lib/config";
 
 export default function FloatingWhatsApp() {
-  const whatsappUrl = RCIConfig.getWhatsAppUrl("Hello RCI, I am looking for information about your computer courses.");
+  const [whatsappNumber, setWhatsappNumber] = useState(RCIConfig.whatsappNumber);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("contact_settings")
+      .select("whatsapp")
+      .eq("id", "default")
+      .single()
+      .then(({ data }) => {
+        if (data?.whatsapp) {
+          setWhatsappNumber(data.whatsapp.replace(/\D/g, ""));
+        }
+      });
+  }, []);
+
+  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hello RCI, I am looking for information about your computer courses.")}`;
 
   return (
     <a

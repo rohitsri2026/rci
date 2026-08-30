@@ -17,6 +17,7 @@ import {
   Settings,
   MessageSquare,
   History,
+  Globe,
 } from "lucide-react";
 import MobileMoreSheet, { MoreSheetGroup } from "@/components/mobile/MobileMoreSheet";
 
@@ -45,6 +46,17 @@ export default function AdminMobileBottomNav({ userEmail }: AdminMobileBottomNav
 
   // Items included in the More Sheet
   const moreGroups: MoreSheetGroup[] = [
+    {
+      groupTitle: "Website & Content",
+      items: [
+        {
+          label: "Website CMS",
+          href: "/admin/cms",
+          icon: Globe,
+          active: pathname.startsWith("/admin/cms"),
+        },
+      ],
+    },
     {
       groupTitle: "Academic Management",
       items: [
