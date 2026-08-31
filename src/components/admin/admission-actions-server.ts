@@ -1,11 +1,11 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import { revalidatePath } from "next/cache";
 import { verifyRole } from "@/lib/auth";
 
 export async function updateAdmissionStatus(admissionId: string, status: "Approved" | "Rejected") {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   // Server-side authorization check
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
@@ -129,7 +129,7 @@ export async function updateAdmissionStatus(admissionId: string, status: "Approv
 }
 
 export async function convertAdmissionToStudent(admissionId: string) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
   if (authCheck.error) {
@@ -200,7 +200,7 @@ export async function convertAdmissionToStudent(admissionId: string) {
 }
 
 export async function deleteAdmission(admissionId: string) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   // 1. Enforce strict Admin role check
   const authCheck = await verifyRole(supabase, ["Admin"]);
@@ -271,7 +271,7 @@ export async function submitAdmission(form: {
   email?: string;
   selected_course: string;
 }) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   const name = form.student_name ? form.student_name.trim() : "";
   if (!name) {

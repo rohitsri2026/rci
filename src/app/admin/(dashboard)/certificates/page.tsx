@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import HistoryTable from "@/components/certificates/HistoryTable";
 import Link from "next/link";
 import { Plus } from "lucide-react";
@@ -7,7 +7,7 @@ import React from "react";
 export const dynamic = "force-dynamic";
 
 export default async function CertificatesPage() {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   // Fetch user role

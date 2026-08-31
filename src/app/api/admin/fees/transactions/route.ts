@@ -1,10 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import { NextResponse } from "next/server";
 import { verifyRole } from "@/lib/auth";
 import { NotificationService } from "@/lib/notifications/service";
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
   if (authCheck.error) {

@@ -1,11 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import CourseListClient from "@/components/admin/courses/CourseListClient";
 import { Course } from "@/types/course";
 
 export const dynamic = "force-dynamic";
 
 export default async function CoursesPage() {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   // 1. Fetch courses
   const { data: coursesData } = await supabase

@@ -1,10 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyRole } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
   if (authCheck.error) {
     return NextResponse.json({ error: authCheck.error }, { status: authCheck.status });
@@ -101,7 +101,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
   if (authCheck.error) {
     return NextResponse.json({ error: authCheck.error }, { status: authCheck.status });
@@ -174,7 +174,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
   if (authCheck.error) {
     return NextResponse.json({ error: authCheck.error }, { status: authCheck.status });

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import { 
   Users, Award, FileText, BookOpen, Plus, ArrowRight, 
   CheckCircle2, Clock, ShieldCheck, AlertCircle, Sparkles, UserPlus, FilePlus
@@ -7,7 +7,7 @@ import Link from "next/link";
 
 // Server-side data fetcher for Admin Dashboard stats & recent activity
 async function getDashboardData() {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   const [
     studentsCount, 

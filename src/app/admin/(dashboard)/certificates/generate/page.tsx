@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import GenerateForm from "@/components/certificates/GenerateForm";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -7,7 +7,7 @@ import React from "react";
 export const dynamic = "force-dynamic";
 
 export default async function GenerateCertificatePage() {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   // Fetch all students
   const { data: students, error: studentError } = await supabase

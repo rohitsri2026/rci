@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import { revalidatePath } from "next/cache";
 import { verifyRole } from "@/lib/auth";
 import {
@@ -25,7 +25,7 @@ import {
  */
 async function logCmsActivity(action: string, details: string, email: string) {
   try {
-    const supabase = await createClient();
+    const supabase = await createAdminServerClient();
     await supabase.from("system_audit_logs").insert({
       action: action,
       performed_by: email || "admin",
@@ -59,7 +59,7 @@ async function revalidateAllWebsitePages() {
 
 // 1. UPDATE BRANDING & SITE SETTINGS
 export async function updateSiteSettingsAction(data: Partial<SiteSettings>) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -84,7 +84,7 @@ export async function updateSiteSettingsAction(data: Partial<SiteSettings>) {
 
 // 2. UPDATE DIRECTOR & INSTITUTE PROFILE
 export async function updateDirectorProfileAction(data: Partial<DirectorProfile>) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -109,7 +109,7 @@ export async function updateDirectorProfileAction(data: Partial<DirectorProfile>
 
 // 3. UPDATE HOMEPAGE HERO SETTINGS
 export async function updateHomepageSettingsAction(data: Partial<HomepageSettings>) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -134,7 +134,7 @@ export async function updateHomepageSettingsAction(data: Partial<HomepageSetting
 
 // 4. SAVE HOMEPAGE BANNER (INSERT / UPDATE)
 export async function saveBannerAction(banner: Partial<HomepageBanner>) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -175,7 +175,7 @@ export async function saveBannerAction(banner: Partial<HomepageBanner>) {
 
 // DELETE BANNER
 export async function deleteBannerAction(id: string) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -191,7 +191,7 @@ export async function deleteBannerAction(id: string) {
 
 // 5. UPDATE ANNOUNCEMENT SETTINGS (Legacy)
 export async function updateAnnouncementSettingsAction(data: Partial<AnnouncementSettings>) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -216,7 +216,7 @@ export async function updateAnnouncementSettingsAction(data: Partial<Announcemen
 
 // 5B. SAVE WEBSITE ANNOUNCEMENT NOTICE ITEM (Professional Notice System)
 export async function saveAnnouncementItemAction(item: Partial<AnnouncementItem>) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -274,7 +274,7 @@ export async function saveAnnouncementItemAction(item: Partial<AnnouncementItem>
 
 // DELETE WEBSITE ANNOUNCEMENT ITEM
 export async function deleteAnnouncementItemAction(id: string) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -290,7 +290,7 @@ export async function deleteAnnouncementItemAction(id: string) {
 
 // 6. UPDATE ABOUT SECTION
 export async function updateAboutSectionAction(data: Partial<AboutSection>) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -314,7 +314,7 @@ export async function updateAboutSectionAction(data: Partial<AboutSection>) {
 
 // 7. SAVE FEATURE ("Why Choose RCI")
 export async function saveFeatureAction(feature: Partial<HomepageFeature>) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -349,7 +349,7 @@ export async function saveFeatureAction(feature: Partial<HomepageFeature>) {
 }
 
 export async function deleteFeatureAction(id: string) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -365,7 +365,7 @@ export async function deleteFeatureAction(id: string) {
 
 // 8. SAVE STATISTIC
 export async function saveStatAction(stat: Partial<HomepageStat>) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -400,7 +400,7 @@ export async function saveStatAction(stat: Partial<HomepageStat>) {
 }
 
 export async function deleteStatAction(id: string) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -416,7 +416,7 @@ export async function deleteStatAction(id: string) {
 
 // 9. UPDATE CONTACT SETTINGS
 export async function updateContactSettingsAction(data: Partial<ContactSettings>) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -441,7 +441,7 @@ export async function updateContactSettingsAction(data: Partial<ContactSettings>
 
 // 10. SAVE SOCIAL LINK
 export async function saveSocialLinkAction(social: Partial<SocialLink>) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -475,7 +475,7 @@ export async function saveSocialLinkAction(social: Partial<SocialLink>) {
 }
 
 export async function deleteSocialLinkAction(id: string) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -491,7 +491,7 @@ export async function deleteSocialLinkAction(id: string) {
 
 // 11. SAVE NAVIGATION LINK
 export async function saveNavigationLinkAction(nav: Partial<NavigationLink>) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -528,7 +528,7 @@ export async function saveNavigationLinkAction(nav: Partial<NavigationLink>) {
 }
 
 export async function deleteNavigationLinkAction(id: string) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -550,7 +550,7 @@ export async function deleteNavigationLinkAction(id: string) {
 
 // 12. UPDATE SEO SETTINGS
 export async function updateSeoSettingsAction(data: Partial<SeoSettings>) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -576,7 +576,7 @@ export async function updateSeoSettingsAction(data: Partial<SeoSettings>) {
 // 13. CMS MEDIA MANAGEMENT
 export async function fetchCmsMediaAction(): Promise<CmsMediaItem[]> {
   try {
-    const supabase = await createClient();
+    const supabase = await createAdminServerClient();
     const { data } = await supabase.from("cms_media").select("*").order("created_at", { ascending: false });
     return data || [];
   } catch (err) {
@@ -586,7 +586,7 @@ export async function fetchCmsMediaAction(): Promise<CmsMediaItem[]> {
 }
 
 export async function recordMediaUploadAction(media: Omit<CmsMediaItem, "id" | "created_at">) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };
@@ -601,7 +601,7 @@ export async function recordMediaUploadAction(media: Omit<CmsMediaItem, "id" | "
 }
 
 export async function deleteCmsAssetAction(id: string, filePath: string) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authResult = await verifyRole(supabase, ["Admin"]);
   if ("error" in authResult) {
     return { success: false, error: authResult.error };

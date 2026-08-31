@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import { createAdminClient, hasAdminKey } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 import { verifyRole } from "@/lib/auth";
@@ -38,7 +38,7 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
 
   if (authCheck.error) {
@@ -220,7 +220,7 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
 
   if (authCheck.error) {

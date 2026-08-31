@@ -1,8 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import StudentListClient from "@/components/admin/students/StudentListClient";
 
 export default async function StudentsPage() {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   const [studentsResult, coursesResult] = await Promise.all([
     supabase
@@ -14,6 +14,13 @@ export default async function StudentsPage() {
       .select("id, course_name")
       .order("course_name", { ascending: true }),
   ]);
+
+  if (studentsResult.error) {
+    console.error("Admin StudentsPage fetch error:", studentsResult.error);
+  }
+  if (coursesResult.error) {
+    console.error("Admin StudentsPage courses error:", coursesResult.error);
+  }
 
   return (
     <StudentListClient 

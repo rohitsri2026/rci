@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import { revalidatePath } from "next/cache";
 import { verifyRole } from "@/lib/auth";
 
@@ -42,7 +42,7 @@ function revalidatePublicCoursePages(slug?: string | null) {
 }
 
 export async function createCourse(payload: CoursePayload) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
   if (authCheck.error) {
@@ -111,7 +111,7 @@ export async function createCourse(payload: CoursePayload) {
 }
 
 export async function updateCourse(courseId: string, payload: Partial<CoursePayload>) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
   if (authCheck.error) {
@@ -187,7 +187,7 @@ export async function updateCourse(courseId: string, payload: Partial<CoursePayl
 }
 
 export async function toggleCourseStatus(courseId: string, currentStatus: string) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
   if (authCheck.error) {
@@ -223,7 +223,7 @@ export async function toggleCourseStatus(courseId: string, currentStatus: string
 }
 
 export async function deleteCourse(courseId: string) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
   if (authCheck.error) {

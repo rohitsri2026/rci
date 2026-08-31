@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import { Award, Calendar, Clock, CheckCircle2, ShieldAlert, ArrowRight, Activity, Eye, FileText } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -6,7 +6,7 @@ import React from "react";
 export const dynamic = "force-dynamic";
 
 async function getCertificateStats() {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
