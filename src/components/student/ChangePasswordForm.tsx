@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createStudentBrowserClient } from "@/lib/supabase/client-student";
 import { 
   Lock, Eye, EyeOff, Check, X, ShieldCheck, AlertCircle, Loader2, KeyRound 
 } from "lucide-react";
@@ -48,7 +48,7 @@ export default function ChangePasswordForm({ isFirstLogin = false }: ChangePassw
     setLoading(true);
 
     try {
-      const supabase = createClient();
+      const supabase = createStudentBrowserClient();
 
       // 1. Re-authenticate current password if provided
       if (currentPassword) {

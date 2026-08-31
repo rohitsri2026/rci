@@ -1,10 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import { NextResponse } from "next/server";
 import { certificateGenerateSchema } from "@/schemas/certificate";
 import { verifyRole } from "@/lib/auth";
 
 export async function GET(request: Request) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   
   // Parse URL search parameters
   const { searchParams } = new URL(request.url);
@@ -77,7 +77,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   
   // 1. Verify Role (Staff or Admin can generate)
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);

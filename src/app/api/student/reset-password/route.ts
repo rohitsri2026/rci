@@ -1,11 +1,11 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyRole } from "@/lib/auth";
 import { normalizePhone } from "@/lib/utils";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   // 1. Authorization check — Admins and Staff only
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);

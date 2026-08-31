@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import { NextResponse } from "next/server";
 import { verifyRole } from "@/lib/auth";
 
 export async function GET(request: Request) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   // 1. Verify Role (Authenticated users can read audit logs)
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   
   // Note: We allow anonymous posting of "Verified" logs (since a public visitor scans a QR code to verify)
   // But other actions (Downloaded, Printed, Deleted, Reissued) are authenticated.

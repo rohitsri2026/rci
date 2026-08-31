@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { Upload, X, RefreshCw, CheckCircle2, AlertCircle, FileImage } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { createAdminBrowserClient } from "@/lib/supabase/client-admin";
 import { recordMediaUploadAction } from "@/app/admin/(dashboard)/cms/cms-actions";
 
 interface ImageUploaderProps {
@@ -48,7 +48,7 @@ export default function ImageUploader({
 
     try {
       setUploading(true);
-      const supabase = createClient();
+      const supabase = createAdminBrowserClient();
 
       const ext = file.name.split(".").pop() || "jpg";
       const cleanFileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;

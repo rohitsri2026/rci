@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createStudentBrowserClient } from "@/lib/supabase/client-student";
 import { NotificationItem } from "@/components/student/StudentNotificationCard";
 
 interface UseRealtimeNotificationsProps {
@@ -68,7 +68,7 @@ export function useRealtimeNotifications({
       return;
     }
 
-    const supabase = createClient();
+    const supabase = createStudentBrowserClient();
     let isMounted = true;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     let reconnectTimer: NodeJS.Timeout | null = null;

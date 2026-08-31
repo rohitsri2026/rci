@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createStudentBrowserClient } from "@/lib/supabase/client-student";
 import { Settings, Lock, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function StudentSettingsPage() {
@@ -29,7 +29,7 @@ export default function StudentSettingsPage() {
     }
 
     setLoading(true);
-    const supabase = createClient();
+    const supabase = createStudentBrowserClient();
 
     const { error: err } = await supabase.auth.updateUser({ password: newPassword });
 

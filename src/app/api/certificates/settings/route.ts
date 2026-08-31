@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import { NextResponse } from "next/server";
 import { certificateSettingsSchema } from "@/schemas/certificate";
 import { verifyRole } from "@/lib/auth";
@@ -16,7 +16,7 @@ const DEFAULT_SETTINGS = {
 };
 
 export async function GET() {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
   
   try {
     const { data, error } = await supabase
@@ -48,7 +48,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   // 1. Verify Role (Admins only can edit settings)
   const authCheck = await verifyRole(supabase, ["Admin"]);

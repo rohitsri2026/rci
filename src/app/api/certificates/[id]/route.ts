@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminServerClient } from "@/lib/supabase/server-admin";
 import { NextResponse } from "next/server";
 import { certificateReissueSchema } from "@/schemas/certificate";
 import { verifyRole } from "@/lib/auth";
@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   try {
     const { data: cert, error } = await supabase
@@ -47,7 +47,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   // 1. Verify Role (Admin or Staff can modify status/reissue)
   const authCheck = await verifyRole(supabase, ["Admin", "Staff"]);
@@ -243,7 +243,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createClient();
+  const supabase = await createAdminServerClient();
 
   // 1. Verify Role (Admins only)
   const authCheck = await verifyRole(supabase, ["Admin"]);
