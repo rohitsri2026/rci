@@ -13,6 +13,7 @@ import {
   NavigationLink,
   SeoSettings,
   AnnouncementItem,
+  AnnouncementDisplayOn,
   CmsFullData,
 } from "@/types/cms";
 import {
@@ -250,9 +251,9 @@ export async function getAnnouncements(): Promise<AnnouncementItem[]> {
 }
 
 /**
- * Fetch Active Announcements (for Website Header)
+ * Fetch Active Announcements (with target filtering for global, homepage, student)
  */
-export async function getActiveAnnouncements(): Promise<AnnouncementItem[]> {
+export async function getActiveAnnouncements(target?: AnnouncementDisplayOn): Promise<AnnouncementItem[]> {
   try {
     const supabase = await createClient();
     const { data } = await supabase
@@ -265,7 +266,19 @@ export async function getActiveAnnouncements(): Promise<AnnouncementItem[]> {
       const now = new Date();
       return data.filter((item) => {
         if (item.start_at && new Date(item.start_at) > now) return false;
-        if (item.end_at && new Date(item.end_at) < now) return false;
+        if (!item.no_expiry && item.end_at && new Date(item.end_at) < now) return false;
+
+        // Target filtering
+        if (target) {
+          const displayOn = item.display_on || "global";
+          if (target === "global") {
+            if (displayOn !== "global" && displayOn !== "global_student") return false;
+          } else if (target === "homepage") {
+            if (displayOn !== "homepage" && displayOn !== "global" && displayOn !== "global_student") return false;
+          } else if (target === "student") {
+            if (displayOn !== "student" && displayOn !== "global_student") return false;
+          }
+        }
         return true;
       });
     }

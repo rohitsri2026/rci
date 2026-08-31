@@ -10,6 +10,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import AnnouncementBar from "@/components/AnnouncementBar";
+import NoticeRenderer from "@/components/notice/NoticeRenderer";
 
 function toSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -136,9 +137,17 @@ export default function Header() {
     hoverTimeout.current = setTimeout(() => setCoursesOpen(false), 150);
   };
 
+  const topStripNotices = announcements.filter((n) => !n.display_format || n.display_format === "top_strip");
+  const tickerNotices = announcements.filter((n) => n.display_format === "ticker");
+  const popupNotice = announcements.find((n) => n.display_format === "popup");
+  const stickyNotice = announcements.find((n) => n.display_format === "sticky");
+
   return (
     <>
-      <AnnouncementBar notices={announcements} settings={announcement} />
+      <AnnouncementBar notices={topStripNotices} settings={announcement} />
+      {tickerNotices.length > 0 && <NoticeRenderer notices={tickerNotices} forcedFormat="ticker" />}
+      {popupNotice && <NoticeRenderer notice={popupNotice} forcedFormat="popup" />}
+      {stickyNotice && <NoticeRenderer notice={stickyNotice} forcedFormat="sticky" />}
       <header
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
           isScrolled

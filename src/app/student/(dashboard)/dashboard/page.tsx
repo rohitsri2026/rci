@@ -10,6 +10,7 @@ import ExamSummaryCard from "@/components/student/ExamSummaryCard";
 import CertificateSummaryCard from "@/components/student/CertificateSummaryCard";
 import StudyMaterialsSummaryCard from "@/components/student/StudyMaterialsSummaryCard";
 import AttentionPanel from "@/components/student/AttentionPanel";
+import StudentPortalNoticeBanner from "@/components/student/StudentPortalNoticeBanner";
 
 export const metadata: Metadata = {
   title: "Student Dashboard",
@@ -90,7 +91,10 @@ export default async function StudentDashboardPage() {
         </div>
       )}
 
-      {/* 2. Welcome Banner */}
+      {/* 2. Student Portal Active Notice Banner */}
+      <StudentPortalNoticeBanner />
+
+      {/* 3. Welcome Banner */}
       <DashboardWelcome
         studentName={student.full_name}
         courseName={course?.course_name}

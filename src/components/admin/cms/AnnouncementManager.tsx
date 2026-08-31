@@ -2,17 +2,17 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  Megaphone, Plus, Trash2, Edit3, CheckCircle, AlertTriangle, Eye,
-  Sparkles, Calendar, Clock, Link as LinkIcon, Star, Bell, GraduationCap,
-  FileText, DollarSign, Award, BookOpen, RefreshCw, X, ShieldAlert, Copy,
-  Check, ToggleLeft, ToggleRight
+  Megaphone, Plus, Trash2, Edit3, Eye, Sparkles, Clock, Link as LinkIcon,
+  Star, Bell, GraduationCap, FileText, DollarSign, Award, BookOpen, RefreshCw,
+  X, AlertTriangle, Copy, ToggleLeft, ToggleRight, Layers, Layout, ShieldAlert
 } from "lucide-react";
-import { AnnouncementItem, AnnouncementType, AnnouncementPriority } from "@/types/cms";
+import { AnnouncementItem, AnnouncementType, AnnouncementPriority, AnnouncementDisplayOn, AnnouncementDisplayFormat } from "@/types/cms";
 import {
   saveAnnouncementItemAction,
   deleteAnnouncementItemAction,
 } from "@/app/admin/(dashboard)/cms/cms-actions";
 import { useCMSFeedback } from "./CMSFeedbackProvider";
+import NoticeRenderer from "@/components/notice/NoticeRenderer";
 
 interface AnnouncementManagerProps {
   initialData?: AnnouncementItem[];
@@ -24,7 +24,6 @@ function isoToDatetimeLocal(isoStr?: string | null): string {
   if (!isoStr) return "";
   try {
     const date = new Date(isoStr);
-    // Offset for IST (+5:30)
     const istOffsetMs = 5.5 * 60 * 60 * 1000;
     const localDate = new Date(date.getTime() + istOffsetMs);
     return localDate.toISOString().slice(0, 16);
@@ -41,8 +40,6 @@ function datetimeLocalToIso(localStr?: string | null): string | null {
     if (!datePart || !timePart) return null;
     const [year, month, day] = datePart.split("-").map(Number);
     const [hours, minutes] = timePart.split(":").map(Number);
-    
-    // Create Date object in UTC subtracting 5:30 IST offset
     const utcTimeMs = Date.UTC(year, month - 1, day, hours, minutes) - (5.5 * 60 * 60 * 1000);
     return new Date(utcTimeMs).toISOString();
   } catch {
@@ -51,8 +48,8 @@ function datetimeLocalToIso(localStr?: string | null): string | null {
 }
 
 // Format ISO date string into Indian locale format (DD MMM YYYY, hh:mm AM/PM)
-function formatISTDisplay(isoStr?: string | null): string {
-  if (!isoStr) return "No Expiry";
+function formatISTDisplay(isoStr?: string | null, noExpiry = false): string {
+  if (noExpiry || !isoStr) return "No Expiry";
   try {
     const date = new Date(isoStr);
     return new Intl.DateTimeFormat("en-IN", {
@@ -74,34 +71,51 @@ function getNoticeStatus(item: AnnouncementItem): "LIVE" | "SCHEDULED" | "DRAFT"
   if (!item.is_enabled) return "DRAFT";
   const now = new Date();
   if (item.start_at && new Date(item.start_at) > now) return "SCHEDULED";
-  if (item.end_at && new Date(item.end_at) < now) return "EXPIRED";
+  if (!item.no_expiry && item.end_at && new Date(item.end_at) < now) return "EXPIRED";
   return "LIVE";
 }
 
 const TYPE_CONFIG: Record<AnnouncementType, { label: string; icon: React.ElementType; color: string; bg: string }> = {
   notice: { label: "General Notice", icon: Bell, color: "text-blue-600", bg: "bg-blue-50 border-blue-200" },
-  important: { label: "Important", icon: Star, color: "text-amber-600", bg: "bg-amber-50 border-amber-200" },
   admission: { label: "Admission", icon: GraduationCap, color: "text-emerald-600", bg: "bg-emerald-50 border-emerald-200" },
   exam: { label: "Exam Notice", icon: FileText, color: "text-purple-600", bg: "bg-purple-50 border-purple-200" },
   fee: { label: "Fee Alert", icon: DollarSign, color: "text-orange-600", bg: "bg-orange-50 border-orange-200" },
-  event: { label: "Event", icon: Calendar, color: "text-indigo-600", bg: "bg-indigo-50 border-indigo-200" },
-  update: { label: "System Update", icon: Sparkles, color: "text-cyan-600", bg: "bg-cyan-50 border-cyan-200" },
+  course: { label: "Course Notice", icon: BookOpen, color: "text-indigo-600", bg: "bg-indigo-50 border-indigo-200" },
   certificate: { label: "Certificate", icon: Award, color: "text-teal-600", bg: "bg-teal-50 border-teal-200" },
-  material: { label: "Study Material", icon: BookOpen, color: "text-rose-600", bg: "bg-rose-50 border-rose-200" },
+  update: { label: "System Update", icon: Sparkles, color: "text-cyan-600", bg: "bg-cyan-50 border-cyan-200" },
+  urgent: { label: "Urgent Alert", icon: Megaphone, color: "text-red-600", bg: "bg-red-50 border-red-200" },
 };
+
+const DISPLAY_TARGET_LABELS: Record<AnnouncementDisplayOn, string> = {
+  global: "🌐 Global Website",
+  homepage: "🏠 Homepage Section",
+  student: "🎓 Student Portal",
+  global_student: "🌐 Global + Student Portal",
+};
+
+const DISPLAY_FORMAT_OPTIONS: { id: AnnouncementDisplayFormat; icon: string; title: string; desc: string }[] = [
+  { id: "top_strip", icon: "📢", title: "Top Strip", desc: "Compact announcement bar near the website header." },
+  { id: "alert_box", icon: "🚨", title: "Alert Box", desc: "Prominent alert/notice card for important updates." },
+  { id: "notice_card", icon: "📋", title: "Notice Card", desc: "Standard card used in homepage/latest notices areas." },
+  { id: "popup", icon: "🪟", title: "Popup Notice", desc: "Center-screen modal notice dialog." },
+  { id: "sticky", icon: "📌", title: "Sticky Notice", desc: "Fixed notice attached to the viewport bottom." },
+  { id: "ticker", icon: "📰", title: "News Ticker", desc: "Compact scrolling news-style notice ticker." },
+];
 
 export default function AnnouncementManager({ initialData = [], onRefresh }: AnnouncementManagerProps) {
   const [items, setItems] = useState<AnnouncementItem[]>(initialData);
   const [activeFilter, setActiveFilter] = useState<"ALL" | "LIVE" | "SCHEDULED" | "DRAFT" | "EXPIRED">("ALL");
   const [priorityFilter, setPriorityFilter] = useState<string>("ALL");
+  const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState<"CONTENT" | "SCHEDULING" | "DISPLAY" | "CTA">("CONTENT");
   const [editingItem, setEditingItem] = useState<Partial<AnnouncementItem> | null>(null);
   const [startLocal, setStartLocal] = useState("");
   const [endLocal, setEndLocal] = useState("");
   
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteConfirmItem, setDeleteConfirmItem] = useState<AnnouncementItem | null>(null);
   const [saving, setSaving] = useState(false);
 
   const { showSuccess, showError, showSaving } = useCMSFeedback();
@@ -110,7 +124,7 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
     setItems(initialData);
   }, [initialData]);
 
-  // Statistics
+  // Counters
   const liveCount = items.filter((i) => getNoticeStatus(i) === "LIVE").length;
   const scheduledCount = items.filter((i) => getNoticeStatus(i) === "SCHEDULED").length;
   const draftCount = items.filter((i) => getNoticeStatus(i) === "DRAFT").length;
@@ -124,6 +138,7 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
     if (activeFilter === "EXPIRED" && status !== "EXPIRED") return false;
 
     if (priorityFilter !== "ALL" && item.priority !== priorityFilter) return false;
+    if (typeFilter !== "ALL" && item.announcement_type !== typeFilter) return false;
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -143,7 +158,10 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
       message: "",
       announcement_type: "admission",
       priority: "important",
+      display_on: "global",
+      display_format: "top_strip",
       is_enabled: true,
+      no_expiry: true,
       button_text: "Apply Now",
       button_url: "/admission",
       display_order: items.length + 1,
@@ -151,6 +169,7 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
     });
     setStartLocal(nowLocal);
     setEndLocal("");
+    setModalTab("CONTENT");
     setModalOpen(true);
   };
 
@@ -158,16 +177,20 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
     setEditingItem(item);
     setStartLocal(isoToDatetimeLocal(item.start_at));
     setEndLocal(isoToDatetimeLocal(item.end_at));
+    setModalTab("CONTENT");
     setModalOpen(true);
   };
 
   const handleDuplicate = (item: AnnouncementItem) => {
     setEditingItem({
-      title: `${item.title} (Copy)`,
+      title: `${item.title} (Draft Copy)`,
       message: item.message,
       announcement_type: item.announcement_type,
       priority: item.priority,
-      is_enabled: true,
+      display_on: item.display_on || "global",
+      display_format: item.display_format || "top_strip",
+      is_enabled: false,
+      no_expiry: item.no_expiry ?? true,
       button_text: item.button_text,
       button_url: item.button_url,
       display_order: items.length + 1,
@@ -175,6 +198,7 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
     });
     setStartLocal(isoToDatetimeLocal(new Date().toISOString()));
     setEndLocal(isoToDatetimeLocal(item.end_at));
+    setModalTab("CONTENT");
     setModalOpen(true);
   };
 
@@ -188,9 +212,9 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
     }
 
     const startIso = datetimeLocalToIso(startLocal) || new Date().toISOString();
-    const endIso = datetimeLocalToIso(endLocal);
+    const endIso = editingItem.no_expiry ? null : datetimeLocalToIso(endLocal);
 
-    if (endIso && new Date(endIso) <= new Date(startIso)) {
+    if (!editingItem.no_expiry && endIso && new Date(endIso) <= new Date(startIso)) {
       showError("Notice End date/time must be after the Start date/time.");
       return;
     }
@@ -249,16 +273,35 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
     if (res.success) {
       setItems((prev) => prev.filter((i) => i.id !== id));
       showSuccess("Announcement notice deleted successfully!");
-      setDeleteConfirmId(null);
+      setDeleteConfirmItem(null);
       if (onRefresh) onRefresh();
     } else {
       showError(res.error || "Failed to delete notice.");
     }
   };
 
+  // Live preview payload for real-time format rendering
+  const previewItemPayload: AnnouncementItem = {
+    id: editingItem?.id || "preview-id",
+    title: editingItem?.title || "Sample Announcement Notice Title",
+    message: editingItem?.message || "Sample message description displaying how the notice will look live in the selected format.",
+    announcement_type: editingItem?.announcement_type || "admission",
+    priority: editingItem?.priority || "important",
+    display_on: editingItem?.display_on || "global",
+    display_format: editingItem?.display_format || "top_strip",
+    is_enabled: true,
+    no_expiry: editingItem?.no_expiry ?? true,
+    start_at: new Date().toISOString(),
+    end_at: null,
+    button_text: editingItem?.button_text || "Apply Now",
+    button_url: editingItem?.button_url || "/admission",
+    display_order: 1,
+    is_dismissible: editingItem?.is_dismissible ?? true,
+  };
+
   return (
-    <div className="space-y-6">
-      {/* 1. Glassmorphism Top Header & Counters */}
+    <div className="space-y-6 pb-8">
+      {/* 1. Header & Counter Overview */}
       <div className="bg-white/90 backdrop-blur-xl border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
@@ -267,10 +310,10 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
               <span>RCI Notice & Announcement Control Center</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black text-slate-900 font-display">
-              Announcements & Notice Management
+              Announcements & Notice Manager
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 font-medium">
-              Publish, schedule, and prioritize dynamic website announcements across all RCI public pages.
+              Configure, format, schedule, prioritize, and target website notices across RCI public pages, homepage, and student portal.
             </p>
           </div>
 
@@ -308,9 +351,8 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
           </div>
         </div>
 
-        {/* Filters & Search Toolbar */}
+        {/* Filters Toolbar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2">
-          {/* Status Tabs */}
           <div className="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
             {(["ALL", "LIVE", "SCHEDULED", "DRAFT", "EXPIRED"] as const).map((tab) => (
               <button
@@ -332,8 +374,7 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
             ))}
           </div>
 
-          {/* Priority & Search inputs */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap shrink-0">
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
@@ -345,18 +386,34 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
               <option value="normal">🔹 Normal</option>
             </select>
 
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="min-h-[38px] px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            >
+              <option value="ALL">All Types</option>
+              <option value="admission">🎓 Admission</option>
+              <option value="notice">📢 General</option>
+              <option value="exam">📝 Exam</option>
+              <option value="fee">💰 Fee</option>
+              <option value="course">📚 Course</option>
+              <option value="certificate">🏆 Certificate</option>
+              <option value="update">🔔 Update</option>
+              <option value="urgent">🔴 Urgent Alert</option>
+            </select>
+
             <input
               type="text"
               placeholder="Search notices..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="min-h-[38px] px-3.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 w-44"
+              className="min-h-[38px] px-3.5 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 w-full sm:w-44"
             />
           </div>
         </div>
       </div>
 
-      {/* 2. Notice List Cards */}
+      {/* 2. Notice Cards List */}
       {filteredItems.length === 0 ? (
         <div className="bg-white/80 backdrop-blur-xl border border-slate-200/90 rounded-3xl p-12 text-center space-y-4 shadow-sm">
           <div className="w-14 h-14 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-center mx-auto text-blue-600">
@@ -365,8 +422,8 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
           <div className="space-y-1">
             <h3 className="text-base font-black text-slate-900">No Announcements Found</h3>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
-              {searchQuery || activeFilter !== "ALL" || priorityFilter !== "ALL"
-                ? "No announcements match your current filter criteria."
+              {searchQuery || activeFilter !== "ALL" || priorityFilter !== "ALL" || typeFilter !== "ALL"
+                ? "No notices match your current filter criteria."
                 : "Create your first RCI website notice to inform students about admissions, exams, or fee schedules."}
             </p>
           </div>
@@ -399,10 +456,8 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
                     : "border-slate-200 opacity-60"
                 }`}
               >
-                {/* Notice Card Header */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2 flex-wrap">
-                    {/* Status Badge */}
                     {status === "LIVE" && (
                       <span className="px-2.5 py-1 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 text-[10.5px] font-black uppercase tracking-wider flex items-center gap-1">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -417,7 +472,7 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
                     )}
                     {status === "DRAFT" && (
                       <span className="px-2.5 py-1 rounded-full bg-slate-100 border border-slate-300 text-slate-700 text-[10.5px] font-black uppercase tracking-wider">
-                        ⚪ DISABLED
+                        ⚪ DRAFT
                       </span>
                     )}
                     {status === "EXPIRED" && (
@@ -426,9 +481,8 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
                       </span>
                     )}
 
-                    {/* Priority Badge */}
                     {item.priority === "urgent" && (
-                      <span className="px-2 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-black uppercase tracking-wider shadow-xs">
+                      <span className="px-2 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-black uppercase tracking-wider shadow-2xs">
                         URGENT
                       </span>
                     )}
@@ -438,7 +492,6 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
                       </span>
                     )}
 
-                    {/* Type Badge */}
                     <span className={`px-2 py-0.5 rounded-full border ${typeConf.bg} ${typeConf.color} text-[10px] font-bold flex items-center gap-1`}>
                       <TypeIcon className="w-3 h-3" />
                       <span>{typeConf.label}</span>
@@ -459,7 +512,6 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
                   </div>
                 </div>
 
-                {/* Notice Title & Content */}
                 <div className="space-y-1">
                   <h4 className="text-sm font-black text-slate-900 leading-snug">
                     {item.title}
@@ -469,24 +521,30 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
                   </p>
                 </div>
 
-                {/* Dates & Button Info */}
-                <div className="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-[11px] font-semibold text-slate-500">
-                  <div className="space-y-0.5">
-                    <span className="text-[9.5px] uppercase font-bold text-slate-400 block">Start (IST)</span>
-                    <span className="text-slate-800 font-mono">{formatISTDisplay(item.start_at)}</span>
+                <div className="pt-3 border-t border-slate-100 grid grid-cols-4 gap-2 text-[11px] font-semibold text-slate-500">
+                  <div>
+                    <span className="text-[9.5px] uppercase font-bold text-slate-400 block">Target</span>
+                    <span className="text-slate-800 truncate block">{DISPLAY_TARGET_LABELS[item.display_on || "global"]}</span>
                   </div>
-                  <div className="space-y-0.5">
+                  <div>
+                    <span className="text-[9.5px] uppercase font-bold text-slate-400 block">Format</span>
+                    <span className="text-blue-700 font-bold capitalize truncate block">{item.display_format?.replace("_", " ") || "top strip"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[9.5px] uppercase font-bold text-slate-400 block">Start (IST)</span>
+                    <span className="text-slate-800 font-mono block truncate">{formatISTDisplay(item.start_at)}</span>
+                  </div>
+                  <div>
                     <span className="text-[9.5px] uppercase font-bold text-slate-400 block">End (IST)</span>
-                    <span className="text-slate-800 font-mono">{formatISTDisplay(item.end_at)}</span>
+                    <span className="text-slate-800 font-mono block truncate">{formatISTDisplay(item.end_at, item.no_expiry)}</span>
                   </div>
                 </div>
 
-                {/* CTA URL & Action Buttons */}
-                <div className="pt-2 flex items-center justify-between gap-2">
+                <div className="pt-2 flex items-center justify-between gap-2 border-t border-slate-100/60">
                   <div className="truncate text-xs font-bold text-blue-600">
                     {item.button_text && item.button_url ? (
-                      <span className="inline-flex items-center gap-1 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
-                        <LinkIcon className="w-3 h-3" />
+                      <span className="inline-flex items-center gap-1 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200 text-[11px]">
+                        <LinkIcon className="w-3 h-3 text-blue-500" />
                         <span>{item.button_text} ({item.button_url})</span>
                       </span>
                     ) : (
@@ -494,12 +552,12 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       type="button"
                       onClick={() => handleDuplicate(item)}
                       className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all cursor-pointer"
-                      title="Duplicate Notice"
+                      title="Duplicate Notice as Draft"
                     >
                       <Copy className="w-4 h-4" />
                     </button>
@@ -513,7 +571,7 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
                     </button>
                     <button
                       type="button"
-                      onClick={() => setDeleteConfirmId(item.id)}
+                      onClick={() => setDeleteConfirmItem(item)}
                       className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all cursor-pointer"
                       title="Delete Notice"
                     >
@@ -527,10 +585,10 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
         </div>
       )}
 
-      {/* 3. Create / Edit Notice Modal Dialog */}
+      {/* 3. Create / Edit Notice Modal Dialog with Format-Aware Real-Time Preview */}
       {modalOpen && editingItem && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto relative">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 max-h-[92vh] overflow-y-auto relative">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shrink-0">
@@ -541,7 +599,7 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
                     {editingItem.id ? "Edit Announcement Notice" : "Create New Announcement Notice"}
                   </h3>
                   <p className="text-xs text-slate-500 font-medium">
-                    Configure notice details, type, priority, and scheduling parameters.
+                    Configure notice details, type, priority, presentation format, targeting, and preview live.
                   </p>
                 </div>
               </div>
@@ -555,187 +613,365 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
               </button>
             </div>
 
+            {/* FORMAT-AWARE REAL-TIME LIVE PREVIEW BOX */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
+                  <Eye className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Real-Time Live Format Preview ({editingItem.display_format?.replace("_", " ").toUpperCase() || "TOP STRIP"})</span>
+                </span>
+                <span className="text-[10px] font-bold text-slate-400">Updates live as you edit</span>
+              </div>
+              <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100 p-2 relative min-h-[60px] flex items-center justify-center">
+                <NoticeRenderer notices={[previewItemPayload]} />
+              </div>
+            </div>
+
+            {/* Modal Section Tabs */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200 text-xs font-bold">
+              {(["CONTENT", "SCHEDULING", "DISPLAY", "CTA"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setModalTab(tab)}
+                  className={`flex-1 py-2 rounded-xl text-center transition-all cursor-pointer ${
+                    modalTab === tab
+                      ? "bg-white text-slate-900 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  {tab === "CONTENT" && "1. Content & Type"}
+                  {tab === "SCHEDULING" && "2. Scheduling"}
+                  {tab === "DISPLAY" && "3. Format & Target"}
+                  {tab === "CTA" && "4. CTA Button"}
+                </button>
+              ))}
+            </div>
+
             <form onSubmit={handleSaveModal} className="space-y-4 text-xs font-bold text-slate-700">
-              {/* Notice Title */}
-              <div className="space-y-1.5">
-                <label className="text-slate-800">Notice Title *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Admissions Open for New CCC & DCA Batches 2026"
-                  value={editingItem.title || ""}
-                  onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                />
-              </div>
+              {/* TAB 1: CONTENT & TYPE */}
+              {modalTab === "CONTENT" && (
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="space-y-1.5">
+                    <label className="text-slate-800">Notice Title *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Admissions Open for New CCC & DCA Batches 2026"
+                      value={editingItem.title || ""}
+                      onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value })}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                  </div>
 
-              {/* Notice Message */}
-              <div className="space-y-1.5">
-                <label className="text-slate-800">Notice Description / Message *</label>
-                <textarea
-                  rows={3}
-                  required
-                  placeholder="Write clear, engaging announcement content for students..."
-                  value={editingItem.message || ""}
-                  onChange={(e) => setEditingItem({ ...editingItem, message: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                />
-              </div>
+                  <div className="space-y-1.5">
+                    <label className="text-slate-800">Notice Description / Message *</label>
+                    <textarea
+                      rows={3}
+                      required
+                      placeholder="Write clear announcement message for students and visitors..."
+                      value={editingItem.message || ""}
+                      onChange={(e) => setEditingItem({ ...editingItem, message: e.target.value })}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    />
+                  </div>
 
-              {/* Type & Priority */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-slate-800">Announcement Type</label>
-                  <select
-                    value={editingItem.announcement_type || "admission"}
-                    onChange={(e) => setEditingItem({ ...editingItem, announcement_type: e.target.value as AnnouncementType })}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  >
-                    <option value="admission">🎓 Admission Open</option>
-                    <option value="notice">📢 General Notice</option>
-                    <option value="important">⭐ Important Notice</option>
-                    <option value="exam">📝 Exam Notice</option>
-                    <option value="fee">💰 Fee Alert</option>
-                    <option value="certificate">🏆 Certificate Distribution</option>
-                    <option value="material">📚 Study Material</option>
-                    <option value="event">📅 Event / Holiday</option>
-                    <option value="update">🔔 System Update</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-slate-800">Priority Level</label>
-                  <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
-                    {(["normal", "important", "urgent"] as const).map((p) => (
-                      <button
-                        key={p}
-                        type="button"
-                        onClick={() => setEditingItem({ ...editingItem, priority: p })}
-                        className={`py-2 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer ${
-                          editingItem.priority === p
-                            ? p === "urgent"
-                              ? "bg-red-600 text-white shadow-sm"
-                              : p === "important"
-                              ? "bg-amber-500 text-slate-950 shadow-sm"
-                              : "bg-blue-600 text-white shadow-sm"
-                            : "text-slate-600 hover:text-slate-900"
-                        }`}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-slate-800">Notice Category / Type</label>
+                      <select
+                        value={editingItem.announcement_type || "admission"}
+                        onChange={(e) => setEditingItem({ ...editingItem, announcement_type: e.target.value as AnnouncementType })}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
                       >
-                        {p}
-                      </button>
-                    ))}
+                        <option value="admission">🎓 Admission</option>
+                        <option value="notice">📢 General Notice</option>
+                        <option value="exam">📝 Exam Notice</option>
+                        <option value="fee">💰 Fee Alert</option>
+                        <option value="course">📚 Course Notice</option>
+                        <option value="certificate">🏆 Certificate Distribution</option>
+                        <option value="update">🔔 Important Update</option>
+                        <option value="urgent">🔴 Urgent Alert</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-slate-800">Priority Level</label>
+                      <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-2xl border border-slate-200">
+                        {(["normal", "important", "urgent"] as const).map((p) => (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => setEditingItem({ ...editingItem, priority: p })}
+                            className={`py-2.5 rounded-xl text-[11px] font-black uppercase transition-all cursor-pointer ${
+                              editingItem.priority === p
+                                ? p === "urgent"
+                                  ? "bg-red-600 text-white shadow-sm"
+                                  : p === "important"
+                                  ? "bg-[#D4A72C] text-slate-950 shadow-sm"
+                                  : "bg-blue-600 text-white shadow-sm"
+                                : "text-slate-600 hover:text-slate-900"
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
-              {/* Start & End Date-Time Pickers (IST) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-slate-800">Start Date & Time (IST) *</label>
-                  <input
-                    type="datetime-local"
-                    required
-                    value={startLocal}
-                    onChange={(e) => setStartLocal(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  />
-                  <span className="text-[10.5px] text-slate-400 font-medium">Converted automatically to India Standard Time.</span>
+              {/* TAB 2: SCHEDULING */}
+              {modalTab === "SCHEDULING" && (
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-2xl">
+                    <div>
+                      <h4 className="text-xs font-black text-slate-900">No Expiration Date</h4>
+                      <p className="text-[11px] text-slate-500 font-medium">Keep this notice active indefinitely until manually disabled.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditingItem({ ...editingItem, no_expiry: !editingItem.no_expiry })}
+                      className={`p-1 rounded-xl transition-all cursor-pointer ${
+                        editingItem.no_expiry ? "text-blue-600" : "text-slate-400"
+                      }`}
+                    >
+                      {editingItem.no_expiry ? <ToggleRight className="w-8 h-8" /> : <ToggleLeft className="w-8 h-8" />}
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-slate-800">Start Date & Time (IST) *</label>
+                      <input
+                        type="datetime-local"
+                        required
+                        value={startLocal}
+                        onChange={(e) => setStartLocal(e.target.value)}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      />
+                      <span className="text-[10.5px] text-slate-400 font-medium">Timezone set to India Standard Time (IST).</span>
+                    </div>
+
+                    {!editingItem.no_expiry && (
+                      <div className="space-y-1.5">
+                        <label className="text-slate-800">End Date & Time (IST Expiration)</label>
+                        <input
+                          type="datetime-local"
+                          value={endLocal}
+                          onChange={(e) => setEndLocal(e.target.value)}
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        />
+                        <span className="text-[10.5px] text-slate-400 font-medium font-mono">Notice automatically expires after this date/time.</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: DISPLAY FORMAT & TARGET */}
+              {modalTab === "DISPLAY" && (
+                <div className="space-y-5 animate-in fade-in">
+                  {/* Presentation Style / Display Format Cards */}
+                  <div className="space-y-2">
+                    <div className="space-y-0.5">
+                      <label className="text-slate-900 font-extrabold text-xs">Display Format / Presentation Style</label>
+                      <p className="text-[11px] text-slate-500 font-medium">Choose how this notice should appear to visitors.</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                      {DISPLAY_FORMAT_OPTIONS.map((opt) => {
+                        const isSelected = (editingItem.display_format || "top_strip") === opt.id;
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() => setEditingItem({ ...editingItem, display_format: opt.id })}
+                            className={`p-3 rounded-2xl border text-left transition-all cursor-pointer min-h-[64px] flex flex-col justify-between ${
+                              isSelected
+                                ? "bg-blue-50/80 border-blue-600 ring-2 ring-blue-600/30 text-blue-950 shadow-sm"
+                                : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-800"
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-base">{opt.icon}</span>
+                              <span className="font-black text-xs">{opt.title}</span>
+                            </div>
+                            <p className="text-[10px] text-slate-500 font-medium leading-tight pt-1">
+                              {opt.desc}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Format Guidance & Warnings */}
+                    {editingItem.display_format === "popup" && (
+                      <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-medium flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>⚠️ Popup notices appear prominently center-screen and should be used sparingly.</span>
+                      </div>
+                    )}
+                    {editingItem.display_format === "sticky" && (
+                      <div className="p-3 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 text-[11px] font-medium flex items-center gap-2">
+                        <Megaphone className="w-4 h-4 text-blue-600 shrink-0" />
+                        <span>ℹ️ Sticky notices remain visible attached to viewport bottom as visitors scroll.</span>
+                      </div>
+                    )}
+                    {editingItem.display_format === "ticker" && (
+                      <div className="p-3 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 text-[11px] font-medium flex items-center gap-2">
+                        <Megaphone className="w-4 h-4 text-blue-600 shrink-0" />
+                        <span>ℹ️ News Ticker continuously rotates short updates. Avoid overly long messages.</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Display Target Location */}
+                  <div className="space-y-1.5 pt-2 border-t border-slate-100">
+                    <label className="text-slate-800">Display Target Location ("Display On")</label>
+                    <select
+                      value={editingItem.display_on || "global"}
+                      onChange={(e) => setEditingItem({ ...editingItem, display_on: e.target.value as AnnouncementDisplayOn })}
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    >
+                      <option value="global">🌐 Global Website (Top Header Banner)</option>
+                      <option value="homepage">🏠 Homepage Section Only</option>
+                      <option value="student">🎓 Student Portal Only</option>
+                      <option value="global_student">🌐 Global Website + Student Portal</option>
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                    <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
+                      <span className="text-xs font-bold text-slate-800">Enable Notice</span>
+                      <button
+                        type="button"
+                        onClick={() => setEditingItem({ ...editingItem, is_enabled: !editingItem.is_enabled })}
+                        className={`p-1 rounded-xl transition-all cursor-pointer ${
+                          editingItem.is_enabled ? "text-emerald-600" : "text-slate-400"
+                        }`}
+                      >
+                        {editingItem.is_enabled ? <ToggleRight className="w-7 h-7" /> : <ToggleLeft className="w-7 h-7" />}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
+                      <span className="text-xs font-bold text-slate-800">Dismissible</span>
+                      <button
+                        type="button"
+                        onClick={() => setEditingItem({ ...editingItem, is_dismissible: !editingItem.is_dismissible })}
+                        className={`p-1 rounded-xl transition-all cursor-pointer ${
+                          editingItem.is_dismissible ? "text-blue-600" : "text-slate-400"
+                        }`}
+                      >
+                        {editingItem.is_dismissible ? <ToggleRight className="w-7 h-7" /> : <ToggleLeft className="w-7 h-7" />}
+                      </button>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-slate-800">Display Order</label>
+                      <input
+                        type="number"
+                        min={1}
+                        value={editingItem.display_order ?? 1}
+                        onChange={(e) => setEditingItem({ ...editingItem, display_order: parseInt(e.target.value) || 1 })}
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 4: CTA BUTTON */}
+              {modalTab === "CTA" && (
+                <div className="space-y-4 animate-in fade-in">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-slate-800">CTA Button Text (Optional)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Apply Now / View Details"
+                        value={editingItem.button_text || ""}
+                        onChange={(e) => setEditingItem({ ...editingItem, button_text: e.target.value })}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-slate-800">CTA Button URL (Optional)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. /admission or /courses"
+                        value={editingItem.button_url || ""}
+                        onChange={(e) => setEditingItem({ ...editingItem, button_url: e.target.value })}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                      />
+                    </div>
+                  </div>
+
+                  {/* CTA Validation Warning */}
+                  {((editingItem.button_text && !editingItem.button_url) || (!editingItem.button_text && editingItem.button_url)) && (
+                    <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-medium flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>
+                        ⚠️ {editingItem.button_text && !editingItem.button_url
+                          ? "CTA Button Text is provided without a Target URL. The button will not be displayed until a URL is specified."
+                          : "CTA Target URL is provided without Button Text. Please specify button text."}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Modal Action Buttons */}
+              <div className="pt-4 flex items-center justify-between border-t border-slate-100">
+                <div className="flex items-center gap-2">
+                  {modalTab !== "CONTENT" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (modalTab === "SCHEDULING") setModalTab("CONTENT");
+                        if (modalTab === "DISPLAY") setModalTab("SCHEDULING");
+                        if (modalTab === "CTA") setModalTab("DISPLAY");
+                      }}
+                      className="min-h-[40px] px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-black transition-all"
+                    >
+                      Back
+                    </button>
+                  )}
+                  {modalTab !== "CTA" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (modalTab === "CONTENT") setModalTab("SCHEDULING");
+                        if (modalTab === "SCHEDULING") setModalTab("DISPLAY");
+                        if (modalTab === "DISPLAY") setModalTab("CTA");
+                      }}
+                      className="min-h-[40px] px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-black transition-all"
+                    >
+                      Next Step →
+                    </button>
+                  )}
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-slate-800">End Date & Time (IST Optional)</label>
-                  <input
-                    type="datetime-local"
-                    value={endLocal}
-                    onChange={(e) => setEndLocal(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  />
-                  <span className="text-[10.5px] text-slate-400 font-medium">Leave empty for no expiration date.</span>
-                </div>
-              </div>
-
-              {/* Button Text & Button URL */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-slate-800">CTA Button Text (Optional)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Apply Now / View Details"
-                    value={editingItem.button_text || ""}
-                    onChange={(e) => setEditingItem({ ...editingItem, button_text: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-slate-800">CTA Button URL (Optional)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. /admission or https://..."
-                    value={editingItem.button_url || ""}
-                    onChange={(e) => setEditingItem({ ...editingItem, button_url: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  />
-                </div>
-              </div>
-
-              {/* Toggles & Display Order */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
-                  <span className="text-xs font-bold text-slate-800">Enable Notice</span>
+                <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    onClick={() => setEditingItem({ ...editingItem, is_enabled: !editingItem.is_enabled })}
-                    className={`p-1 rounded-xl transition-all cursor-pointer ${
-                      editingItem.is_enabled ? "text-emerald-600" : "text-slate-400"
-                    }`}
+                    onClick={() => setModalOpen(false)}
+                    className="min-h-[44px] px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-black transition-all cursor-pointer"
                   >
-                    {editingItem.is_enabled ? <ToggleRight className="w-7 h-7" /> : <ToggleLeft className="w-7 h-7" />}
+                    Cancel
                   </button>
-                </div>
-
-                <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
-                  <span className="text-xs font-bold text-slate-800">Dismissible</span>
                   <button
-                    type="button"
-                    onClick={() => setEditingItem({ ...editingItem, is_dismissible: !editingItem.is_dismissible })}
-                    className={`p-1 rounded-xl transition-all cursor-pointer ${
-                      editingItem.is_dismissible ? "text-blue-600" : "text-slate-400"
-                    }`}
+                    type="submit"
+                    disabled={saving}
+                    className="min-h-[44px] px-6 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl text-xs font-black shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2 cursor-pointer"
                   >
-                    {editingItem.is_dismissible ? <ToggleRight className="w-7 h-7" /> : <ToggleLeft className="w-7 h-7" />}
+                    {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4" />}
+                    <span>{saving ? "Saving..." : "Save Announcement Notice"}</span>
                   </button>
                 </div>
-
-                <div className="space-y-1">
-                  <label className="text-slate-800">Display Order</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={editingItem.display_order ?? 1}
-                    onChange={(e) => setEditingItem({ ...editingItem, display_order: parseInt(e.target.value) || 1 })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  />
-                </div>
-              </div>
-
-              {/* Modal Buttons */}
-              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="min-h-[44px] px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-black transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="min-h-[44px] px-6 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl text-xs font-black shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2 cursor-pointer"
-                >
-                  {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                  <span>{saving ? "Saving..." : "Save Announcement Notice"}</span>
-                </button>
               </div>
             </form>
           </div>
@@ -743,7 +979,7 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
       )}
 
       {/* 4. Delete Confirmation Dialog */}
-      {deleteConfirmId && (
+      {deleteConfirmItem && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
           <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 text-center space-y-4">
             <div className="w-12 h-12 bg-red-50 border border-red-200 rounded-2xl flex items-center justify-center mx-auto text-red-600">
@@ -751,21 +987,22 @@ export default function AnnouncementManager({ initialData = [], onRefresh }: Ann
             </div>
             <div className="space-y-1">
               <h3 className="text-base font-black text-slate-900">Delete Announcement Notice?</h3>
-              <p className="text-xs text-slate-500 font-medium">
-                This action cannot be undone. The notice will be permanently removed from the website database.
+              <p className="text-xs font-bold text-slate-800">"{deleteConfirmItem.title}"</p>
+              <p className="text-xs text-slate-500 font-medium pt-1">
+                This action cannot be undone. The notice will be permanently removed from the database.
               </p>
             </div>
             <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 type="button"
-                onClick={() => setDeleteConfirmId(null)}
+                onClick={() => setDeleteConfirmItem(null)}
                 className="min-h-[44px] px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-black transition-all cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                onClick={() => handleDelete(deleteConfirmId)}
+                onClick={() => handleDelete(deleteConfirmItem.id)}
                 className="min-h-[44px] px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-black shadow-md shadow-red-600/20 transition-all cursor-pointer"
               >
                 Delete Notice

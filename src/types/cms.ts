@@ -154,16 +154,25 @@ export interface CmsMediaItem {
 
 export type AnnouncementType =
   | "notice"
-  | "important"
   | "admission"
   | "exam"
   | "fee"
-  | "event"
-  | "update"
+  | "course"
   | "certificate"
-  | "material";
+  | "update"
+  | "urgent";
 
 export type AnnouncementPriority = "normal" | "important" | "urgent";
+
+export type AnnouncementDisplayOn = "global" | "homepage" | "student" | "global_student";
+
+export type AnnouncementDisplayFormat =
+  | "top_strip"
+  | "alert_box"
+  | "notice_card"
+  | "popup"
+  | "sticky"
+  | "ticker";
 
 export interface AnnouncementItem {
   id: string;
@@ -171,7 +180,10 @@ export interface AnnouncementItem {
   message: string;
   announcement_type: AnnouncementType;
   priority: AnnouncementPriority;
+  display_on?: AnnouncementDisplayOn;
+  display_format?: AnnouncementDisplayFormat;
   is_enabled: boolean;
+  no_expiry?: boolean;
   start_at: string;
   end_at: string | null;
   button_text: string | null;

@@ -4,14 +4,14 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   Megaphone, ArrowRight, X, ChevronLeft, ChevronRight, Star, Bell,
-  GraduationCap, FileText, DollarSign, Award, BookOpen, Calendar, Sparkles
+  GraduationCap, FileText, DollarSign, Award, BookOpen, Sparkles
 } from "lucide-react";
-import { AnnouncementItem, AnnouncementSettings, AnnouncementType } from "@/types/cms";
+import { AnnouncementItem, AnnouncementSettings } from "@/types/cms";
 
-interface AnnouncementBarProps {
-  settings?: AnnouncementSettings | null;
+interface TopStripNoticeProps {
   notices?: AnnouncementItem[] | null;
-  target?: "global" | "homepage" | "student";
+  settings?: AnnouncementSettings | null;
+  onDismiss?: (id: string) => void;
 }
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
@@ -25,40 +25,22 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
   urgent: Megaphone,
 };
 
-export default function AnnouncementBar({ settings, notices, target = "global" }: AnnouncementBarProps) {
-  const [dismissedIds, setDismissedIds] = useState<string[]>([]);
+export default function TopStripNotice({ notices, settings, onDismiss }: TopStripNoticeProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Safely load dismissed notice IDs from localStorage
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("rci_dismissed_notices");
-      if (stored) {
-        setDismissedIds(JSON.parse(stored));
-      }
-    } catch {
-      // Ignore localStorage errors
-    }
-  }, []);
-
-  // Filter & sort active notices
-  const activeList: AnnouncementItem[] = useMemo(() => {
-    const now = new Date();
-    let rawItems: AnnouncementItem[] = [];
-
-    if (notices && Array.isArray(notices) && notices.length > 0) {
-      rawItems = notices;
-    } else if (settings && settings.is_enabled && settings.message) {
-      // Legacy fallback
-      rawItems = [
+  const activeList = useMemo(() => {
+    if (notices && notices.length > 0) return notices;
+    if (settings && settings.is_enabled && settings.message) {
+      return [
         {
           id: "legacy-default",
           title: "Notice",
           message: settings.message,
-          announcement_type: "admission",
-          priority: "important",
-          display_on: "global",
+          announcement_type: "admission" as const,
+          priority: "important" as const,
+          display_on: "global" as const,
+          display_format: "top_strip" as const,
           is_enabled: settings.is_enabled,
           no_expiry: !settings.end_at,
           start_at: settings.start_at || new Date(0).toISOString(),
@@ -70,39 +52,9 @@ export default function AnnouncementBar({ settings, notices, target = "global" }
         },
       ];
     }
+    return [];
+  }, [notices, settings]);
 
-    // Filter active, non-dismissed & targeted items
-    const filtered = rawItems.filter((item) => {
-      if (!item.is_enabled) return false;
-      if (dismissedIds.includes(item.id)) return false;
-      if (item.start_at && new Date(item.start_at) > now) return false;
-      if (!item.no_expiry && item.end_at && new Date(item.end_at) < now) return false;
-
-      // Target filtering
-      if (target === "global") {
-        const displayOn = item.display_on || "global";
-        if (displayOn !== "global" && displayOn !== "global_student") return false;
-      }
-
-      return true;
-    });
-
-    // Priority sorting: urgent (1) > important (2) > normal (3)
-    const getPriorityWeight = (p: string) => {
-      if (p === "urgent") return 1;
-      if (p === "important") return 2;
-      return 3;
-    };
-
-    return filtered.sort((a, b) => {
-      const pA = getPriorityWeight(a.priority);
-      const pB = getPriorityWeight(b.priority);
-      if (pA !== pB) return pA - pB;
-      return (a.display_order ?? 0) - (b.display_order ?? 0);
-    });
-  }, [notices, settings, dismissedIds, target]);
-
-  // Auto Rotation Timer (6 seconds) if > 1 notice
   useEffect(() => {
     if (activeList.length <= 1 || isHovered) return;
     const interval = setInterval(() => {
@@ -115,32 +67,12 @@ export default function AnnouncementBar({ settings, notices, target = "global" }
 
   const safeIndex = currentIndex % activeList.length;
   const currentNotice = activeList[safeIndex] || activeList[0];
-
-  const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + activeList.length) % activeList.length);
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % activeList.length);
-  };
-
-  const handleDismiss = (id: string) => {
-    const updated = [...dismissedIds, id];
-    setDismissedIds(updated);
-    try {
-      localStorage.setItem("rci_dismissed_notices", JSON.stringify(updated));
-    } catch {}
-    if (currentIndex >= activeList.length - 1) {
-      setCurrentIndex(0);
-    }
-  };
-
   const IconComp = TYPE_ICONS[currentNotice.announcement_type] || Bell;
 
   return (
     <aside
       role="region"
-      aria-label="Institutional Notices"
+      aria-label="Top Strip Announcement"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsHovered(true)}
@@ -155,9 +87,7 @@ export default function AnnouncementBar({ settings, notices, target = "global" }
       style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
     >
       <div className="container mx-auto px-3 sm:px-6 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        {/* Top / Left Section: Badge & Message */}
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          {/* Priority Badge */}
           {currentNotice.priority === "urgent" ? (
             <span className="bg-red-600 text-white px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider shrink-0 flex items-center gap-1 shadow-2xs">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
@@ -175,7 +105,6 @@ export default function AnnouncementBar({ settings, notices, target = "global" }
             </span>
           )}
 
-          {/* Title & Description Message */}
           <div className="min-w-0 flex-1 overflow-hidden">
             <p className="truncate text-xs text-slate-200 font-medium">
               <strong className="font-bold text-white mr-1.5">{currentNotice.title}:</strong>
@@ -184,9 +113,7 @@ export default function AnnouncementBar({ settings, notices, target = "global" }
           </div>
         </div>
 
-        {/* Bottom / Right Section: CTA Button, Multi-notice Nav & Close */}
         <div className="flex items-center justify-end gap-2 sm:gap-3 shrink-0">
-          {/* CTA Link Button */}
           {currentNotice.button_url && currentNotice.button_text && (
             <Link
               href={currentNotice.button_url}
@@ -203,39 +130,34 @@ export default function AnnouncementBar({ settings, notices, target = "global" }
             </Link>
           )}
 
-          {/* Navigation Controls (ONLY IF > 1 NOTICE) */}
           {activeList.length > 1 && (
             <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-full text-[10.5px] font-mono text-slate-300 shrink-0">
               <button
                 type="button"
-                onClick={handlePrev}
+                onClick={() => setCurrentIndex((prev) => (prev - 1 + activeList.length) % activeList.length)}
                 className="hover:text-white p-1 cursor-pointer transition-colors"
                 aria-label="Previous notice"
-                title="Previous notice"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
               <span className="font-bold px-1">{safeIndex + 1} / {activeList.length}</span>
               <button
                 type="button"
-                onClick={handleNext}
+                onClick={() => setCurrentIndex((prev) => (prev + 1) % activeList.length)}
                 className="hover:text-white p-1 cursor-pointer transition-colors"
                 aria-label="Next notice"
-                title="Next notice"
               >
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
           )}
 
-          {/* Dismiss Close Button */}
           {currentNotice.is_dismissible && (
             <button
               type="button"
-              onClick={() => handleDismiss(currentNotice.id)}
+              onClick={() => onDismiss && onDismiss(currentNotice.id)}
               className="text-slate-300 hover:text-white p-1.5 rounded-lg transition-colors cursor-pointer shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center"
-              aria-label="Dismiss announcement notice"
-              title="Dismiss notice"
+              aria-label="Dismiss notice"
             >
               <X className="w-4 h-4" />
             </button>

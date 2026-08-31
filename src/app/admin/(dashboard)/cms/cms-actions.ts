@@ -50,6 +50,7 @@ async function revalidateAllWebsitePages() {
     revalidatePath("/contact");
     revalidatePath("/verify");
     revalidatePath("/admission");
+    revalidatePath("/notices");
     revalidatePath("/admin/cms");
   } catch (err) {
     console.error("Failed to revalidate paths:", err);
@@ -225,14 +226,29 @@ export async function saveAnnouncementItemAction(item: Partial<AnnouncementItem>
     return { success: false, error: "Notice Title and Message are required." };
   }
 
+  // Validate CTA button URL scheme for security
+  if (item.button_url) {
+    const lowerUrl = item.button_url.trim().toLowerCase();
+    if (
+      lowerUrl.startsWith("javascript:") ||
+      lowerUrl.startsWith("data:") ||
+      lowerUrl.startsWith("vbscript:")
+    ) {
+      return { success: false, error: "Invalid CTA Button URL scheme. Use relative or http/https URLs." };
+    }
+  }
+
   const payload: any = {
     title: item.title,
     message: item.message,
     announcement_type: item.announcement_type || "notice",
     priority: item.priority || "normal",
+    display_on: item.display_on || "global",
+    display_format: item.display_format || "top_strip",
     is_enabled: item.is_enabled ?? true,
+    no_expiry: item.no_expiry ?? true,
     start_at: item.start_at || new Date().toISOString(),
-    end_at: item.end_at || null,
+    end_at: item.no_expiry ? null : (item.end_at || null),
     button_text: item.button_text || null,
     button_url: item.button_url || null,
     display_order: item.display_order ?? 0,

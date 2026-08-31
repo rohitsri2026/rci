@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import LatestNoticesSection from "@/components/LatestNoticesSection";
 import StatsSection from "@/components/StatsSection";
 import WhyRCI from "@/components/WhyRCI";
 import CoursesSection from "@/components/CoursesSection";
@@ -21,6 +22,9 @@ export default function Home() {
       <main className="pb-16 lg:pb-0">
         {/* 1. Hero Section */}
         <Hero />
+
+        {/* 2. Official Latest Notices Section */}
+        <LatestNoticesSection />
 
         {/* 2. Trust / Statistics */}
         <StatsSection />
