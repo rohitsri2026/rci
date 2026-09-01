@@ -118,8 +118,8 @@ export default function CertificateTemplate({
       <div 
         className="absolute flex items-center justify-center bg-white rounded-md z-10"
         style={{
-          left: "1373px",
-          top: "247px",
+          left: "1374px",
+          top: "248px",
           transform: "translate(-50%, -50%)",
           width: "154px",
           height: "154px",
