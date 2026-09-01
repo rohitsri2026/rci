@@ -14,8 +14,10 @@ import {
   Copy,
   BookOpen,
   User,
+  Move,
+  RotateCw,
 } from "lucide-react";
-import CertificateTemplate from "@/components/certificates/CertificateTemplate";
+import CertificateTemplate, { DEFAULT_NAME_X, DEFAULT_NAME_Y } from "@/components/certificates/CertificateTemplate";
 import CertificatePreview from "@/components/certificates/CertificatePreview";
 import CertificateQRCode from "@/components/certificates/CertificateQRCode";
 import DownloadButton from "@/components/certificates/DownloadButton";
@@ -72,12 +74,55 @@ export default function AdminCertificateModal({
   const [completionDate, setCompletionDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [issueDate, setIssueDate] = useState(() => new Date().toISOString().split("T")[0]);
 
-  // Sync state when props change
+  // Certificate Number Generation States (4-digit format RCI-YYYY-NNNN)
+  const [certNumMode, setCertNumMode] = useState<"auto" | "manual">("auto");
+  const [manualDigits, setManualDigits] = useState("");
+  const [autoCertNumber, setAutoCertNumber] = useState("");
+  const [certNumError, setCertNumError] = useState("");
+
+  // Student Name Position States
+  const [nameX, setNameX] = useState<number>(DEFAULT_NAME_X);
+  const [nameY, setNameY] = useState<number>(DEFAULT_NAME_Y);
+  const [showAdvancedPosition, setShowAdvancedPosition] = useState(false);
+
+  const getIssueYear = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      return isNaN(date.getTime()) ? "2026" : String(date.getFullYear());
+    } catch {
+      return "2026";
+    }
+  };
+
+  const generateRandom4Digits = () => {
+    return String(Math.floor(1000 + Math.random() * 9000));
+  };
+
+  const regenerateAutoCertNumber = (dateStr: string) => {
+    const year = getIssueYear(dateStr);
+    const rand4 = generateRandom4Digits();
+    const certNo = `RCI-${year}-${rand4}`;
+    setAutoCertNumber(certNo);
+    setCertNumError("");
+    return certNo;
+  };
+
+  // Sync state when props change or issue date changes
   useEffect(() => {
     setActiveCert(existingCertificate);
     setError("");
+    setCertNumError("");
     setGrade("A");
+    if (!existingCertificate) {
+      regenerateAutoCertNumber(issueDate);
+    }
   }, [student, existingCertificate]);
+
+  useEffect(() => {
+    if (!activeCert && certNumMode === "auto") {
+      regenerateAutoCertNumber(issueDate);
+    }
+  }, [issueDate]);
 
   // Handle ESC key to close modal
   useEffect(() => {
@@ -96,6 +141,12 @@ export default function AdminCertificateModal({
   const duration = student.courses?.duration || "3 Months";
   const hasCourse = Boolean(student.course_id);
 
+  const currentCertNumber = activeCert
+    ? activeCert.certificate_number
+    : certNumMode === "auto"
+      ? autoCertNumber || `RCI-${getIssueYear(issueDate)}-1234`
+      : `RCI-${getIssueYear(issueDate)}-${manualDigits.padStart(4, "0")}`;
+
   const handleCopyNumber = (num: string) => {
     navigator.clipboard.writeText(num);
     setCopiedNumber(true);
@@ -109,8 +160,20 @@ export default function AdminCertificateModal({
       return;
     }
 
+    let certNumToSend = "";
+    if (certNumMode === "manual") {
+      if (manualDigits.length !== 4) {
+        setCertNumError("Please enter exactly 4 digits for manual certificate number.");
+        return;
+      }
+      certNumToSend = `RCI-${getIssueYear(issueDate)}-${manualDigits}`;
+    } else {
+      certNumToSend = autoCertNumber;
+    }
+
     setLoading(true);
     setError("");
+    setCertNumError("");
 
     try {
       const res = await fetch("/api/certificates", {
@@ -119,15 +182,21 @@ export default function AdminCertificateModal({
         body: JSON.stringify({
           student_id: student.id,
           course_id: student.course_id,
+          certificate_number: certNumToSend,
           grade,
           completion_date: completionDate,
           issue_date: issueDate,
+          name_x: nameX,
+          name_y: nameY,
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 409 || data.error?.includes("already exists")) {
+          setCertNumError(data.error);
+        }
         throw new Error(data.error || "Failed to generate certificate.");
       }
 
@@ -140,15 +209,14 @@ export default function AdminCertificateModal({
     }
   };
 
-  const previewCertNumber = activeCert ? activeCert.certificate_number : "RCI-2026-DRAFT";
-  const verificationUrl = `/verify/${previewCertNumber}`;
+  const verificationUrl = `/verify/${currentCertNumber}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
       {/* Offscreen element for DOM capture during PNG/PDF print actions */}
       <div style={{ position: "fixed", left: "-9999px", top: "-9999px", width: "1536px", height: "1024px", overflow: "hidden", zIndex: -100, opacity: 0.01, pointerEvents: "none" }}>
         <CertificateTemplate
-          certificateNumber={activeCert ? activeCert.certificate_number : "RCI-2026-PREVIEW"}
+          certificateNumber={currentCertNumber}
           studentName={student.full_name}
           courseName={courseName}
           duration={duration}
@@ -156,6 +224,8 @@ export default function AdminCertificateModal({
           completionDate={activeCert ? activeCert.completion_date : completionDate}
           issueDate={activeCert ? activeCert.issue_date : issueDate}
           fatherName={student.address || undefined}
+          nameX={nameX}
+          nameY={nameY}
         />
       </div>
 
@@ -372,6 +442,8 @@ export default function AdminCertificateModal({
                   completionDate={activeCert.completion_date}
                   issueDate={activeCert.issue_date}
                   fatherName={student.address || undefined}
+                  nameX={nameX}
+                  nameY={nameY}
                 />
               </div>
             </div>
@@ -430,6 +502,175 @@ export default function AdminCertificateModal({
                   />
                 </div>
 
+                {/* Certificate Number Selection (Auto / Manual) */}
+                <div className="bg-white border border-slate-200 rounded-xl p-3.5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide">
+                      Certificate Number
+                    </label>
+                    <div className="flex items-center gap-3 text-xs font-extrabold">
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="certNumMode"
+                          checked={certNumMode === "auto"}
+                          onChange={() => {
+                            setCertNumMode("auto");
+                            setCertNumError("");
+                            if (!autoCertNumber) regenerateAutoCertNumber(issueDate);
+                          }}
+                          className="text-blue-600 focus:ring-blue-500"
+                        />
+                        <span>Auto Generate</span>
+                      </label>
+
+                      <label className="flex items-center gap-1.5 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="certNumMode"
+                          checked={certNumMode === "manual"}
+                          onChange={() => {
+                            setCertNumMode("manual");
+                            setCertNumError("");
+                          }}
+                          className="text-blue-600 focus:ring-blue-500"
+                        />
+                        <span>Enter Manually</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {certNumMode === "auto" ? (
+                    <div className="flex items-center justify-between gap-2 bg-slate-50 border border-slate-200 p-2 rounded-xl">
+                      <span className="font-mono text-sm font-black text-blue-700 px-2">
+                        {autoCertNumber || `RCI-${getIssueYear(issueDate)}-5832`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => regenerateAutoCertNumber(issueDate)}
+                        className="inline-flex items-center gap-1 text-xs font-extrabold px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-lg transition-colors shadow-2xs"
+                      >
+                        <RotateCw className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Regenerate</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl p-1.5">
+                        <span className="font-mono text-sm font-black text-slate-600 px-2">
+                          RCI-{getIssueYear(issueDate)}-
+                        </span>
+                        <input
+                          type="text"
+                          value={manualDigits}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                            setManualDigits(val);
+                            setCertNumError("");
+                          }}
+                          placeholder="1234"
+                          className="flex-1 h-9 border border-slate-300 rounded-lg px-2.5 font-mono text-sm font-black text-blue-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          maxLength={4}
+                        />
+                      </div>
+                      <p className="text-[10.5px] text-slate-500 font-medium">
+                        Enter exactly 4 numeric digits (e.g. 1234). Unique verification URL will be created.
+                      </p>
+                    </div>
+                  )}
+
+                  {certNumError && (
+                    <div className="text-[11px] font-bold text-rose-600 bg-rose-50 border border-rose-200 p-2 rounded-lg flex items-center gap-1.5">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{certNumError}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Student Name Position Controls (Collapsible Section) */}
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                  <button
+                    type="button"
+                    onClick={() => setShowAdvancedPosition(!showAdvancedPosition)}
+                    className="w-full flex items-center justify-between p-3 text-xs font-extrabold text-slate-700 bg-slate-50 hover:bg-slate-100 transition-colors"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Move className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Student Name Position Controls</span>
+                    </span>
+                    <span className="text-[10px] font-extrabold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
+                      {showAdvancedPosition ? "Hide ▲" : "Advanced Position ▾"}
+                    </span>
+                  </button>
+
+                  {showAdvancedPosition && (
+                    <div className="p-3.5 space-y-3.5 border-t border-slate-200 text-xs">
+                      {/* Horizontal X */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-slate-700 uppercase tracking-wide text-[10.5px]">
+                            Horizontal Position (X)
+                          </span>
+                          <span className="font-mono font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded text-[11px]">
+                            {nameX} px
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button type="button" onClick={() => setNameX(prev => Math.max(400, prev - 10))} className="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded font-extrabold text-[11px]">-10</button>
+                          <button type="button" onClick={() => setNameX(prev => Math.max(400, prev - 1))} className="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded font-extrabold text-[11px]">-1</button>
+                          <input
+                            type="range"
+                            min="400"
+                            max="1100"
+                            value={nameX}
+                            onChange={(e) => setNameX(Number(e.target.value))}
+                            className="flex-1 accent-blue-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg"
+                          />
+                          <button type="button" onClick={() => setNameX(prev => Math.min(1100, prev + 1))} className="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded font-extrabold text-[11px]">+1</button>
+                          <button type="button" onClick={() => setNameX(prev => Math.min(1100, prev + 10))} className="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded font-extrabold text-[11px]">+10</button>
+                        </div>
+                      </div>
+
+                      {/* Vertical Y */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-slate-700 uppercase tracking-wide text-[10.5px]">
+                            Vertical Position (Y)
+                          </span>
+                          <span className="font-mono font-black text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded text-[11px]">
+                            {nameY} px
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button type="button" onClick={() => setNameY(prev => Math.max(400, prev - 10))} className="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded font-extrabold text-[11px]">-10</button>
+                          <button type="button" onClick={() => setNameY(prev => Math.max(400, prev - 1))} className="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded font-extrabold text-[11px]">-1</button>
+                          <input
+                            type="range"
+                            min="400"
+                            max="750"
+                            value={nameY}
+                            onChange={(e) => setNameY(Number(e.target.value))}
+                            className="flex-1 accent-blue-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg"
+                          />
+                          <button type="button" onClick={() => setNameY(prev => Math.min(750, prev + 1))} className="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded font-extrabold text-[11px]">+1</button>
+                          <button type="button" onClick={() => setNameY(prev => Math.min(750, prev + 10))} className="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded font-extrabold text-[11px]">+10</button>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                        <span className="text-[10px] text-slate-400 font-medium">Default: X: 768px, Y: 564px</span>
+                        <button
+                          type="button"
+                          onClick={() => { setNameX(DEFAULT_NAME_X); setNameY(DEFAULT_NAME_Y); }}
+                          className="text-[11px] font-extrabold text-blue-600 hover:text-blue-800 underline"
+                        >
+                          Reset Position
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Auto Data Summary */}
                 <div className="bg-blue-50/70 border border-blue-100 rounded-xl p-3 text-xs space-y-1">
                   <div className="flex items-center gap-1.5 text-blue-900 font-bold">
@@ -437,13 +678,13 @@ export default function AdminCertificateModal({
                     <span>Auto-fetched Student Data:</span>
                   </div>
                   <p className="text-slate-600 text-[11px] leading-snug">
-                    Certificate No. will be assigned automatically (e.g. RCI-2026-XXXXXX) with a unique verification QR code.
+                    Certificate No. <strong className="font-mono text-blue-700">{currentCertNumber}</strong> will be assigned with a unique verification QR code.
                   </p>
                 </div>
 
                 <button
                   type="submit"
-                  disabled={loading || !hasCourse}
+                  disabled={loading || !hasCourse || Boolean(certNumError)}
                   className="w-full h-12 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-xl transition-all shadow-md shadow-blue-500/20 text-sm disabled:opacity-50"
                 >
                   {loading ? (
@@ -472,7 +713,7 @@ export default function AdminCertificateModal({
                 </div>
 
                 <CertificatePreview
-                  certificateNumber="RCI-2026-DRAFT"
+                  certificateNumber={currentCertNumber}
                   studentName={student.full_name}
                   courseName={courseName}
                   duration={duration}
@@ -480,6 +721,8 @@ export default function AdminCertificateModal({
                   completionDate={completionDate}
                   issueDate={issueDate}
                   fatherName={student.address || undefined}
+                  nameX={nameX}
+                  nameY={nameY}
                 />
               </div>
             </div>

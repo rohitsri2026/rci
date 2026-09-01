@@ -96,7 +96,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error.issues[0].message }, { status: 400 });
     }
 
-    const { student_id, course_id, grade, completion_date, issue_date } = validation.data;
+    const { student_id, course_id, grade, completion_date, issue_date, certificate_number: reqCertNumber } = validation.data;
 
     // 3. Prevent duplicate certificate generation for the same student + course
     const { data: existingCert } = await supabase
@@ -113,7 +113,62 @@ export async function POST(request: Request) {
       }, { status: 409 });
     }
 
-    // 4. Fetch details to cache in the certificate record
+    // 4. Validate or Auto-Generate 4-Digit Unique Certificate Number (Format: RCI-YYYY-NNNN)
+    const issueYear = new Date(issue_date).getFullYear() || 2026;
+    let finalCertNumber = "";
+
+    if (reqCertNumber && reqCertNumber.trim() !== "") {
+      const cleanCertNum = reqCertNumber.trim();
+      
+      // Ensure 4-digit number format (e.g. RCI-2026-1234)
+      const numberPattern = /^RCI-\d{4}-\d{4}$/;
+      if (!numberPattern.test(cleanCertNum)) {
+        return NextResponse.json({ 
+          error: `Invalid certificate number format (${cleanCertNum}). Must be exactly RCI-YYYY-XXXX (4 numeric digits).` 
+        }, { status: 400 });
+      }
+
+      // Check DB uniqueness for requested manual certificate number
+      const { data: duplicateNumber } = await supabase
+        .from("certificates")
+        .select("id")
+        .eq("certificate_number", cleanCertNum)
+        .maybeSingle();
+
+      if (duplicateNumber) {
+        return NextResponse.json({ 
+          error: `Certificate number ${cleanCertNum} already exists in registry. Please choose another number.` 
+        }, { status: 409 });
+      }
+
+      finalCertNumber = cleanCertNum;
+    } else {
+      // Auto-generate random unique 4-digit candidate number
+      let isUnique = false;
+      let attempts = 0;
+      while (!isUnique && attempts < 20) {
+        attempts++;
+        const rand4Digits = String(Math.floor(1000 + Math.random() * 9000));
+        const candidate = `RCI-${issueYear}-${rand4Digits}`;
+        
+        const { data: existing } = await supabase
+          .from("certificates")
+          .select("id")
+          .eq("certificate_number", candidate)
+          .maybeSingle();
+
+        if (!existing) {
+          finalCertNumber = candidate;
+          isUnique = true;
+        }
+      }
+
+      if (!finalCertNumber) {
+        finalCertNumber = `RCI-${issueYear}-${String(Math.floor(1000 + Math.random() * 9000))}`;
+      }
+    }
+
+    // 5. Fetch student & course details to cache in the certificate record
     const { data: student, error: studentError } = await supabase
       .from("students")
       .select("full_name, email, phone")
@@ -134,19 +189,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
-    // 5. Insert certificate (Trigger will auto-generate certificate_number and verification_token)
+    // 6. Insert certificate with explicit 4-digit certificate_number
     const { data: newCert, error: insertError } = await supabase
       .from("certificates")
       .insert([
         {
           student_id,
           course_id,
+          certificate_number: finalCertNumber,
           grade,
           completion_date,
           issue_date,
           status: "Valid",
-          student_name: student.full_name, // Cached for backward compatibility
-          course_name: course.course_name,   // Cached for backward compatibility
+          student_name: student.full_name,
+          course_name: course.course_name,
           created_by: user.id,
           updated_by: user.id,
         }

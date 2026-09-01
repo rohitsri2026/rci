@@ -6,6 +6,9 @@ export const certificateGenerateSchema = z.object({
   grade: z.string().min(1, "Grade is required").max(10, "Grade is too long"),
   completion_date: z.string().min(1, "Completion date is required"),
   issue_date: z.string().min(1, "Issue date is required"),
+  certificate_number: z.string().optional(),
+  name_x: z.number().optional(),
+  name_y: z.number().optional(),
 });
 
 export const bulkCertificateGenerateSchema = z.object({

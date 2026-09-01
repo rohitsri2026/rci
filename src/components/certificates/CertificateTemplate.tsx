@@ -2,6 +2,9 @@ import React from "react";
 import QRCode from "./QRCode";
 import { RCIConfig } from "@/lib/config";
 
+export const DEFAULT_NAME_X = 768;
+export const DEFAULT_NAME_Y = 564;
+
 export interface CertificateTemplateProps {
   certificateNumber: string;
   studentName: string;
@@ -11,6 +14,8 @@ export interface CertificateTemplateProps {
   completionDate: string;
   issueDate: string;
   fatherName?: string;
+  nameX?: number;
+  nameY?: number;
   instituteName?: string;
   directorName?: string;
   directorTitle?: string;
@@ -29,6 +34,8 @@ export default function CertificateTemplate({
   completionDate,
   issueDate,
   fatherName,
+  nameX,
+  nameY,
 }: CertificateTemplateProps) {
 
   const formatDate = (dateStr: string) => {
@@ -126,8 +133,8 @@ export default function CertificateTemplate({
       <div 
         className="absolute text-center flex flex-col items-center justify-center"
         style={{
-          left: "768px",
-          top: fatherName ? "552px" : "564px",
+          left: `${nameX ?? DEFAULT_NAME_X}px`,
+          top: `${nameY ?? (fatherName ? 552 : DEFAULT_NAME_Y)}px`,
           transform: "translate(-50%, -50%)",
           width: "800px"
         }}
