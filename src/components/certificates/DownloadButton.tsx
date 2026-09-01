@@ -37,8 +37,8 @@ export default function DownloadButton({
       iframe.style.position = "fixed";
       iframe.style.left = "-9999px";
       iframe.style.top = "-9999px";
-      iframe.style.width = "1123px";
-      iframe.style.height = "794px";
+      iframe.style.width = "1536px";
+      iframe.style.height = "1024px";
       document.body.appendChild(iframe);
 
       const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -72,7 +72,7 @@ export default function DownloadButton({
       iframeDoc.close();
 
       // Wait a short duration for fonts/assets to resolve inside the iframe's window
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      await new Promise((resolve) => setTimeout(resolve, 450));
 
       const targetElement = iframeDoc.getElementById("rci-certificate-print-area");
       if (!targetElement) {
@@ -81,10 +81,10 @@ export default function DownloadButton({
 
       // Render canvas at high DPI using isolated target
       const canvas = await html2canvas(targetElement, {
-        scale: 3.125,
+        scale: 2.0,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: "#fdfdfd",
+        backgroundColor: "#ffffff",
         logging: false,
       });
 

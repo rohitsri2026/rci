@@ -15,8 +15,8 @@ export default function CertificatePreview(props: CertificatePreviewProps) {
     const handleResize = () => {
       if (!containerRef.current) return;
       const containerWidth = containerRef.current.clientWidth;
-      // Target certificate width is 1123px
-      const targetWidth = 1123;
+      // Target certificate width is 1536px
+      const targetWidth = 1536;
       const newScale = containerWidth / targetWidth;
       setScale(Math.min(newScale, 1)); // Don't upscale past 1
     };
@@ -40,15 +40,15 @@ export default function CertificatePreview(props: CertificatePreviewProps) {
     <div 
       ref={containerRef} 
       className="w-full flex justify-center items-center overflow-hidden bg-slate-800/5 rounded-2xl border border-slate-200/55 p-4 md:p-8"
-      style={{ minHeight: `${794 * scale + 64}px` }}
+      style={{ minHeight: `${1024 * scale + 32}px` }}
     >
       <div 
         className="origin-center shadow-2xl transition-all duration-300"
         style={{
           transform: `scale(${scale})`,
-          width: "1123px",
-          height: "794px",
-          margin: `-${(794 * (1 - scale)) / 2}px -${(1123 * (1 - scale)) / 2}px`
+          width: "1536px",
+          height: "1024px",
+          margin: `-${(1024 * (1 - scale)) / 2}px -${(1536 * (1 - scale)) / 2}px`
         }}
       >
         <CertificateTemplate {...props} />

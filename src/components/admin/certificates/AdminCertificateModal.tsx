@@ -146,7 +146,7 @@ export default function AdminCertificateModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
       {/* Offscreen element for DOM capture during PNG/PDF print actions */}
-      <div style={{ position: "fixed", left: "-9999px", top: "-9999px", width: "1123px", height: "794px", overflow: "hidden", zIndex: -100, opacity: 0.01, pointerEvents: "none" }}>
+      <div style={{ position: "fixed", left: "-9999px", top: "-9999px", width: "1536px", height: "1024px", overflow: "hidden", zIndex: -100, opacity: 0.01, pointerEvents: "none" }}>
         <CertificateTemplate
           certificateNumber={activeCert ? activeCert.certificate_number : "RCI-2026-PREVIEW"}
           studentName={student.full_name}

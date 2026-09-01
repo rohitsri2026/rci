@@ -256,8 +256,8 @@ export default function GenerateForm({ students, courses }: GenerateFormProps) {
     <div className="max-w-2xl mx-auto w-full space-y-6">
       {/* Offscreen / Hidden container for capturing bulk PDF generation */}
       {bulkRenderCert && (
-        <div style={{ position: "fixed", left: "0", top: "0", width: "1123px", height: "794px", overflow: "hidden", zIndex: -100, opacity: 0.01, pointerEvents: "none" }}>
-          <div id="rci-certificate-bulk-render" style={{ width: "1123px", height: "794px" }}>
+        <div style={{ position: "fixed", left: "-9999px", top: "-9999px", width: "1536px", height: "1024px", overflow: "hidden", zIndex: -100, opacity: 0.01, pointerEvents: "none" }}>
+          <div id="rci-certificate-bulk-render" style={{ width: "1536px", height: "1024px" }}>
             <CertificateTemplate
               certificateNumber={bulkRenderCert.certificate_number}
               studentName={bulkRenderCert.student_name}
@@ -273,7 +273,7 @@ export default function GenerateForm({ students, courses }: GenerateFormProps) {
 
       {/* Hidden single certificate render area for printing and downloading */}
       {successCert && (
-        <div style={{ position: "fixed", left: "0", top: "0", width: "1123px", height: "794px", overflow: "hidden", zIndex: -100, opacity: 0.01, pointerEvents: "none" }}>
+        <div style={{ position: "fixed", left: "-9999px", top: "-9999px", width: "1536px", height: "1024px", overflow: "hidden", zIndex: -100, opacity: 0.01, pointerEvents: "none" }}>
           <CertificateTemplate
             certificateNumber={successCert.certificate_number}
             studentName={successCert.student_name}

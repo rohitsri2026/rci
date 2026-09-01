@@ -38,8 +38,8 @@ export default function DownloadPNGButton({
       iframe.style.position = "fixed";
       iframe.style.left = "-9999px";
       iframe.style.top = "-9999px";
-      iframe.style.width = "1123px";
-      iframe.style.height = "794px";
+      iframe.style.width = "1536px";
+      iframe.style.height = "1024px";
       document.body.appendChild(iframe);
 
       const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -71,7 +71,7 @@ export default function DownloadPNGButton({
       iframeDoc.write(htmlContent);
       iframeDoc.close();
 
-      // Wait 450ms for web fonts (Great Vibes, Cinzel) and images to resolve inside the iframe
+      // Wait 450ms for web fonts (Great Vibes, Montserrat) and images to resolve inside the iframe
       await new Promise((resolve) => setTimeout(resolve, 450));
 
       const targetElement = iframeDoc.getElementById("rci-certificate-print-area");
@@ -79,12 +79,12 @@ export default function DownloadPNGButton({
         throw new Error("Target element inside iframe not found");
       }
 
-      // Render high-DPI canvas (3.125 scale for 300 DPI 3508x2480px PNG output)
+      // Render high-DPI canvas (2.0 scale for 3072x2048px PNG output)
       const canvas = await html2canvas(targetElement, {
-        scale: 3.125,
+        scale: 2.0,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: "#fdfdfd",
+        backgroundColor: "#ffffff",
         logging: false,
       });
 
