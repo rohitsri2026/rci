@@ -16,6 +16,7 @@ import {
   User,
 } from "lucide-react";
 import CertificateTemplate from "@/components/certificates/CertificateTemplate";
+import CertificatePreview from "@/components/certificates/CertificatePreview";
 import CertificateQRCode from "@/components/certificates/CertificateQRCode";
 import DownloadButton from "@/components/certificates/DownloadButton";
 import DownloadPNGButton from "@/components/certificates/DownloadPNGButton";
@@ -145,7 +146,7 @@ export default function AdminCertificateModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-xs overflow-y-auto">
       {/* Offscreen element for DOM capture during PNG/PDF print actions */}
-      <div style={{ position: "fixed", left: "0", top: "0", width: "1123px", height: "794px", overflow: "hidden", zIndex: -100, opacity: 0.01, pointerEvents: "none" }}>
+      <div style={{ position: "fixed", left: "-9999px", top: "-9999px", width: "1123px", height: "794px", overflow: "hidden", zIndex: -100, opacity: 0.01, pointerEvents: "none" }}>
         <CertificateTemplate
           certificateNumber={activeCert ? activeCert.certificate_number : "RCI-2026-PREVIEW"}
           studentName={student.full_name}
@@ -341,20 +342,16 @@ export default function AdminCertificateModal({
                 <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
                   Live Certificate Preview
                 </h4>
-                <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-lg bg-slate-900 p-2 sm:p-4 flex justify-center">
-                  <div className="transform scale-[0.55] sm:scale-[0.7] md:scale-[0.8] origin-top my-[-150px] sm:my-[-90px] md:my-[-40px]">
-                    <CertificateTemplate
-                      certificateNumber={activeCert.certificate_number}
-                      studentName={student.full_name}
-                      courseName={courseName}
-                      duration={duration}
-                      grade={activeCert.grade}
-                      completionDate={activeCert.completion_date}
-                      issueDate={activeCert.issue_date}
-                      fatherName={student.address || undefined}
-                    />
-                  </div>
-                </div>
+                <CertificatePreview
+                  certificateNumber={activeCert.certificate_number}
+                  studentName={student.full_name}
+                  courseName={courseName}
+                  duration={duration}
+                  grade={activeCert.grade}
+                  completionDate={activeCert.completion_date}
+                  issueDate={activeCert.issue_date}
+                  fatherName={student.address || undefined}
+                />
               </div>
             </div>
           ) : (
@@ -453,20 +450,16 @@ export default function AdminCertificateModal({
                   </span>
                 </div>
 
-                <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-xl bg-slate-900 p-2 flex justify-center">
-                  <div className="transform scale-[0.45] sm:scale-[0.55] origin-top my-[-190px] sm:my-[-140px]">
-                    <CertificateTemplate
-                      certificateNumber="RCI-2026-DRAFT"
-                      studentName={student.full_name}
-                      courseName={courseName}
-                      duration={duration}
-                      grade={grade}
-                      completionDate={completionDate}
-                      issueDate={issueDate}
-                      fatherName={student.address || undefined}
-                    />
-                  </div>
-                </div>
+                <CertificatePreview
+                  certificateNumber="RCI-2026-DRAFT"
+                  studentName={student.full_name}
+                  courseName={courseName}
+                  duration={duration}
+                  grade={grade}
+                  completionDate={completionDate}
+                  issueDate={issueDate}
+                  fatherName={student.address || undefined}
+                />
               </div>
             </div>
           )}
