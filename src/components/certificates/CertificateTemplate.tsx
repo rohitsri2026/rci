@@ -46,8 +46,23 @@ export default function CertificateTemplate({
     }
   };
 
+  const formatCertNumber = (num: string) => {
+    if (!num) return "RCI-2026-1234";
+    if (num.includes("DRAFT") || num.includes("PREVIEW")) return "RCI-2026-1234";
+    
+    // Extract trailing digits and format as RCI-2026-XXXX (4-digit number)
+    const match = num.match(/(\d+)$/);
+    if (match) {
+      const rawDigits = match[1];
+      const fourDigits = rawDigits.length > 4 ? rawDigits.slice(-4) : rawDigits.padStart(4, "0");
+      return `RCI-2026-${fourDigits}`;
+    }
+    return num;
+  };
+
+  const formattedCertNumber = formatCertNumber(certificateNumber);
   const formattedCompletionDate = formatDate(completionDate);
-  const verifyUrl = RCIConfig.getVerificationUrl(certificateNumber);
+  const verifyUrl = RCIConfig.getVerificationUrl(formattedCertNumber);
 
   return (
     <div 
@@ -76,7 +91,7 @@ export default function CertificateTemplate({
         }
       `}} />
 
-      {/* 1. Certificate Number (Top Right under Certificate No.) */}
+      {/* 1. Certificate Number (Top Right under Certificate No. - ALWAYS 4-digit e.g. RCI-2026-1234) */}
       <div 
         className="absolute text-center flex items-center justify-center font-extrabold font-montserrat"
         style={{
@@ -89,21 +104,22 @@ export default function CertificateTemplate({
           letterSpacing: "0.5px"
         }}
       >
-        {certificateNumber}
+        {formattedCertNumber}
       </div>
 
-      {/* 2. QR Code (Top Right Inside QR Box) */}
+      {/* 2. QR Code (Top Right Inside QR Box - Solid White Container masks background artwork QR to ensure single dynamic QR) */}
       <div 
-        className="absolute flex items-center justify-center bg-white p-1 rounded-lg shadow-2xs"
+        className="absolute flex items-center justify-center bg-white p-1 rounded-md z-10"
         style={{
           left: "1377px",
           top: "242px",
           transform: "translate(-50%, -50%)",
-          width: "140px",
-          height: "140px"
+          width: "148px",
+          height: "148px",
+          backgroundColor: "#ffffff"
         }}
       >
-        <QRCode value={verifyUrl} size={132} fgColor="#0b2240" />
+        <QRCode value={verifyUrl} size={140} fgColor="#0b2240" />
       </div>
 
       {/* 3. Student Name (Great Vibes Signature Calligraphy) */}

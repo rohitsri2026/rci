@@ -46,37 +46,44 @@ export default function PrintButton({
       {/* Print Styles Injection */}
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
-          /* Hide all UI containers */
+          /* Hide all UI containers and enforce color printing */
           html, body {
             background: #ffffff !important;
             margin: 0 !important;
             padding: 0 !important;
             height: auto !important;
             overflow: visible !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           
           body * {
-            visibility: hidden;
+            visibility: hidden !important;
           }
           
           /* Only display the certificate container and its children */
           #rci-certificate-print-area,
           #rci-certificate-print-area * {
             visibility: visible !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           
           #rci-certificate-print-area {
-            position: absolute !important;
+            position: fixed !important;
             left: 0 !important;
             top: 0 !important;
             width: 297mm !important; /* Perfect A4 Landscape Width */
-            height: 210mm !important; /* Perfect A4 Landscape Height */
+            height: 198mm !important; /* Perfect A4 Landscape Height */
             margin: 0 !important;
+            padding: 0 !important;
             box-shadow: none !important;
             border: none !important;
             box-sizing: border-box !important;
             transform: none !important;
-            zoom: 100% !important;
+            background-size: 297mm 198mm !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
           }
           
           @page {
