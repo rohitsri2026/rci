@@ -114,19 +114,19 @@ export default function CertificateTemplate({
         {formattedCertNumber}
       </div>
 
-      {/* 2. QR Code (Top Right Inside QR Box - Solid White Container masks background artwork QR to ensure single dynamic QR) */}
+      {/* 2. QR Code (Top Right Inside QR Box - Mathematically Centered at X: 1377px, Y: 247px with 8px quiet-zone) */}
       <div 
-        className="absolute flex items-center justify-center bg-white p-1 rounded-md z-10"
+        className="absolute flex items-center justify-center bg-white rounded-md z-10"
         style={{
           left: "1377px",
-          top: "242px",
+          top: "247px",
           transform: "translate(-50%, -50%)",
-          width: "148px",
-          height: "148px",
+          width: "154px",
+          height: "154px",
           backgroundColor: "#ffffff"
         }}
       >
-        <QRCode value={verifyUrl} size={140} fgColor="#0b2240" />
+        <QRCode value={verifyUrl} size={138} fgColor="#0b2240" />
       </div>
 
       {/* 3. Student Name (Great Vibes Signature Calligraphy) */}
