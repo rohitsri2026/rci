@@ -310,7 +310,7 @@ export default function CertificateTemplate({
         {/* Student Name */}
         <div className="pt-1">
           <h3 
-            className="font-playfair italic font-medium text-4xl tracking-wide leading-none drop-shadow-sm select-text"
+            className="font-signature text-5xl tracking-wide leading-none drop-shadow-sm select-text py-1"
             style={{ color: "#c5a880" }}
           >
             {studentName}

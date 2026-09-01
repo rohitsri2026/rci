@@ -17,6 +17,9 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  Award,
+  Check,
+  Eye,
 } from "lucide-react";
 import NotificationTrigger from "@/components/admin/notifications/NotificationTrigger";
 import StudentAvatar from "@/components/student/StudentAvatar";
@@ -36,15 +39,27 @@ interface Student {
   } | null;
 }
 
+interface CertificateInfo {
+  id: string;
+  certificate_number: string;
+  status: string;
+  grade?: string;
+  completion_date?: string;
+}
+
 interface StudentProfileDrawerProps {
   student: Student | null;
+  certificate?: CertificateInfo | null;
   onClose: () => void;
+  onOpenCertificateModal?: (student: Student) => void;
   onPhotoUpdated?: (studentId: string, photoUrl: string | null) => void;
 }
 
 export default function StudentProfileDrawer({
   student,
+  certificate = null,
   onClose,
+  onOpenCertificateModal,
   onPhotoUpdated,
 }: StudentProfileDrawerProps) {
   const [currentPhotoUrl, setCurrentPhotoUrl] = useState<string | null>(null);
@@ -360,6 +375,76 @@ export default function StudentProfileDrawer({
                   </span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Section: CERTIFICATE STATUS */}
+          <div className="space-y-3">
+            <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 pb-1 border-b border-slate-100 flex items-center justify-between">
+              <span>Course Certificate</span>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
+                certificate
+                  ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                  : "text-amber-700 bg-amber-50 border-amber-200"
+              }`}>
+                {certificate ? "Certificate Issued" : "Not Issued"}
+              </span>
+            </h4>
+
+            <div className="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+              {certificate ? (
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
+                        Certificate Number
+                      </span>
+                      <span className="font-mono text-sm font-extrabold text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-lg inline-block mt-0.5">
+                        {certificate.certificate_number}
+                      </span>
+                    </div>
+                    {certificate.grade && (
+                      <div className="text-right">
+                        <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
+                          Grade
+                        </span>
+                        <span className="font-bold text-slate-800 text-xs mt-0.5 block">
+                          {certificate.grade}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenCertificateModal?.(student);
+                    }}
+                    className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm shadow-blue-500/20"
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span>View Certificate & Actions</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-xs text-slate-600 font-medium">
+                    No certificate has been generated for this student yet.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenCertificateModal?.(student);
+                    }}
+                    className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm shadow-blue-500/20"
+                  >
+                    <Award className="w-4 h-4" />
+                    <span>Generate Certificate</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

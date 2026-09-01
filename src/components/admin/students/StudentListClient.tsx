@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { 
   Plus, Search, Filter, ArrowUpDown, Edit3, Trash2, 
-  MoreVertical, Copy, Check, Users, AlertTriangle, Loader2, User
+  MoreVertical, Copy, Check, Users, AlertTriangle, Loader2, User,
+  Award, Eye, FileText
 } from "lucide-react";
 import StudentProfileDrawer from "./StudentProfileDrawer";
 import ActionDropdown from "@/components/ui/ActionDropdown";
 import StudentAvatar from "@/components/student/StudentAvatar";
+import AdminCertificateModal, { StudentModalInfo, ExistingCertInfo } from "@/components/admin/certificates/AdminCertificateModal";
 
 interface Student {
   id: string;
@@ -21,29 +23,66 @@ interface Student {
   created_at: string;
   course_id: string | null;
   courses?: {
+    id?: string;
     course_name: string;
+    duration?: string | null;
   } | null;
 }
 
 interface Course {
   id: string;
   course_name: string;
+  duration?: string | null;
+}
+
+interface CertificateRecord {
+  id: string;
+  certificate_number: string;
+  student_id: string;
+  course_id: string;
+  completion_date: string;
+  issue_date: string;
+  grade: string;
+  status: "Valid" | "Revoked" | "Expired";
+  student_name?: string | null;
+  course_name?: string | null;
 }
 
 interface StudentListClientProps {
   initialStudents: Student[];
   courses: Course[];
+  initialCertificates?: CertificateRecord[];
 }
 
-export default function StudentListClient({ initialStudents, courses }: StudentListClientProps) {
+export default function StudentListClient({ 
+  initialStudents, 
+  courses, 
+  initialCertificates = [] 
+}: StudentListClientProps) {
   const router = useRouter();
 
-  // Local state for students
+  // Local state for students and certificates
   const [students, setStudents] = useState<Student[]>(initialStudents);
+  const [certificates, setCertificates] = useState<CertificateRecord[]>(initialCertificates);
 
   useEffect(() => {
     setStudents(initialStudents);
   }, [initialStudents]);
+
+  useEffect(() => {
+    setCertificates(initialCertificates);
+  }, [initialCertificates]);
+
+  // Certificate map by student_id
+  const certMap = useMemo(() => {
+    const map = new Map<string, CertificateRecord>();
+    certificates.forEach((c) => {
+      if (c.status === "Valid") {
+        map.set(c.student_id, c);
+      }
+    });
+    return map;
+  }, [certificates]);
 
   // Search & Filter State
   const [search, setSearch] = useState("");
@@ -56,6 +95,10 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
   const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
   const [deletingStudent, setDeletingStudent] = useState<Student | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Certificate Modal State
+  const [certModalStudent, setCertModalStudent] = useState<StudentModalInfo | null>(null);
+  const [certModalCert, setCertModalCert] = useState<ExistingCertInfo | null>(null);
 
   // Close active dropdown menu on global Escape key press
   useEffect(() => {
@@ -126,13 +169,22 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
     }
   };
 
-  const getInitials = (name: string) => {
-    if (!name) return "ST";
-    const parts = name.trim().split(" ");
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return name.slice(0, 2).toUpperCase();
+  const openCertificateModal = (student: Student) => {
+    const existing = certMap.get(student.id) || null;
+    setCertModalStudent({
+      id: student.id,
+      full_name: student.full_name,
+      email: student.email,
+      phone: student.phone,
+      address: student.address,
+      course_id: student.course_id,
+      courses: student.courses,
+    });
+    setCertModalCert(existing);
+  };
+
+  const handleCertificateGenerated = (newCert: CertificateRecord) => {
+    setCertificates((prev) => [...prev.filter((c) => c.id !== newCert.id), newCert]);
   };
 
   return (
@@ -144,7 +196,7 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
             Students
           </h1>
           <p className="text-slate-500 text-xs sm:text-sm mt-1">
-            Manage all registered students.
+            Manage all registered students and issue official course certificates.
           </p>
         </div>
 
@@ -217,9 +269,9 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
             <thead className="bg-slate-50/80 text-slate-500 font-bold uppercase tracking-wider text-[10.5px] border-b border-slate-200/90">
               <tr>
                 <th className="px-6 py-4">Student</th>
-                <th className="px-6 py-4">Email</th>
-                <th className="px-6 py-4">Phone</th>
+                <th className="px-6 py-4">Email / Phone</th>
                 <th className="px-6 py-4">Course</th>
+                <th className="px-6 py-4">Certificate</th>
                 <th className="px-6 py-4">Enrolled On</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
@@ -227,12 +279,11 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
             <tbody className="divide-y divide-slate-100">
               {filteredStudents.length > 0 ? (
                 filteredStudents.map((student) => {
-                  const initials = getInitials(student.full_name);
-                  const isMenuOpen = activeMenuId === student.id;
+                  const cert = certMap.get(student.id);
 
                   return (
                     <tr key={student.id} className="hover:bg-slate-50/60 transition-colors">
-                      {/* STUDENT NAME: font-extrabold text-slate-950 (Visually Strongest) */}
+                      {/* STUDENT NAME */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <StudentAvatar
@@ -249,18 +300,46 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
                         </div>
                       </td>
 
-                      {/* EMAIL: text-xs text-slate-600 font-medium */}
-                      <td className="px-6 py-4 text-slate-600 font-medium text-xs">{student.email || "—"}</td>
+                      {/* EMAIL / PHONE */}
+                      <td className="px-6 py-4">
+                        <p className="text-slate-700 font-medium text-xs truncate max-w-[160px]">{student.email || "—"}</p>
+                        <p className="font-mono text-slate-500 text-[11px] mt-0.5">{student.phone || "—"}</p>
+                      </td>
 
-                      {/* PHONE: text-xs text-slate-600 font-mono */}
-                      <td className="px-6 py-4 font-mono text-slate-600 text-xs">{student.phone || "—"}</td>
-
-                      {/* COURSE: font-bold text-slate-800 text-xs (Allows Natural Wrapping) */}
-                      <td className="px-6 py-4 font-bold text-slate-800 text-xs leading-snug max-w-[220px]">
+                      {/* COURSE */}
+                      <td className="px-6 py-4 font-bold text-slate-800 text-xs leading-snug max-w-[200px]">
                         {student.courses?.course_name || "—"}
                       </td>
 
-                      {/* ENROLLED DATE: text-xs text-slate-600 font-medium */}
+                      {/* CERTIFICATE STATUS COLUMN */}
+                      <td className="px-6 py-4">
+                        {cert ? (
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg font-mono text-[11px] font-extrabold">
+                              <Check className="w-3 h-3 text-emerald-600" />
+                              <span>{cert.certificate_number}</span>
+                            </span>
+                            <button
+                              onClick={() => openCertificateModal(student)}
+                              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                              title="View Certificate"
+                              aria-label="View Certificate"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => openCertificateModal(student)}
+                            className="inline-flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-xl font-extrabold text-[11px] transition-all shadow-2xs active:scale-98"
+                          >
+                            <Award className="w-3.5 h-3.5 text-blue-600" />
+                            <span>Generate Certificate</span>
+                          </button>
+                        )}
+                      </td>
+
+                      {/* ENROLLED DATE */}
                       <td className="px-6 py-4 text-slate-600 font-medium text-xs">
                         {new Date(student.created_at).toLocaleDateString("en-IN", {
                           day: "numeric",
@@ -284,6 +363,17 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
                                 >
                                   <User className="w-3.5 h-3.5 text-blue-600" />
                                   <span>View Profile</span>
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    openCertificateModal(student);
+                                    close();
+                                  }}
+                                  className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                                >
+                                  <Award className="w-3.5 h-3.5 text-blue-600" />
+                                  <span>{cert ? "View Certificate" : "Generate Certificate"}</span>
                                 </button>
 
                                 <Link
@@ -365,8 +455,7 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
       <div className="md:hidden space-y-3">
         {filteredStudents.length > 0 ? (
           filteredStudents.map((student) => {
-            const initials = getInitials(student.full_name);
-            const isMenuOpen = activeMenuId === student.id;
+            const cert = certMap.get(student.id);
 
             return (
               <div key={student.id} className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-2xs space-y-3 relative">
@@ -403,6 +492,17 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
                           >
                             <User className="w-4 h-4 text-blue-600" />
                             <span>View Profile</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              openCertificateModal(student);
+                              close();
+                            }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-bold text-blue-700 hover:bg-blue-50 rounded-lg"
+                          >
+                            <Award className="w-4 h-4 text-blue-600" />
+                            <span>{cert ? "View Certificate" : "Generate Certificate"}</span>
                           </button>
 
                           <Link
@@ -464,10 +564,31 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
                   </div>
                 </div>
 
-                {/* Footer Info */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
-                  <span>Enrolled: {new Date(student.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
-                  {student.address && <span className="truncate max-w-[140px]">{student.address}</span>}
+                {/* Certificate Action Bar in Mobile Card */}
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                  {cert ? (
+                    <div className="flex items-center justify-between w-full">
+                      <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-mono text-[11px] font-extrabold">
+                        <Check className="w-3 h-3 text-emerald-600" />
+                        <span>{cert.certificate_number}</span>
+                      </span>
+                      <button
+                        onClick={() => openCertificateModal(student)}
+                        className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-lg transition-colors flex items-center gap-1"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-blue-600" />
+                        <span>View</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => openCertificateModal(student)}
+                      className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-sm shadow-blue-500/20"
+                    >
+                      <Award className="w-4 h-4" />
+                      <span>Generate Certificate</span>
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -485,6 +606,8 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
       <StudentProfileDrawer
         student={viewingStudent}
         onClose={() => setViewingStudent(null)}
+        certificate={viewingStudent ? certMap.get(viewingStudent.id) || null : null}
+        onOpenCertificateModal={(st) => openCertificateModal(st)}
         onPhotoUpdated={(studentId, photoUrl) => {
           setStudents((prev) =>
             prev.map((s) => (s.id === studentId ? { ...s, photo_url: photoUrl } : s))
@@ -493,6 +616,17 @@ export default function StudentListClient({ initialStudents, courses }: StudentL
             setViewingStudent({ ...viewingStudent, photo_url: photoUrl });
           }
         }}
+      />
+
+      {/* ADMIN CERTIFICATE GENERATE & PREVIEW MODAL */}
+      <AdminCertificateModal
+        student={certModalStudent}
+        existingCertificate={certModalCert}
+        onClose={() => {
+          setCertModalStudent(null);
+          setCertModalCert(null);
+        }}
+        onCertificateGenerated={handleCertificateGenerated}
       />
 
       {/* DELETE CONFIRMATION DIALOG MODAL */}
