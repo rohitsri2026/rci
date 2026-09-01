@@ -211,24 +211,34 @@ export default function AdminCertificateModal({
             </div>
           ) : activeCert ? (
             /* ISSUED CERTIFICATE VIEW */
-            <div className="space-y-6">
-              {/* Info Card with QR Verification */}
-              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 sm:p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Certificate Summary */}
-                <div className="md:col-span-2 space-y-3">
+            <div className="space-y-5 animate-in fade-in duration-200">
+              {/* 2-Column Info & QR Grid matching Generate Form density */}
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-5 items-stretch">
+                {/* Left Column: Certificate Information Card (3 cols) */}
+                <div className="lg:col-span-3 bg-slate-50 border border-slate-200/90 rounded-2xl p-4 sm:p-5 flex flex-col justify-between space-y-4 shadow-2xs">
                   <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
+                    <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                      Certificate Information
+                    </h3>
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+                      Active Credentials
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Cert Number */}
                     <div>
                       <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
                         Certificate Number
                       </span>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="font-mono text-base font-black text-blue-700 bg-blue-50 border border-blue-100 px-3 py-1 rounded-xl">
+                        <span className="font-mono text-sm sm:text-base font-black text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-xl break-all">
                           {activeCert.certificate_number}
                         </span>
                         <button
                           type="button"
                           onClick={() => handleCopyNumber(activeCert.certificate_number)}
-                          className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition-colors"
+                          className="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition-colors shrink-0"
                           title="Copy Certificate Number"
                         >
                           {copiedNumber ? (
@@ -240,22 +250,22 @@ export default function AdminCertificateModal({
                       </div>
                     </div>
 
-                    <div className="text-right">
+                    {/* Secured Grade */}
+                    <div>
                       <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
                         Secured Grade
                       </span>
                       <span className="text-base font-black text-slate-900 block mt-1">
-                        {activeCert.grade}
+                        Grade {activeCert.grade}
                       </span>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    {/* Completion Date */}
                     <div>
                       <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
                         Completion Date
                       </span>
-                      <span className="font-semibold text-slate-800 block mt-0.5">
+                      <span className="text-xs font-bold text-slate-800 block mt-1">
                         {new Date(activeCert.completion_date).toLocaleDateString("en-IN", {
                           day: "numeric",
                           month: "short",
@@ -264,11 +274,12 @@ export default function AdminCertificateModal({
                       </span>
                     </div>
 
+                    {/* Issue Date */}
                     <div>
                       <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
                         Issue Date
                       </span>
-                      <span className="font-semibold text-slate-800 block mt-0.5">
+                      <span className="text-xs font-bold text-slate-800 block mt-1">
                         {new Date(activeCert.issue_date).toLocaleDateString("en-IN", {
                           day: "numeric",
                           month: "short",
@@ -279,7 +290,7 @@ export default function AdminCertificateModal({
                   </div>
 
                   {/* Verification URL Pill */}
-                  <div className="pt-2">
+                  <div className="border-t border-slate-200/80 pt-3">
                     <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
                       Verification URL
                     </span>
@@ -290,38 +301,43 @@ export default function AdminCertificateModal({
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline mt-1 break-all"
                     >
                       <span>{typeof window !== "undefined" ? `${window.location.origin}${verificationUrl}` : verificationUrl}</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
+                      <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                     </a>
                   </div>
                 </div>
 
-                {/* QR Code Verification Box */}
-                <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col items-center justify-center text-center space-y-2">
-                  <CertificateQRCode certificateNumber={activeCert.certificate_number} size={130} />
+                {/* Right Column: QR Verification Card (2 cols) */}
+                <div className="lg:col-span-2 bg-slate-50 border border-slate-200/90 rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center text-center space-y-2 shadow-2xs">
+                  <div className="bg-white p-2 rounded-2xl border border-slate-200/80 shadow-2xs">
+                    <CertificateQRCode certificateNumber={activeCert.certificate_number} size={125} />
+                  </div>
                   <span className="text-[11px] font-extrabold text-slate-900 uppercase tracking-wider block mt-1">
                     Scannable QR Verification
                   </span>
-                  <p className="text-[10.5px] text-slate-500 leading-tight">
+                  <p className="text-[10.5px] text-slate-500 font-medium leading-tight max-w-[200px]">
                     Scan with any mobile camera to authenticate this certificate online.
                   </p>
                 </div>
               </div>
 
-              {/* Certificate Actions Bar */}
-              <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                <div className="flex items-center gap-2 flex-wrap">
+              {/* Action Buttons Bar */}
+              <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
+                <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
                   <DownloadPNGButton
                     certificateNumber={activeCert.certificate_number}
                     studentName={student.full_name}
                     variant="primary"
+                    className="w-full sm:w-auto min-h-[42px] text-xs font-extrabold"
                   />
                   <DownloadButton
                     certificateNumber={activeCert.certificate_number}
                     studentName={student.full_name}
+                    className="w-full sm:w-auto min-h-[42px] text-xs font-extrabold"
                   />
                   <PrintButton
                     certificateNumber={activeCert.certificate_number}
                     studentName={student.full_name}
+                    className="w-full sm:w-auto col-span-2 sm:col-span-1 min-h-[42px] text-xs font-extrabold"
                   />
                 </div>
 
@@ -329,7 +345,7 @@ export default function AdminCertificateModal({
                   href={verificationUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-950 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-sm shrink-0"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-950 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-sm shrink-0 min-h-[42px]"
                 >
                   <ShieldCheck className="w-4 h-4 text-amber-400" />
                   <span>Open Verification Page</span>
@@ -338,10 +354,15 @@ export default function AdminCertificateModal({
               </div>
 
               {/* Certificate Visual Preview */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
-                  Live Certificate Preview
-                </h4>
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                    Live Certificate Preview
+                  </h4>
+                  <span className="text-[11px] font-bold text-slate-500">
+                    Format: A4 Landscape
+                  </span>
+                </div>
                 <CertificatePreview
                   certificateNumber={activeCert.certificate_number}
                   studentName={student.full_name}
