@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
-import Hero from "@/components/Hero";
+import QuickActions from "@/components/QuickActions";
+import HeroSlider from "@/components/HeroSlider";
 import LatestNoticesSection from "@/components/LatestNoticesSection";
 import StatsSection from "@/components/StatsSection";
 import WhyRCI from "@/components/WhyRCI";
@@ -18,45 +19,52 @@ import MobileStickyCTA from "@/components/MobileStickyCTA";
 export default function Home() {
   return (
     <>
+      {/* 1. Top Contact / Information Strip & 2. Main Navigation Bar */}
       <Header />
-      <main className="pb-16 lg:pb-0">
-        {/* 1. Hero Section */}
-        <Hero />
 
-        {/* 2. Official Latest Notices Section */}
+      <main className="pb-16 lg:pb-0 overflow-x-hidden">
+        {/* 3. Quick Action Button Row (Immediately below nav, above hero) */}
+        <QuickActions />
+
+        {/* 4. Large Hero Slider */}
+        <HeroSlider />
+
+        {/* 5. Remaining Existing Homepage Sections */}
+        {/* Official Latest Notices */}
         <LatestNoticesSection />
 
-        {/* 2. Trust / Statistics */}
+        {/* Statistics / Trust Metrics */}
         <StatsSection />
 
-        {/* 3. Why Choose RCI */}
+        {/* Why Choose RCI */}
         <WhyRCI />
 
-        {/* 4. Featured & All Courses */}
+        {/* Featured & All Courses */}
         <CoursesSection />
 
-        {/* 5. About RCI + MD Message */}
+        {/* About RCI + MD Message */}
         <AboutMDSection />
 
-        {/* 6. How Admission Works */}
+        {/* How Admission Works */}
         <AdmissionWorkflow />
 
-        {/* 7. Certificate Verification */}
+        {/* Certificate Verification Section */}
         <VerifyCertificate />
 
-        {/* 8. Student Success Stories */}
+        {/* Student Success Stories */}
         <Testimonials />
 
-        {/* 9. Student Portal CTA */}
+        {/* Student Digital Portal CTA */}
         <StudentPortalCTA />
 
-        {/* 10. FAQ */}
+        {/* Frequently Asked Questions */}
         <FAQ />
 
-        {/* 11. Final CTA */}
+        {/* Final Bottom Call to Action */}
         <CTA />
       </main>
-      
+
+      {/* Institutional Footer */}
       <Footer />
 
       {/* Persistent Quick Action Floaters */}

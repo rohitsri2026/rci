@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Mail, Phone, MapPin, Globe, MessageCircle, ArrowUpRight, ChevronDown, ShieldCheck } from "lucide-react";
+import { 
+  Mail, Phone, MapPin, Globe, MessageCircle, ArrowUpRight, 
+  ChevronDown, ShieldCheck, Clock 
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -71,47 +74,52 @@ export default function Footer() {
       });
   }, []);
 
-  const whatsappUrl = `https://wa.me/${contactSettings.whatsapp || RCIConfig.whatsappNumber}?text=${encodeURIComponent("Hello RCI, I have an inquiry about computer courses.")}`;
+  const cleanWhatsapp = contactSettings.whatsapp ? contactSettings.whatsapp.replace(/\D/g, "") : "";
+  const whatsappUrl = `https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent("Hello RCI, I have an inquiry about computer courses.")}`;
 
   const toggleSection = (section: string) => {
     setOpenSection((prev) => (prev === section ? null : section));
   };
 
   return (
-    <footer className="bg-slate-950 text-white pt-12 md:pt-20 pb-8 md:pb-12 border-t border-slate-800 relative overflow-hidden">
+    <footer className="bg-[#07152F] text-white pt-12 md:pt-18 pb-8 md:pb-12 border-t border-slate-800 relative overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-12 md:mb-16">
+          
           {/* Col 1: Brand & About */}
           <div className="lg:col-span-2 space-y-4">
-            <Link href="/" className="inline-block bg-white p-3 rounded-2xl shadow-sm group">
+            <Link href="/" className="inline-block bg-white p-2.5 rounded-2xl shadow-sm group">
               <Image
                 src={siteSettings.logo_url || "/logo.png"}
                 alt={siteSettings.site_name}
-                width={180}
-                height={70}
-                className="object-contain h-12 sm:h-14 w-auto"
+                width={160}
+                height={60}
+                className="object-contain h-10 sm:h-12 w-auto"
                 unoptimized
               />
             </Link>
 
             <div>
-              <h3 className="text-lg sm:text-xl font-bold text-white mb-1.5">{siteSettings.site_name}</h3>
-              <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-sm">
+              <h3 className="text-base sm:text-lg font-bold text-white mb-1">{siteSettings.site_name}</h3>
+              <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-sm font-normal">
                 Empowering students with practical computer education, recognized certifications, modern computer lab practice, and digital career guidance.
               </p>
             </div>
 
             {/* Social Links */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="WhatsApp RCI"
-                className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-emerald-600 hover:text-white hover:border-emerald-500 transition-colors"
-              >
-                <MessageCircle className="w-5 h-5" />
-              </a>
+            <div className="flex flex-wrap items-center gap-2.5 pt-2">
+              {cleanWhatsapp && (
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="WhatsApp RCI"
+                  className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-emerald-600 hover:text-white hover:border-emerald-500 transition-colors"
+                  title="Chat on WhatsApp"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                </a>
+              )}
 
               {socialLinks.map((soc) => (
                 <a
@@ -120,10 +128,10 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={soc.platform}
-                  className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-blue-600 hover:text-white hover:border-blue-500 transition-colors"
+                  className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-[#155EEF] hover:text-white hover:border-blue-500 transition-colors"
                   title={soc.platform}
                 >
-                  <Globe className="w-5 h-5" />
+                  <Globe className="w-4 h-4" />
                 </a>
               ))}
             </div>
@@ -137,7 +145,7 @@ export default function Footer() {
               className="flex items-center justify-between w-full md:cursor-default py-1 text-left"
               aria-expanded={openSection === "quickLinks"}
             >
-              <h4 className="text-blue-400 font-extrabold tracking-wider uppercase text-xs">Quick Links</h4>
+              <h4 className="text-[#D4A72C] font-extrabold tracking-wider uppercase text-xs">Quick Links</h4>
               <ChevronDown
                 className={`w-4 h-4 text-slate-400 md:hidden transition-transform duration-200 ${
                   openSection === "quickLinks" ? "rotate-180 text-blue-400" : ""
@@ -145,7 +153,7 @@ export default function Footer() {
               />
             </button>
             <ul
-              className={`space-y-3 text-sm text-slate-400 mt-3 md:block ${
+              className={`space-y-2.5 text-xs sm:text-sm text-slate-400 mt-3 md:block ${
                 openSection === "quickLinks" ? "block" : "hidden md:block"
               }`}
             >
@@ -165,7 +173,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 3: Student & Portal Links */}
+          {/* Col 3: Portal & Services */}
           <div className="border-t border-slate-800/80 md:border-t-0 pt-4 md:pt-0">
             <button
               type="button"
@@ -173,7 +181,7 @@ export default function Footer() {
               className="flex items-center justify-between w-full md:cursor-default py-1 text-left"
               aria-expanded={openSection === "usefulLinks"}
             >
-              <h4 className="text-blue-400 font-extrabold tracking-wider uppercase text-xs">Portal & Services</h4>
+              <h4 className="text-[#D4A72C] font-extrabold tracking-wider uppercase text-xs">Portal &amp; Services</h4>
               <ChevronDown
                 className={`w-4 h-4 text-slate-400 md:hidden transition-transform duration-200 ${
                   openSection === "usefulLinks" ? "rotate-180 text-blue-400" : ""
@@ -181,7 +189,7 @@ export default function Footer() {
               />
             </button>
             <ul
-              className={`space-y-3 text-sm text-slate-400 mt-3 md:block ${
+              className={`space-y-2.5 text-xs sm:text-sm text-slate-400 mt-3 md:block ${
                 openSection === "usefulLinks" ? "block" : "hidden md:block"
               }`}
             >
@@ -201,7 +209,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 4: Contact Info */}
+          {/* Col 4: Contact Info & Office Hours */}
           <div className="border-t border-slate-800/80 md:border-t-0 pt-4 md:pt-0">
             <button
               type="button"
@@ -209,7 +217,7 @@ export default function Footer() {
               className="flex items-center justify-between w-full md:cursor-default py-1 text-left"
               aria-expanded={openSection === "contactUs"}
             >
-              <h4 className="text-blue-400 font-extrabold tracking-wider uppercase text-xs">Contact Us</h4>
+              <h4 className="text-[#D4A72C] font-extrabold tracking-wider uppercase text-xs">Contact Us</h4>
               <ChevronDown
                 className={`w-4 h-4 text-slate-400 md:hidden transition-transform duration-200 ${
                   openSection === "contactUs" ? "rotate-180 text-blue-400" : ""
@@ -217,45 +225,64 @@ export default function Footer() {
               />
             </button>
             <ul
-              className={`space-y-3.5 text-sm text-slate-400 mt-3 md:block ${
+              className={`space-y-3 text-xs sm:text-sm text-slate-400 mt-3 md:block ${
                 openSection === "contactUs" ? "block" : "hidden md:block"
               }`}
             >
-              <li className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+              <li className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                 <span className="leading-snug">{contactSettings.address}</span>
               </li>
 
-              <li className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-blue-500 shrink-0" />
+              <li className="flex items-center gap-2.5">
+                <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
                 <a href={`tel:${contactSettings.phone.replace(/\s+/g, "")}`} className="hover:text-white transition-colors font-medium">
                   {contactSettings.phone}
                 </a>
               </li>
 
-              <li className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-blue-500 shrink-0" />
+              {cleanWhatsapp && (
+                <li className="flex items-center gap-2.5">
+                  <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors font-medium">
+                    {contactSettings.whatsapp}
+                  </a>
+                </li>
+              )}
+
+              <li className="flex items-center gap-2.5">
+                <Mail className="w-4 h-4 text-blue-400 shrink-0" />
                 <a href={`mailto:${contactSettings.email}`} className="hover:text-white transition-colors break-all sm:break-normal">
                   {contactSettings.email}
                 </a>
               </li>
 
-              <li className="pt-1">
-                <a
-                  href={contactSettings.maps_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:underline font-semibold"
-                >
-                  Find Us On Google Maps <ArrowUpRight className="w-3.5 h-3.5" />
-                </a>
-              </li>
+              {contactSettings.office_hours && (
+                <li className="flex items-center gap-2.5">
+                  <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>{contactSettings.office_hours}</span>
+                </li>
+              )}
+
+              {contactSettings.maps_url && (
+                <li className="pt-1">
+                  <a
+                    href={contactSettings.maps_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:underline font-semibold"
+                  >
+                    Find Us On Google Maps <ArrowUpRight className="w-3.5 h-3.5" />
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
+
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-slate-900 pt-6 md:pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center md:text-left">
+        <div className="border-t border-slate-800/80 pt-6 md:pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center md:text-left">
           <p className="leading-relaxed">
             &copy; {new Date().getFullYear()} {siteSettings.site_name}. All rights reserved. Registered under MSME &amp; ISO Quality Standards.
           </p>
@@ -270,9 +297,6 @@ export default function Footer() {
             </Link>
             <Link href="/contact" className="hover:text-slate-300 transition-colors">
               Terms of Service
-            </Link>
-            <Link href="/contact" className="hover:text-slate-300 transition-colors">
-              Refund Policy
             </Link>
           </div>
         </div>

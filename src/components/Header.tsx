@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { 
   Menu, X, ChevronDown, ChevronRight, BookOpen, GraduationCap, 
-  Award, Home, User, PhoneCall, ShieldCheck 
+  Award, Home, User, PhoneCall, ShieldCheck, MapPin, Mail, Phone,
+  MessageCircle, Globe
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,9 +12,20 @@ import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import NoticeRenderer from "@/components/notice/NoticeRenderer";
+import { 
+  DEFAULT_SITE_SETTINGS, 
+  DEFAULT_CONTACT_SETTINGS, 
+  DEFAULT_SOCIAL_LINKS, 
+  DEFAULT_NAV_LINKS 
+} from "@/lib/cms-defaults";
+import { NavigationLink, SocialLink } from "@/types/cms";
 
 function toSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+function getSocialIcon(platform: string) {
+  return <Globe className="w-3.5 h-3.5" aria-hidden="true" />;
 }
 
 export default function Header() {
@@ -26,15 +38,12 @@ export default function Header() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [siteSettings, setSiteSettings] = useState({
-    site_name: "Rohit Computer Institute",
-    short_name: "RCI",
-    tagline: "Empowering Digital Careers",
-    logo_url: "/logo.png",
-  });
+  const [siteSettings, setSiteSettings] = useState(DEFAULT_SITE_SETTINGS);
+  const [contactSettings, setContactSettings] = useState(DEFAULT_CONTACT_SETTINGS);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>(DEFAULT_SOCIAL_LINKS);
   const [announcement, setAnnouncement] = useState<any>(null);
   const [announcements, setAnnouncements] = useState<any[]>([]);
-  const [headerNavLinks, setHeaderNavLinks] = useState<{ id?: string; label: string; url: string; open_new_tab?: boolean }[]>([]);
+  const [headerNavLinks, setHeaderNavLinks] = useState<NavigationLink[]>([]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -45,7 +54,7 @@ export default function Header() {
   useEffect(() => {
     const supabase = createClient();
 
-    // Fetch site settings
+    // 1. Fetch site settings
     supabase
       .from("site_settings")
       .select("site_name, short_name, tagline, logo_url")
@@ -63,7 +72,27 @@ export default function Header() {
         }
       });
 
-    // Fetch active website announcements
+    // 2. Fetch contact settings
+    supabase
+      .from("contact_settings")
+      .select("*")
+      .eq("id", "default")
+      .single()
+      .then(({ data }) => {
+        if (data) setContactSettings((prev) => ({ ...prev, ...data }));
+      });
+
+    // 3. Fetch social links
+    supabase
+      .from("social_links")
+      .select("*")
+      .eq("is_active", true)
+      .order("display_order")
+      .then(({ data }) => {
+        if (data && data.length > 0) setSocialLinks(data);
+      });
+
+    // 4. Fetch active website announcements
     supabase
       .from("website_announcements")
       .select("*")
@@ -73,7 +102,7 @@ export default function Header() {
         if (data && data.length > 0) setAnnouncements(data);
       });
 
-    // Fetch announcement settings fallback
+    // 5. Fetch announcement settings fallback
     supabase
       .from("announcement_settings")
       .select("*")
@@ -83,7 +112,7 @@ export default function Header() {
         if (data) setAnnouncement(data);
       });
 
-    // Fetch navigation links
+    // 6. Fetch navigation links (CANONICAL SOURCE)
     supabase
       .from("navigation_links")
       .select("*")
@@ -96,7 +125,7 @@ export default function Header() {
         }
       });
 
-    // Fetch courses
+    // 7. Fetch courses for dropdown
     supabase
       .from("courses")
       .select("id, course_name, slug")
@@ -107,7 +136,7 @@ export default function Header() {
       });
   }, []);
 
-  // Handle outside click & Escape key for Courses dropdown accessibility
+  // Dropdown accessibility: outside click & Escape key
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -137,374 +166,420 @@ export default function Header() {
     hoverTimeout.current = setTimeout(() => setCoursesOpen(false), 150);
   };
 
+  // Canonical navigation items: Use headerNavLinks if available, else controlled fallback
+  const canonicalNavItems = useMemo(() => {
+    if (headerNavLinks.length > 0) return headerNavLinks;
+    return DEFAULT_NAV_LINKS.filter((l) => l.location === "header");
+  }, [headerNavLinks]);
+
   const topStripNotices = announcements.filter((n) => !n.display_format || n.display_format === "top_strip");
   const tickerNotices = announcements.filter((n) => n.display_format === "ticker");
   const popupNotice = announcements.find((n) => n.display_format === "popup");
   const stickyNotice = announcements.find((n) => n.display_format === "sticky");
 
+  const cleanPhone = contactSettings.phone ? contactSettings.phone.replace(/\s+/g, "") : "";
+  const cleanWhatsapp = contactSettings.whatsapp ? contactSettings.whatsapp.replace(/\D/g, "") : "";
+  const whatsappUrl = `https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent("Hello RCI, I have an inquiry about computer courses.")}`;
+
   return (
     <>
+      {/* Announcement system (preserved untouched) */}
       <AnnouncementBar notices={topStripNotices} settings={announcement} />
       {tickerNotices.length > 0 && <NoticeRenderer notices={tickerNotices} forcedFormat="ticker" />}
       {popupNotice && <NoticeRenderer notice={popupNotice} forcedFormat="popup" />}
       {stickyNotice && <NoticeRenderer notice={stickyNotice} forcedFormat="sticky" />}
-      <header
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-          isScrolled
-            ? "bg-white/95 backdrop-blur-md border-b border-slate-200/80 py-3 shadow-xs"
-            : "bg-white/90 backdrop-blur-sm border-b border-slate-100 py-4.5"
-        }`}
-      >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 group focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-xl p-1 max-w-[72%] sm:max-w-none">
-            <Image
-              src={siteSettings.logo_url || "/logo.png"}
-              alt={siteSettings.site_name}
-              width={160}
-              height={60}
-              className="object-contain h-8 sm:h-12 w-auto shrink-0 transition-transform group-hover:scale-105"
-              priority
-              unoptimized
-            />
-            <div className="flex flex-col min-w-0">
-              <span className="text-xs sm:text-xl lg:text-2xl font-black text-slate-900 tracking-tight leading-tight truncate sm:whitespace-normal group-hover:text-blue-600 transition-colors">
-                {siteSettings.site_name}
-              </span>
-              <span className="text-[9px] sm:text-[10.5px] font-bold text-blue-600 tracking-widest uppercase mt-0.5 truncate hidden sm:block">
-                {siteSettings.tagline}
+
+      <header className="fixed top-0 left-0 right-0 z-40 transition-all duration-300">
+        {/* ============================================================ */}
+        {/* 1. TOP CONTACT / INFORMATION STRIP (~36px height)            */}
+        {/* ============================================================ */}
+        <div 
+          className={`bg-[#07152F] text-slate-200 border-b border-white/10 transition-all duration-300 ${
+            isScrolled ? "hidden md:block h-8 py-1 opacity-95" : "h-9 py-1.5"
+          }`}
+        >
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-4 text-[11px] sm:text-xs">
+            {/* Desktop Left: Address */}
+            <div className="flex items-center gap-2 text-slate-300 truncate">
+              <MapPin className="w-3.5 h-3.5 text-[#D4A72C] shrink-0" />
+              <span className="truncate font-medium">
+                {contactSettings.address || "Sanjay Nagar Cantt, Kanpur, Uttar Pradesh"}
               </span>
             </div>
-          </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-6">
-          <Link
-            href="/"
-            className={`text-sm font-semibold tracking-tight transition-colors hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-lg px-2.5 py-1.5 ${
-              pathname === "/" ? "text-blue-600 font-bold bg-blue-50/80" : "text-slate-700"
-            }`}
-          >
-            Home
-          </Link>
-          
-          <Link
-            href="/about"
-            className={`text-sm font-semibold tracking-tight transition-colors hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-lg px-2.5 py-1.5 ${
-              pathname === "/about" ? "text-blue-600 font-bold bg-blue-50/80" : "text-slate-700"
-            }`}
-          >
-            About
-          </Link>
+            {/* Desktop Right: Email, Phone, WhatsApp, Socials */}
+            <div className="flex items-center gap-3.5 sm:gap-4 shrink-0">
+              {contactSettings.email && (
+                <a
+                  href={`mailto:${contactSettings.email}`}
+                  className="hidden md:inline-flex items-center gap-1.5 text-slate-300 hover:text-white transition-colors"
+                >
+                  <Mail className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="truncate max-w-[180px]">{contactSettings.email}</span>
+                </a>
+              )}
 
-          {/* Courses Dropdown */}
-          <div
-            ref={dropdownRef}
-            className="relative"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <button
-              type="button"
-              onClick={() => setCoursesOpen((prev) => !prev)}
-              aria-expanded={coursesOpen}
-              aria-haspopup="menu"
-              className={`flex items-center gap-1 text-sm font-semibold tracking-tight transition-colors hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-lg px-2.5 py-1.5 cursor-pointer ${
-                pathname.startsWith("/courses") ? "text-blue-600 font-bold bg-blue-50/80" : "text-slate-700"
-              }`}
-            >
-              Courses
-              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${coursesOpen ? "rotate-180 text-blue-600" : "text-slate-400"}`} />
-            </button>
+              {contactSettings.phone && (
+                <a
+                  href={`tel:${cleanPhone}`}
+                  className="inline-flex items-center gap-1.5 text-slate-300 hover:text-white transition-colors font-semibold"
+                >
+                  <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{contactSettings.phone}</span>
+                </a>
+              )}
 
-            {coursesOpen && (
-              <div
-                role="menu"
-                aria-label="Courses menu"
-                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[340px] bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-2.5 px-2 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150"
-              >
-                {/* Dropdown Header */}
-                <div className="px-3 py-2 border-b border-slate-100 mb-1.5 flex items-center justify-between">
-                  <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Programs Offered</p>
-                  <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">
-                    {courses.length} Programs
-                  </span>
+              {cleanWhatsapp && (
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hidden sm:inline-flex items-center gap-1.5 text-emerald-300 hover:text-emerald-200 transition-colors font-bold"
+                >
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>WhatsApp</span>
+                </a>
+              )}
+
+              {socialLinks.length > 0 && (
+                <div className="hidden lg:flex items-center gap-2 border-l border-white/15 pl-3">
+                  {socialLinks.slice(0, 3).map((soc) => (
+                    <a
+                      key={soc.id}
+                      href={soc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-slate-400 hover:text-[#D4A72C] transition-colors p-0.5"
+                      title={soc.platform}
+                      aria-label={`Visit RCI on ${soc.platform}`}
+                    >
+                      {getSocialIcon(soc.platform)}
+                    </a>
+                  ))}
                 </div>
+              )}
+            </div>
+          </div>
+        </div>
 
-                {/* Course Links List */}
-                <div className="max-h-[320px] overflow-y-auto space-y-1 pr-0.5">
-                  {courses.map((course) => {
-                    const slug = course.slug || toSlug(course.course_name);
-                    const active = pathname === `/courses/${slug}`;
-                    return (
-                      <Link
-                        key={course.id}
-                        href={`/courses/${slug}`}
-                        role="menuitem"
-                        onClick={() => setCoursesOpen(false)}
-                        className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group/item focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
-                          active
-                            ? "bg-blue-50 text-blue-600 font-bold"
-                            : "hover:bg-blue-50/70 text-slate-700 hover:text-blue-600"
+        {/* ============================================================ */}
+        {/* 2. MAIN NAVIGATION BAR (Target ~70-76px)                     */}
+        {/* ============================================================ */}
+        <div
+          className={`transition-all duration-300 ${
+            isScrolled
+              ? "bg-white/95 backdrop-blur-md border-b border-slate-200/90 h-[68px] shadow-sm"
+              : "bg-white border-b border-slate-200/70 h-[74px] shadow-2xs"
+          }`}
+        >
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-4">
+            
+            {/* Institute Compact Logo & Name */}
+            <Link
+              href="/"
+              className="flex items-center gap-2.5 sm:gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-xl p-1 shrink-0"
+            >
+              <Image
+                src={siteSettings.logo_url || "/logo.png"}
+                alt={siteSettings.site_name}
+                width={44}
+                height={44}
+                className="object-contain h-9 sm:h-10 w-auto shrink-0 transition-transform group-hover:scale-105"
+                priority
+                unoptimized
+              />
+              <div className="flex flex-col justify-center min-w-0">
+                <span className="text-sm sm:text-base font-black text-[#07152F] tracking-tight leading-tight group-hover:text-blue-600 transition-colors truncate max-w-[200px] sm:max-w-[280px]">
+                  {siteSettings.site_name}
+                  {siteSettings.short_name && !siteSettings.site_name.includes(siteSettings.short_name) && (
+                    <span className="text-blue-600 font-extrabold ml-1">({siteSettings.short_name})</span>
+                  )}
+                </span>
+                {siteSettings.tagline && (
+                  <span className="text-[9px] sm:text-[10px] font-bold text-blue-600 tracking-wider uppercase truncate max-w-[180px] sm:max-w-[260px] leading-tight mt-0.5">
+                    {siteSettings.tagline}
+                  </span>
+                )}
+              </div>
+            </Link>
+
+            {/* Desktop Navigation Links — RENDERED ONLY ONCE FROM CANONICAL CMS SOURCE */}
+            <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
+              {canonicalNavItems.map((item) => {
+                const isCourses = item.url === "/courses" || item.label.toLowerCase() === "courses";
+                const isActive = pathname === item.url || (isCourses && pathname.startsWith("/courses"));
+
+                if (isCourses) {
+                  return (
+                    <div
+                      key={item.id || item.url}
+                      ref={dropdownRef}
+                      className="relative"
+                      onMouseEnter={handleMouseEnter}
+                      onMouseLeave={handleMouseLeave}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setCoursesOpen((prev) => !prev)}
+                        aria-expanded={coursesOpen}
+                        aria-haspopup="menu"
+                        className={`flex items-center gap-1 text-sm font-semibold tracking-tight transition-colors hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-lg px-2.5 py-1.5 cursor-pointer ${
+                          isActive ? "text-blue-600 font-bold bg-blue-50/80" : "text-slate-700"
                         }`}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-150 ${
-                              active
-                                ? "bg-blue-600 text-white"
-                                : "bg-slate-100 text-slate-500 group-hover/item:bg-blue-600 group-hover/item:text-white"
-                            }`}
-                          >
-                            <BookOpen className="w-4 h-4" />
+                        {item.label}
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${coursesOpen ? "rotate-180 text-blue-600" : "text-slate-400"}`} />
+                      </button>
+
+                      {coursesOpen && (
+                        <div
+                          role="menu"
+                          aria-label="Courses menu"
+                          className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-[340px] bg-white rounded-2xl shadow-2xl border border-slate-200/90 py-2.5 px-2 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+                        >
+                          <div className="px-3 py-2 border-b border-slate-100 mb-1.5 flex items-center justify-between">
+                            <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Programs Offered</p>
+                            <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold">
+                              {courses.length} Programs
+                            </span>
                           </div>
-                          <span className="text-xs sm:text-sm font-semibold leading-snug line-clamp-2">
-                            {course.course_name}
-                          </span>
+
+                          <div className="max-h-[320px] overflow-y-auto space-y-1 pr-0.5">
+                            {courses.map((course) => {
+                              const slug = course.slug || toSlug(course.course_name);
+                              const courseActive = pathname === `/courses/${slug}`;
+                              return (
+                                <Link
+                                  key={course.id}
+                                  href={`/courses/${slug}`}
+                                  role="menuitem"
+                                  onClick={() => setCoursesOpen(false)}
+                                  className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 group/item focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 ${
+                                    courseActive
+                                      ? "bg-blue-50 text-blue-600 font-bold"
+                                      : "hover:bg-blue-50/70 text-slate-700 hover:text-blue-600"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-3 min-w-0">
+                                    <div
+                                      className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-150 ${
+                                        courseActive
+                                          ? "bg-blue-600 text-white"
+                                          : "bg-slate-100 text-slate-500 group-hover/item:bg-blue-600 group-hover/item:text-white"
+                                      }`}
+                                    >
+                                      <BookOpen className="w-3.5 h-3.5" />
+                                    </div>
+                                    <span className="text-xs sm:text-sm font-semibold leading-snug line-clamp-2">
+                                      {course.course_name}
+                                    </span>
+                                  </div>
+
+                                  <ChevronRight
+                                    className={`w-3.5 h-3.5 text-blue-600 transition-all duration-150 shrink-0 ${
+                                      courseActive
+                                        ? "opacity-100 translate-x-0"
+                                        : "opacity-0 -translate-x-1 group-hover/item:opacity-100 group-hover/item:translate-x-0"
+                                    }`}
+                                  />
+                                </Link>
+                              );
+                            })}
+                          </div>
+
+                          <div className="border-t border-slate-100 mt-2 pt-2 px-1">
+                            <Link
+                              href="/courses"
+                              role="menuitem"
+                              onClick={() => setCoursesOpen(false)}
+                              className="flex items-center justify-center gap-2 w-full py-2 bg-slate-50 hover:bg-blue-50 text-blue-600 text-xs font-extrabold rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                            >
+                              View All Courses →
+                            </Link>
+                          </div>
                         </div>
-
-                        <ChevronRight
-                          className={`w-3.5 h-3.5 text-blue-600 transition-all duration-150 shrink-0 ${
-                            active
-                              ? "opacity-100 translate-x-0"
-                              : "opacity-0 -translate-x-1 group-hover/item:opacity-100 group-hover/item:translate-x-0"
-                          }`}
-                        />
-                      </Link>
-                    );
-                  })}
-                </div>
-
-                {/* Dropdown Bottom CTA */}
-                <div className="border-t border-slate-100 mt-2 pt-2 px-1">
-                  <Link
-                    href="/courses"
-                    role="menuitem"
-                    onClick={() => setCoursesOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-50 hover:bg-blue-50 text-blue-600 text-xs font-extrabold rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
-                  >
-                    View All Courses →
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <Link
-            href="/admission"
-            className={`text-sm font-semibold tracking-tight transition-colors hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-lg px-2.5 py-1.5 ${
-              pathname === "/admission" ? "text-blue-600 font-bold bg-blue-50/80" : "text-slate-700"
-            }`}
-          >
-            Admissions
-          </Link>
-
-          <Link
-            href="/verify"
-            className={`text-sm font-semibold tracking-tight transition-colors hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-lg px-2.5 py-1.5 ${
-              pathname.startsWith("/verify") ? "text-blue-600 font-bold bg-blue-50/80" : "text-slate-700"
-            }`}
-          >
-            Verify Certificate
-          </Link>
-
-          <Link
-            href="/contact"
-            className={`text-sm font-semibold tracking-tight transition-colors hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-lg px-2.5 py-1.5 ${
-              pathname === "/contact" ? "text-blue-600 font-bold bg-blue-50/80" : "text-slate-700"
-            }`}
-          >
-            Contact
-          </Link>
-        </nav>
-
-        {/* Action Buttons */}
-        <div className="hidden lg:flex items-center gap-2.5">
-          <Link
-            href="/student/login"
-            className="flex items-center gap-1.5 border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-600"
-          >
-            <GraduationCap className="w-4 h-4 text-blue-600" />
-            <span>Student Login</span>
-          </Link>
-
-          <Link
-            href="/admin/login"
-            className="flex items-center gap-1.5 border border-slate-200/90 bg-slate-50 hover:bg-slate-100 text-slate-800 hover:text-blue-600 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs focus:outline-none focus:ring-2 focus:ring-blue-600"
-            title="Admin Login Portal"
-          >
-            <ShieldCheck className="w-4 h-4 text-blue-600" />
-            <span>Admin Login</span>
-          </Link>
-
-          <Link
-            href="/admission"
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-600 active:scale-98"
-          >
-            Apply Now
-          </Link>
-        </div>
-
-        {/* Mobile Hamburger Toggle */}
-        <div className="lg:hidden flex items-center gap-2 shrink-0">
-          <Link
-            href="/admission"
-            className="hidden xs:inline-flex bg-blue-600 text-white text-xs font-bold px-3 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Apply Now
-          </Link>
-          <button
-            type="button"
-            aria-label="Toggle navigation menu"
-            aria-expanded={mobileMenuOpen}
-            className="p-2 text-slate-700 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 min-h-[44px] min-w-[44px] flex items-center justify-center"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-x-0 top-[62px] bg-white/98 backdrop-blur-xl border-b border-slate-200 shadow-2xl py-5 px-6 flex flex-col gap-3 max-h-[calc(100vh-65px)] overflow-y-auto animate-in slide-in-from-top-4 duration-300">
-          <Link
-            href="/"
-            onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center gap-3 p-3 rounded-xl text-base font-semibold ${
-              pathname === "/" ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            <Home className="w-5 h-5 text-blue-600" />
-            Home
-          </Link>
-
-          <Link
-            href="/about"
-            onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center gap-3 p-3 rounded-xl text-base font-semibold ${
-              pathname === "/about" ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            <User className="w-5 h-5 text-blue-600" />
-            About RCI
-          </Link>
-
-          {/* Mobile Courses Accordion */}
-          <div className="border border-slate-100 rounded-2xl overflow-hidden">
-            <button
-              type="button"
-              aria-expanded={mobileCourseOpen}
-              onClick={() => setMobileCourseOpen(!mobileCourseOpen)}
-              className="flex items-center justify-between w-full p-3.5 bg-slate-50 text-slate-800 text-base font-semibold"
-            >
-              <span className="flex items-center gap-3">
-                <BookOpen className="w-5 h-5 text-blue-600" />
-                Courses Offered
-              </span>
-              <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${mobileCourseOpen ? "rotate-180" : ""}`} />
-            </button>
-            {mobileCourseOpen && (
-              <div className="p-3 bg-white space-y-1 border-t border-slate-100">
-                {courses.map((course) => {
-                  const slug = course.slug || toSlug(course.course_name);
-                  const active = pathname === `/courses/${slug}`;
-                  return (
-                    <Link
-                      key={course.id}
-                      href={`/courses/${slug}`}
-                      onClick={() => {
-                        setMobileCourseOpen(false);
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`flex items-center gap-2.5 p-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                        active ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-700 hover:bg-slate-50 hover:text-blue-600"
-                      }`}
-                    >
-                      <span className={`w-2 h-2 rounded-full ${active ? "bg-blue-600" : "bg-slate-300"}`} />
-                      <span className="line-clamp-2 leading-snug">{course.course_name}</span>
-                    </Link>
+                      )}
+                    </div>
                   );
-                })}
-                <Link
-                  href="/courses"
-                  onClick={() => {
-                    setMobileCourseOpen(false);
-                    setMobileMenuOpen(false);
-                  }}
-                  className="block text-center py-2.5 text-blue-600 text-xs font-extrabold uppercase tracking-wider bg-blue-50 rounded-xl mt-2"
-                >
-                  View All Courses →
-                </Link>
-              </div>
-            )}
-          </div>
+                }
 
-          <Link
-            href="/admission"
-            onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center gap-3 p-3 rounded-xl text-base font-semibold ${
-              pathname === "/admission" ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            <GraduationCap className="w-5 h-5 text-blue-600" />
-            Admissions
-          </Link>
+                return (
+                  <Link
+                    key={item.id || item.url}
+                    href={item.url}
+                    target={item.open_new_tab ? "_blank" : undefined}
+                    rel={item.open_new_tab ? "noopener noreferrer" : undefined}
+                    className={`text-sm font-semibold tracking-tight transition-colors hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-lg px-2.5 py-1.5 ${
+                      isActive ? "text-blue-600 font-bold bg-blue-50/80" : "text-slate-700"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
 
-          <Link
-            href="/verify"
-            onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center gap-3 p-3 rounded-xl text-base font-semibold ${
-              pathname.startsWith("/verify") ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            <Award className="w-5 h-5 text-blue-600" />
-            Verify Certificate
-          </Link>
-
-          <Link
-            href="/contact"
-            onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center gap-3 p-3 rounded-xl text-base font-semibold ${
-              pathname === "/contact" ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            <PhoneCall className="w-5 h-5 text-blue-600" />
-            Contact Us
-          </Link>
-
-          <div className="pt-4 border-t border-slate-100 flex flex-col gap-2.5 mt-2">
-            <div className="grid grid-cols-2 gap-2">
+            {/* Desktop Action Buttons: Student Login, Admin Login, Apply Now */}
+            <div className="hidden lg:flex items-center gap-2 shrink-0">
               <Link
                 href="/student/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 border border-slate-200 text-slate-800 bg-white py-3 rounded-xl font-bold text-xs shadow-2xs min-h-[44px]"
+                className="flex items-center gap-1.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs hover:border-blue-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
               >
-                <GraduationCap className="w-4 h-4 text-blue-600" />
-                Student Login
+                <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
+                <span>Student Login</span>
               </Link>
 
               <Link
                 href="/admin/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 border border-slate-200 text-slate-800 bg-slate-50 py-3 rounded-xl font-bold text-xs shadow-2xs min-h-[44px]"
+                className="flex items-center gap-1.5 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 hover:text-blue-600 px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                title="Admin Management Portal"
               >
-                <ShieldCheck className="w-4 h-4 text-blue-600" />
-                Admin Login
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                <span>Admin Login</span>
+              </Link>
+
+              <Link
+                href="/admission"
+                className="flex items-center gap-1.5 bg-[#155EEF] hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-extrabold transition-all shadow-md shadow-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 active:scale-98"
+              >
+                <span>Apply Now</span>
               </Link>
             </div>
 
-            <Link
-              href="/admission"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-center gap-2 bg-blue-600 text-white py-3.5 rounded-xl font-bold text-sm shadow-md shadow-blue-500/20 min-h-[44px]"
-            >
-              Apply for Admission
-            </Link>
+            {/* Mobile Hamburger Toggle */}
+            <div className="lg:hidden flex items-center gap-2 shrink-0">
+              <Link
+                href="/admission"
+                className="hidden xs:inline-flex bg-[#155EEF] text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Apply Now
+              </Link>
+              <button
+                type="button"
+                aria-label="Toggle navigation menu"
+                aria-expanded={mobileMenuOpen}
+                className="p-2 text-slate-700 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
+
           </div>
         </div>
-      )}
-    </header>
+
+        {/* Mobile Slide-down Drawer — Uses Same Canonical Nav List Once */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden fixed inset-x-0 top-[102px] bg-white/98 backdrop-blur-xl border-b border-slate-200 shadow-2xl py-4 px-5 flex flex-col gap-2.5 max-h-[calc(100vh-105px)] overflow-y-auto animate-in slide-in-from-top-4 duration-300">
+            {canonicalNavItems.map((item) => {
+              const isCourses = item.url === "/courses" || item.label.toLowerCase() === "courses";
+              const isActive = pathname === item.url || (isCourses && pathname.startsWith("/courses"));
+
+              if (isCourses) {
+                return (
+                  <div key={item.id || item.url} className="border border-slate-100 rounded-2xl overflow-hidden">
+                    <button
+                      type="button"
+                      aria-expanded={mobileCourseOpen}
+                      onClick={() => setMobileCourseOpen(!mobileCourseOpen)}
+                      className="flex items-center justify-between w-full p-3 bg-slate-50 text-slate-800 text-sm font-bold min-h-[44px]"
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <BookOpen className="w-4 h-4 text-blue-600" />
+                        {item.label} Offered
+                      </span>
+                      <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${mobileCourseOpen ? "rotate-180" : ""}`} />
+                    </button>
+                    {mobileCourseOpen && (
+                      <div className="p-2 bg-white space-y-1 border-t border-slate-100">
+                        {courses.map((course) => {
+                          const slug = course.slug || toSlug(course.course_name);
+                          const active = pathname === `/courses/${slug}`;
+                          return (
+                            <Link
+                              key={course.id}
+                              href={`/courses/${slug}`}
+                              onClick={() => {
+                                setMobileCourseOpen(false);
+                                setMobileMenuOpen(false);
+                              }}
+                              className={`flex items-center gap-2.5 p-2 rounded-xl text-xs font-semibold transition-colors min-h-[44px] ${
+                                active ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-700 hover:bg-slate-50"
+                              }`}
+                            >
+                              <span className={`w-2 h-2 rounded-full ${active ? "bg-blue-600" : "bg-slate-300"}`} />
+                              <span className="line-clamp-2 leading-snug">{course.course_name}</span>
+                            </Link>
+                          );
+                        })}
+                        <Link
+                          href="/courses"
+                          onClick={() => {
+                            setMobileCourseOpen(false);
+                            setMobileMenuOpen(false);
+                          }}
+                          className="block text-center py-2 text-blue-600 text-xs font-extrabold uppercase tracking-wider bg-blue-50 rounded-xl mt-1 min-h-[44px] flex items-center justify-center"
+                        >
+                          View All Courses →
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return (
+                <Link
+                  key={item.id || item.url}
+                  href={item.url}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-2.5 p-3 rounded-xl text-sm font-semibold min-h-[44px] ${
+                    isActive ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  {item.url === "/" && <Home className="w-4 h-4 text-blue-600" />}
+                  {item.url === "/about" && <User className="w-4 h-4 text-blue-600" />}
+                  {item.url === "/admission" && <GraduationCap className="w-4 h-4 text-blue-600" />}
+                  {item.url.startsWith("/verify") && <Award className="w-4 h-4 text-blue-600" />}
+                  {item.url === "/contact" && <PhoneCall className="w-4 h-4 text-blue-600" />}
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+
+            {/* Mobile Auth and Action Buttons */}
+            <div className="pt-3 border-t border-slate-100 flex flex-col gap-2 mt-1">
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href="/student/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 border border-slate-200 text-slate-800 bg-white py-2.5 rounded-xl font-bold text-xs shadow-2xs min-h-[44px]"
+                >
+                  <GraduationCap className="w-4 h-4 text-blue-600" />
+                  Student Login
+                </Link>
+
+                <Link
+                  href="/admin/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 border border-slate-200 text-slate-800 bg-slate-50 py-2.5 rounded-xl font-bold text-xs shadow-2xs min-h-[44px]"
+                >
+                  <ShieldCheck className="w-4 h-4 text-blue-600" />
+                  Admin Login
+                </Link>
+              </div>
+
+              <Link
+                href="/admission"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 bg-[#155EEF] text-white py-3 rounded-xl font-bold text-sm shadow-md shadow-blue-500/20 min-h-[44px]"
+              >
+                Apply for Admission
+              </Link>
+            </div>
+          </div>
+        )}
+      </header>
     </>
   );
 }

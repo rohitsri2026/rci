@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Megaphone, ArrowRight, Star, Bell, Calendar, ChevronRight, Sparkles } from "lucide-react";
+import { Megaphone, ArrowRight, Calendar, ChevronRight } from "lucide-react";
 import { AnnouncementItem } from "@/types/cms";
 import { createClient } from "@/lib/supabase/client";
 
@@ -69,42 +69,42 @@ export default function LatestNoticesSection() {
   if (loading || notices.length === 0) return null;
 
   return (
-    <section className="py-12 bg-slate-50 border-y border-slate-200/80 relative overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+    <section aria-labelledby="latest-notices-title" className="py-14 sm:py-20 bg-white border-b border-slate-200/80 relative overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
           <div className="space-y-1.5">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100/80 border border-blue-200 text-blue-700 text-xs font-black uppercase tracking-wider">
               <Megaphone className="w-3.5 h-3.5 text-blue-600" />
               <span>Official RCI Notice Board</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 font-display">
-              Latest Notices & Updates
+            <h2 id="latest-notices-title" className="text-2xl sm:text-3xl md:text-4xl font-black font-display text-[#07152F] tracking-tight">
+              Latest Notices &amp; Updates
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 font-medium max-w-xl">
+            <p className="text-xs sm:text-sm text-slate-600 font-normal max-w-xl">
               Stay informed about upcoming exam dates, new batch admissions, fee schedules, and official institute announcements.
             </p>
           </div>
 
           <Link
             href="/notices"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 text-xs font-black transition-all shadow-2xs hover:shadow-xs shrink-0 self-start sm:self-auto"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-[#07152F] border border-slate-300 text-xs font-bold transition-all shadow-2xs hover:shadow-xs shrink-0 self-start sm:self-auto"
           >
             <span>View All Notices</span>
-            <ChevronRight className="w-4 h-4 text-blue-600" />
+            <ChevronRight className="w-4 h-4 text-[#155EEF]" />
           </Link>
         </div>
 
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {notices.map((notice) => (
             <div
               key={notice.id}
-              className={`bg-white rounded-3xl p-6 border shadow-2xs space-y-4 flex flex-col justify-between transition-all hover:shadow-md ${
+              className={`bg-white rounded-2xl p-6 border shadow-2xs space-y-4 flex flex-col justify-between transition-all hover:shadow-lg hover:-translate-y-1 ${
                 notice.priority === "urgent"
                   ? "border-red-200"
                   : notice.priority === "important"
                   ? "border-amber-200"
-                  : "border-slate-200"
+                  : "border-slate-200/90"
               }`}
             >
               <div className="space-y-3">
@@ -120,22 +120,22 @@ export default function LatestNoticesSection() {
                     </span>
                   ) : (
                     <span className="px-2.5 py-0.5 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-black uppercase tracking-wider">
-                      NOTICE
+                      NORMAL
                     </span>
                   )}
 
                   <span className="text-[11px] font-bold text-slate-400 font-mono flex items-center gap-1">
-                    <Calendar className="w-3 h-3 text-slate-400" />
+                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
                     {formatISTDate(notice.start_at)}
                   </span>
                 </div>
 
                 {/* Title & Message */}
-                <div className="space-y-1">
-                  <h3 className="text-sm font-black text-slate-900 leading-snug font-display line-clamp-2">
+                <div className="space-y-1.5">
+                  <h3 className="text-base font-black text-[#07152F] leading-snug font-display line-clamp-2">
                     {notice.title}
                   </h3>
-                  <p className="text-xs text-slate-600 font-medium leading-relaxed line-clamp-3">
+                  <p className="text-xs text-slate-600 font-normal leading-relaxed line-clamp-3">
                     {notice.message}
                   </p>
                 </div>
@@ -146,7 +146,7 @@ export default function LatestNoticesSection() {
                 {notice.button_url && notice.button_text ? (
                   <Link
                     href={notice.button_url}
-                    className="inline-flex items-center gap-1 text-xs font-black text-blue-600 hover:text-blue-700 hover:underline"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#155EEF] hover:text-blue-700 hover:underline"
                   >
                     <span>{notice.button_text}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -156,7 +156,7 @@ export default function LatestNoticesSection() {
                     href="/notices"
                     className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-900"
                   >
-                    <span>Read Full Notice</span>
+                    <span>Read Notice Details</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 )}
