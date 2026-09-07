@@ -69,37 +69,37 @@ export default function LatestNoticesSection() {
   if (loading || notices.length === 0) return null;
 
   return (
-    <section aria-labelledby="latest-notices-title" className="py-14 sm:py-20 bg-white border-b border-slate-200/80 relative overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100/80 border border-blue-200 text-blue-700 text-xs font-black uppercase tracking-wider">
+    <section aria-labelledby="latest-notices-title" className="py-10 sm:py-16 bg-white border-b border-slate-200/80 relative overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100/80 border border-blue-200 text-blue-700 text-[10.5px] sm:text-xs font-black uppercase tracking-wider">
               <Megaphone className="w-3.5 h-3.5 text-blue-600" />
               <span>Official RCI Notice Board</span>
             </div>
-            <h2 id="latest-notices-title" className="text-2xl sm:text-3xl md:text-4xl font-black font-display text-[#07152F] tracking-tight">
+            <h2 id="latest-notices-title" className="text-2xl sm:text-3xl font-black font-display text-[#07152F] tracking-tight">
               Latest Notices &amp; Updates
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 font-normal max-w-xl">
-              Stay informed about upcoming exam dates, new batch admissions, fee schedules, and official institute announcements.
+            <p className="text-xs sm:text-sm text-slate-600 font-normal max-w-lg">
+              Official institute announcements for exams, batch admissions, and schedules.
             </p>
           </div>
 
           <Link
             href="/notices"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-[#07152F] border border-slate-300 text-xs font-bold transition-all shadow-2xs hover:shadow-xs shrink-0 self-start sm:self-auto"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-[#07152F] border border-slate-300 text-xs font-bold transition-all shadow-2xs hover:shadow-xs shrink-0 self-start sm:self-auto"
           >
             <span>View All Notices</span>
             <ChevronRight className="w-4 h-4 text-[#155EEF]" />
           </Link>
         </div>
 
-        {/* Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Max 3 Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
           {notices.map((notice) => (
             <div
               key={notice.id}
-              className={`bg-white rounded-2xl p-6 border shadow-2xs space-y-4 flex flex-col justify-between transition-all hover:shadow-lg hover:-translate-y-1 ${
+              className={`bg-white rounded-2xl p-4 sm:p-5 border shadow-2xs space-y-3 flex flex-col justify-between transition-all hover:shadow-md ${
                 notice.priority === "urgent"
                   ? "border-red-200"
                   : notice.priority === "important"
@@ -107,42 +107,42 @@ export default function LatestNoticesSection() {
                   : "border-slate-200/90"
               }`}
             >
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {/* Priority & Date */}
                 <div className="flex items-center justify-between gap-2">
                   {notice.priority === "urgent" ? (
-                    <span className="px-2.5 py-0.5 rounded-md bg-red-600 text-white text-[10px] font-black uppercase tracking-wider">
+                    <span className="px-2 py-0.5 rounded-md bg-red-600 text-white text-[9.5px] font-black uppercase tracking-wider">
                       URGENT
                     </span>
                   ) : notice.priority === "important" ? (
-                    <span className="px-2.5 py-0.5 rounded-md bg-[#D4A72C] text-slate-950 text-[10px] font-black uppercase tracking-wider">
+                    <span className="px-2 py-0.5 rounded-md bg-[#D4A72C] text-slate-950 text-[9.5px] font-black uppercase tracking-wider">
                       IMPORTANT
                     </span>
                   ) : (
-                    <span className="px-2.5 py-0.5 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-black uppercase tracking-wider">
+                    <span className="px-2 py-0.5 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-[9.5px] font-black uppercase tracking-wider">
                       NORMAL
                     </span>
                   )}
 
-                  <span className="text-[11px] font-bold text-slate-400 font-mono flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="text-[10.5px] font-bold text-slate-400 font-mono flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-slate-400" />
                     {formatISTDate(notice.start_at)}
                   </span>
                 </div>
 
                 {/* Title & Message */}
-                <div className="space-y-1.5">
-                  <h3 className="text-base font-black text-[#07152F] leading-snug font-display line-clamp-2">
+                <div className="space-y-1">
+                  <h3 className="text-sm sm:text-base font-black text-[#07152F] leading-snug font-display line-clamp-2">
                     {notice.title}
                   </h3>
-                  <p className="text-xs text-slate-600 font-normal leading-relaxed line-clamp-3">
+                  <p className="text-xs text-slate-600 font-normal leading-relaxed line-clamp-2 sm:line-clamp-3">
                     {notice.message}
                   </p>
                 </div>
               </div>
 
-              {/* Action Link Button */}
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+              {/* Link Button */}
+              <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between">
                 {notice.button_url && notice.button_text ? (
                   <Link
                     href={notice.button_url}
@@ -156,7 +156,7 @@ export default function LatestNoticesSection() {
                     href="/notices"
                     className="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-900"
                   >
-                    <span>Read Notice Details</span>
+                    <span>Read Details</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 )}

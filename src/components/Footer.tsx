@@ -8,7 +8,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { RCIConfig } from "@/lib/config";
 import {
   DEFAULT_SITE_SETTINGS,
   DEFAULT_CONTACT_SETTINGS,
@@ -27,7 +26,6 @@ export default function Footer() {
   useEffect(() => {
     const supabase = createClient();
 
-    // Fetch site_settings
     supabase
       .from("site_settings")
       .select("*")
@@ -37,7 +35,6 @@ export default function Footer() {
         if (data) setSiteSettings((prev) => ({ ...prev, ...data }));
       });
 
-    // Fetch contact_settings
     supabase
       .from("contact_settings")
       .select("*")
@@ -47,7 +44,6 @@ export default function Footer() {
         if (data) setContactSettings((prev) => ({ ...prev, ...data }));
       });
 
-    // Fetch social_links
     supabase
       .from("social_links")
       .select("*")
@@ -57,7 +53,6 @@ export default function Footer() {
         if (data && data.length > 0) setSocialLinks(data);
       });
 
-    // Fetch navigation_links
     supabase
       .from("navigation_links")
       .select("*")
@@ -82,39 +77,39 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-[#07152F] text-white pt-12 md:pt-18 pb-8 md:pb-12 border-t border-slate-800 relative overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-12 md:mb-16">
+    <footer className="bg-[#07152F] text-white pt-10 md:pt-16 pb-8 md:pb-12 border-t border-slate-800 relative overflow-hidden">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-12 mb-10 md:mb-14">
           
           {/* Col 1: Brand & About */}
-          <div className="lg:col-span-2 space-y-4">
-            <Link href="/" className="inline-block bg-white p-2.5 rounded-2xl shadow-sm group">
+          <div className="lg:col-span-2 space-y-3.5">
+            <Link href="/" className="inline-block bg-white p-2 rounded-xl shadow-xs group">
               <Image
                 src={siteSettings.logo_url || "/logo.png"}
                 alt={siteSettings.site_name}
-                width={160}
-                height={60}
-                className="object-contain h-10 sm:h-12 w-auto"
+                width={140}
+                height={50}
+                className="object-contain h-8 sm:h-10 w-auto"
                 unoptimized
               />
             </Link>
 
             <div>
-              <h3 className="text-base sm:text-lg font-bold text-white mb-1">{siteSettings.site_name}</h3>
-              <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-sm font-normal">
+              <h3 className="text-sm sm:text-base font-bold text-white mb-1">{siteSettings.site_name}</h3>
+              <p className="text-slate-400 text-xs leading-relaxed max-w-sm font-normal">
                 Empowering students with practical computer education, recognized certifications, modern computer lab practice, and digital career guidance.
               </p>
             </div>
 
             {/* Social Links */}
-            <div className="flex flex-wrap items-center gap-2.5 pt-2">
+            <div className="flex flex-wrap items-center gap-2 pt-1">
               {cleanWhatsapp && (
                 <a
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="WhatsApp RCI"
-                  className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-emerald-600 hover:text-white hover:border-emerald-500 transition-colors"
+                  className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-emerald-600 hover:text-white hover:border-emerald-500 transition-colors"
                   title="Chat on WhatsApp"
                 >
                   <MessageCircle className="w-4 h-4" />
@@ -128,7 +123,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={soc.platform}
-                  className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-[#155EEF] hover:text-white hover:border-blue-500 transition-colors"
+                  className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-[#155EEF] hover:text-white hover:border-blue-500 transition-colors"
                   title={soc.platform}
                 >
                   <Globe className="w-4 h-4" />
@@ -138,11 +133,11 @@ export default function Footer() {
           </div>
 
           {/* Col 2: Quick Links */}
-          <div className="border-t border-slate-800/80 md:border-t-0 pt-4 md:pt-0">
+          <div className="border-t border-slate-800/80 md:border-t-0 pt-3 md:pt-0">
             <button
               type="button"
               onClick={() => toggleSection("quickLinks")}
-              className="flex items-center justify-between w-full md:cursor-default py-1 text-left"
+              className="flex items-center justify-between w-full md:cursor-default py-2 text-left min-h-[44px]"
               aria-expanded={openSection === "quickLinks"}
             >
               <h4 className="text-[#D4A72C] font-extrabold tracking-wider uppercase text-xs">Quick Links</h4>
@@ -153,7 +148,7 @@ export default function Footer() {
               />
             </button>
             <ul
-              className={`space-y-2.5 text-xs sm:text-sm text-slate-400 mt-3 md:block ${
+              className={`space-y-2 text-xs text-slate-400 mt-2 md:block ${
                 openSection === "quickLinks" ? "block" : "hidden md:block"
               }`}
             >
@@ -163,7 +158,7 @@ export default function Footer() {
                     <Link
                       href={item.url}
                       target={item.open_new_tab ? "_blank" : undefined}
-                      className="hover:text-blue-400 transition-colors flex items-center gap-1 group py-0.5"
+                      className="hover:text-blue-400 transition-colors flex items-center gap-1 group py-1"
                     >
                       <span>{item.label}</span>
                     </Link>
@@ -174,11 +169,11 @@ export default function Footer() {
           </div>
 
           {/* Col 3: Portal & Services */}
-          <div className="border-t border-slate-800/80 md:border-t-0 pt-4 md:pt-0">
+          <div className="border-t border-slate-800/80 md:border-t-0 pt-3 md:pt-0">
             <button
               type="button"
               onClick={() => toggleSection("usefulLinks")}
-              className="flex items-center justify-between w-full md:cursor-default py-1 text-left"
+              className="flex items-center justify-between w-full md:cursor-default py-2 text-left min-h-[44px]"
               aria-expanded={openSection === "usefulLinks"}
             >
               <h4 className="text-[#D4A72C] font-extrabold tracking-wider uppercase text-xs">Portal &amp; Services</h4>
@@ -189,7 +184,7 @@ export default function Footer() {
               />
             </button>
             <ul
-              className={`space-y-2.5 text-xs sm:text-sm text-slate-400 mt-3 md:block ${
+              className={`space-y-2 text-xs text-slate-400 mt-2 md:block ${
                 openSection === "usefulLinks" ? "block" : "hidden md:block"
               }`}
             >
@@ -199,7 +194,7 @@ export default function Footer() {
                     <Link
                       href={item.url}
                       target={item.open_new_tab ? "_blank" : undefined}
-                      className="hover:text-blue-400 transition-colors flex items-center gap-1 py-0.5"
+                      className="hover:text-blue-400 transition-colors flex items-center gap-1 py-1"
                     >
                       <span>{item.label}</span>
                     </Link>
@@ -209,12 +204,12 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 4: Contact Info & Office Hours */}
-          <div className="border-t border-slate-800/80 md:border-t-0 pt-4 md:pt-0">
+          {/* Col 4: Contact Info */}
+          <div className="border-t border-slate-800/80 md:border-t-0 pt-3 md:pt-0">
             <button
               type="button"
               onClick={() => toggleSection("contactUs")}
-              className="flex items-center justify-between w-full md:cursor-default py-1 text-left"
+              className="flex items-center justify-between w-full md:cursor-default py-2 text-left min-h-[44px]"
               aria-expanded={openSection === "contactUs"}
             >
               <h4 className="text-[#D4A72C] font-extrabold tracking-wider uppercase text-xs">Contact Us</h4>
@@ -225,55 +220,42 @@ export default function Footer() {
               />
             </button>
             <ul
-              className={`space-y-3 text-xs sm:text-sm text-slate-400 mt-3 md:block ${
+              className={`space-y-2.5 text-xs text-slate-400 mt-2 md:block ${
                 openSection === "contactUs" ? "block" : "hidden md:block"
               }`}
             >
-              <li className="flex items-start gap-2.5">
-                <MapPin className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+              <li className="flex items-start gap-2">
+                <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
                 <span className="leading-snug">{contactSettings.address}</span>
               </li>
 
-              <li className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
-                <a href={`tel:${contactSettings.phone.replace(/\s+/g, "")}`} className="hover:text-white transition-colors font-medium">
+              <li className="flex items-center gap-2">
+                <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <a href={`tel:${contactSettings.phone.replace(/\s+/g, "")}`} className="hover:text-white transition-colors">
                   {contactSettings.phone}
                 </a>
               </li>
 
               {cleanWhatsapp && (
-                <li className="flex items-center gap-2.5">
-                  <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors font-medium">
+                <li className="flex items-center gap-2">
+                  <MessageCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
                     {contactSettings.whatsapp}
                   </a>
                 </li>
               )}
 
-              <li className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-blue-400 shrink-0" />
-                <a href={`mailto:${contactSettings.email}`} className="hover:text-white transition-colors break-all sm:break-normal">
+              <li className="flex items-center gap-2">
+                <Mail className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                <a href={`mailto:${contactSettings.email}`} className="hover:text-white transition-colors break-all">
                   {contactSettings.email}
                 </a>
               </li>
 
               {contactSettings.office_hours && (
-                <li className="flex items-center gap-2.5">
-                  <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                <li className="flex items-center gap-2 text-slate-400">
+                  <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                   <span>{contactSettings.office_hours}</span>
-                </li>
-              )}
-
-              {contactSettings.maps_url && (
-                <li className="pt-1">
-                  <a
-                    href={contactSettings.maps_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:underline font-semibold"
-                  >
-                    Find Us On Google Maps <ArrowUpRight className="w-3.5 h-3.5" />
-                  </a>
                 </li>
               )}
             </ul>
@@ -282,14 +264,14 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-slate-800/80 pt-6 md:pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center md:text-left">
+        <div className="border-t border-slate-800/80 pt-5 md:pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-[11px] text-slate-500 text-center md:text-left">
           <p className="leading-relaxed">
             &copy; {new Date().getFullYear()} {siteSettings.site_name}. All rights reserved. Registered under MSME &amp; ISO Quality Standards.
           </p>
 
-          <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6">
+          <div className="flex flex-wrap justify-center items-center gap-4">
             <Link href="/admin/login" className="hover:text-slate-300 transition-colors flex items-center gap-1 text-slate-400">
-              <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
+              <ShieldCheck className="w-3 h-3 text-slate-400" />
               <span>Admin Portal</span>
             </Link>
             <Link href="/contact" className="hover:text-slate-300 transition-colors">

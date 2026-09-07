@@ -1,68 +1,54 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { GraduationCap, CreditCard, CalendarCheck, Award, FileText, Bell, Download, ArrowRight, ShieldCheck } from "lucide-react";
-
-const portalFeatures = [
-  { icon: CreditCard, title: "Fee Ledger & Receipts", desc: "View fee breakdown, payment history & download receipts" },
-  { icon: CalendarCheck, title: "Attendance Tracker", desc: "Monitor daily computer lab attendance records" },
-  { icon: FileText, title: "Exam Results", desc: "Access official test marks, grades & performance reports" },
-  { icon: Award, title: "Digital Certificates", desc: "Download verified QR-coded course completion certificates" },
-  { icon: Bell, title: "Institute Alerts", desc: "Receive immediate notifications for class & exam schedules" },
-  { icon: Download, title: "Study Materials", desc: "Download lab practice files, notes & syllabus guides" },
-];
+import { GraduationCap, ArrowRight, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 export default function StudentPortalCTA() {
   return (
-    <section className="py-18 bg-gradient-to-br from-blue-950 via-indigo-950 to-slate-950 text-white relative overflow-hidden">
-      {/* Glow Effects */}
-      <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[140px] pointer-events-none" />
-      
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-4xl mx-auto text-center mb-12">
-          <span className="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-blue-400 bg-white/10 border border-white/15 px-4 py-1.5 rounded-full inline-flex items-center gap-2 mb-4 shadow-sm">
-            <ShieldCheck className="w-4 h-4 text-blue-400" />
-            Digital Student Ecosystem
-          </span>
+    <section aria-labelledby="student-portal-title" className="py-12 sm:py-16 bg-[#07152F] text-white relative overflow-hidden">
+      {/* Subtle Glows */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#07152F] via-[#0D295C] to-[#155EEF] opacity-90 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black font-display text-white mb-4 leading-tight">
-            Everything You Need, In One Student Portal
-          </h2>
-          <p className="text-blue-100 text-base sm:text-lg max-w-2xl mx-auto">
-            RCI students enjoy 24/7 access to our digital student portal for complete academic tracking and resource management.
-          </p>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl relative z-10 text-center">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[10.5px] sm:text-xs font-bold text-blue-200 mb-3.5">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#D4A72C]" />
+          <span>Student Digital Ecosystem</span>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 max-w-6xl mx-auto">
-          {portalFeatures.map((feat, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: idx * 0.08 }}
-              viewport={{ once: true }}
-              className="bg-white/10 backdrop-blur-md border border-white/15 p-6 rounded-2xl hover:bg-white/15 hover:border-blue-400/40 transition-all group"
-            >
-              <div className="w-11 h-11 rounded-xl bg-blue-500/20 border border-blue-400/30 text-blue-400 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
-                <feat.icon className="w-5.5 h-5.5" />
-              </div>
-              <h3 className="text-lg font-bold text-white mb-1.5">{feat.title}</h3>
-              <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">{feat.desc}</p>
-            </motion.div>
-          ))}
+        <h2 id="student-portal-title" className="text-2xl sm:text-3xl md:text-4xl font-black font-display text-white tracking-tight mb-3">
+          Access Your RCI Student Portal
+        </h2>
+
+        <p className="text-xs sm:text-sm md:text-base text-blue-100 max-w-xl mx-auto mb-6 leading-relaxed font-normal">
+          Enrolled students can log in 24/7 to track lab attendance records, access study materials, view fee statements, and check official exam results.
+        </p>
+
+        {/* 3 Quick Benefit Tags */}
+        <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-xs text-blue-200 mb-7">
+          <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span>Lab Attendance Tracking</span>
+          </div>
+          <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
+            <CheckCircle2 className="w-3.5 h-3.5 text-blue-300 shrink-0" />
+            <span>Class Notes & Practice Files</span>
+          </div>
+          <div className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#D4A72C] shrink-0" />
+            <span>Official Exam Results</span>
+          </div>
         </div>
 
         {/* CTA Button preserving /student/login route */}
-        <div className="text-center">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href="/student/login"
-            className="inline-flex items-center gap-2.5 bg-white text-blue-950 hover:bg-blue-50 px-9 py-4 rounded-2xl font-extrabold text-base transition-all shadow-xl shadow-black/30 active:scale-98"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-[#07152F] hover:bg-slate-100 px-7 py-3.5 rounded-xl font-extrabold text-xs sm:text-sm transition-all shadow-lg active:scale-98 min-h-[44px]"
           >
-            <GraduationCap className="w-5 h-5 text-blue-600" />
-            Access Student Portal Login
-            <ArrowRight className="w-5 h-5 text-blue-600" />
+            <GraduationCap className="w-4 h-4 text-[#155EEF]" />
+            <span>Access Student Portal Login</span>
+            <ArrowRight className="w-4 h-4 text-[#155EEF]" />
           </Link>
         </div>
       </div>

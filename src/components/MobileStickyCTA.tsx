@@ -26,24 +26,27 @@ export default function MobileStickyCTA() {
   const whatsappUrl = `https://wa.me/${whatsappNum}?text=${encodeURIComponent("Hello RCI, I want to apply for admission.")}`;
 
   return (
-    <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 p-2.5 shadow-2xl">
+    <div 
+      aria-label="Mobile quick actions"
+      className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white/98 backdrop-blur-md border-t border-slate-200 px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-2xl"
+    >
       <div className="grid grid-cols-2 gap-2 max-w-md mx-auto">
         <Link
           href="/admission"
-          className="flex items-center justify-center gap-1.5 bg-blue-600 active:bg-blue-700 text-white py-3 rounded-xl text-xs font-extrabold shadow-sm"
+          className="flex items-center justify-center gap-1.5 bg-[#155EEF] active:bg-blue-700 text-white py-2.5 rounded-xl text-xs font-bold shadow-2xs min-h-[44px]"
         >
           <GraduationCap className="w-4 h-4" />
-          Apply Now
+          <span>Apply Now</span>
         </Link>
 
         <a
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1.5 bg-emerald-600 active:bg-emerald-700 text-white py-3 rounded-xl text-xs font-extrabold shadow-sm"
+          className="flex items-center justify-center gap-1.5 bg-emerald-600 active:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-bold shadow-2xs min-h-[44px]"
         >
           <MessageCircle className="w-4 h-4" />
-          WhatsApp RCI
+          <span>WhatsApp RCI</span>
         </a>
       </div>
     </div>

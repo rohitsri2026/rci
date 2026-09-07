@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { 
-  ChevronLeft, ChevronRight, BookOpen, Award, ArrowRight, 
+  ChevronLeft, ChevronRight, BookOpen, ArrowRight, 
   Sparkles, CheckCircle2 
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -20,7 +20,6 @@ export default function HeroSlider() {
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
-  // Fetch CMS hero settings & active banners
   useEffect(() => {
     const supabase = createClient();
 
@@ -116,91 +115,75 @@ export default function HeroSlider() {
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
-      {/* Subtle Deep Ambient Glows */}
+      {/* Deep Ambient Glows */}
       <div className="absolute inset-0 pointer-events-none opacity-30">
-        <div className="absolute top-[-10%] left-[-5%] w-[550px] h-[550px] bg-blue-600/35 rounded-full blur-[130px]" />
+        <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-blue-600/35 rounded-full blur-[130px]" />
         <div className="absolute bottom-[-10%] right-[-5%] w-[450px] h-[450px] bg-indigo-600/25 rounded-full blur-[130px]" />
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10 py-10 sm:py-14 md:py-16 lg:py-18 min-h-[500px] sm:min-h-[540px] lg:min-h-[560px] flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10 py-8 sm:py-12 md:py-16 flex items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-center w-full">
           
-          {/* ============================================================ */}
-          {/* LEFT: ~55% Institutional Presentation & CTAs                  */}
-          {/* ============================================================ */}
-          <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-left">
+          {/* LEFT: Core Message & CTAs */}
+          <div className="lg:col-span-7 space-y-3.5 sm:space-y-5 text-left">
             {/* Small Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-bold text-blue-200">
-              <Sparkles className="w-3.5 h-3.5 text-[#D4A72C]" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[10px] sm:text-xs font-bold text-blue-200">
+              <Sparkles className="w-3 h-3 text-[#D4A72C]" />
               <span className="tracking-wider uppercase">
                 {heroSettings.hero_badge || "Trusted Computer Education"}
               </span>
             </div>
 
             {/* Large Heading */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-black font-display tracking-tight text-white leading-[1.15]">
-              {heroSettings.hero_title || "Build Your Digital Future"} <br />
+            <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-[3.15rem] font-black font-display tracking-tight text-white leading-[1.18] sm:leading-[1.15]">
+              {heroSettings.hero_title || "Build Your Digital Future"}{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-[#D4A72C]">
                 {heroSettings.hero_highlight || "With Practical IT Skills"}
               </span>
             </h1>
 
-            {/* Professional Description */}
-            <p className="text-sm sm:text-base md:text-lg text-slate-300 leading-relaxed max-w-xl font-normal">
+            {/* Description (Concise on mobile to reduce content density) */}
+            <p className="text-xs sm:text-base md:text-lg text-slate-300 leading-relaxed max-w-xl font-normal line-clamp-2 sm:line-clamp-none">
               {heroSettings.hero_description ||
-                "Master modern computer applications, Tally Prime accounting, web development, and programming with hands-on lab training and QR-verifiable certificates."}
+                "Master modern computer applications, Tally Prime accounting, and software skills with hands-on lab practice and QR-verifiable certificates."}
             </p>
 
-            {/* Action CTA Buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            {/* Clean Dual CTAs on Mobile */}
+            <div className="flex items-center gap-2.5 sm:gap-3.5 pt-1 sm:pt-2">
               <Link
                 href={heroSettings.primary_cta_url || "/courses"}
-                className="inline-flex items-center justify-center gap-2 bg-[#155EEF] hover:bg-blue-600 text-white px-6 sm:px-7 py-3.5 rounded-xl font-extrabold text-sm sm:text-base transition-all shadow-lg shadow-blue-600/30 active:scale-98"
+                className="inline-flex items-center justify-center gap-1.5 bg-[#155EEF] hover:bg-blue-600 text-white px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl font-extrabold text-xs sm:text-base transition-all shadow-lg shadow-blue-600/30 active:scale-98"
               >
                 <BookOpen className="w-4 h-4" />
                 <span>{heroSettings.primary_cta_text || "Explore Courses"}</span>
-                <ArrowRight className="w-4 h-4 ml-0.5" />
+                <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
               </Link>
 
               <Link
                 href={heroSettings.secondary_cta_url || "/admission"}
-                className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-[#07152F] px-6 sm:px-7 py-3.5 rounded-xl font-extrabold text-sm sm:text-base transition-all shadow-md active:scale-98"
+                className="inline-flex items-center justify-center gap-1.5 bg-white hover:bg-slate-100 text-[#07152F] px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl font-extrabold text-xs sm:text-base transition-all shadow-md active:scale-98"
               >
                 <span>{heroSettings.secondary_cta_text || "Apply Now"}</span>
-              </Link>
-
-              <Link
-                href="/verify"
-                className="inline-flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 px-4 sm:px-5 py-3.5 rounded-xl font-bold text-sm transition-all backdrop-blur-xs active:scale-98"
-              >
-                <Award className="w-4 h-4 text-[#D4A72C]" />
-                <span>Verify</span>
               </Link>
             </div>
 
             {/* Trust Highlights Strip */}
-            <div className="pt-2 border-t border-white/10 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-slate-300">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="pt-2 border-t border-white/10 flex flex-wrap items-center gap-x-4 sm:gap-x-6 gap-y-1.5 text-[11px] sm:text-xs text-slate-300">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                 <span className="font-semibold">ISO 9001:2015 Registered</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                 <span className="font-semibold">100% Practical Lab Training</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#D4A72C] shrink-0" />
-                <span className="font-semibold">QR Verifiable Diplomas</span>
               </div>
             </div>
           </div>
 
-          {/* ============================================================ */}
-          {/* RIGHT: ~45% Large Banner Image Slider                         */}
-          {/* ============================================================ */}
+          {/* RIGHT: Large Banner Image Slider */}
           <div className="lg:col-span-5 relative">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/15 bg-slate-900/80 p-2 sm:p-2.5 backdrop-blur-sm group/banner">
-              <div className="relative aspect-[16/11] sm:aspect-[16/10] w-full rounded-2xl overflow-hidden bg-slate-950">
+            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-white/15 bg-slate-900/80 p-1.5 sm:p-2.5 backdrop-blur-sm group/banner">
+              <div className="relative aspect-[16/10] sm:aspect-[16/10] w-full rounded-xl sm:rounded-2xl overflow-hidden bg-slate-950">
                 
                 {banners.length > 0 ? (
                   banners.map((banner, index) => {
@@ -228,14 +211,14 @@ export default function HeroSlider() {
 
                         {/* Banner Caption */}
                         {(banner.title || banner.description) && (
-                          <div className="absolute bottom-3 sm:bottom-4 left-4 right-4 text-left">
+                          <div className="absolute bottom-2.5 sm:bottom-4 left-3.5 right-3.5 text-left">
                             {banner.title && (
-                              <h3 className="text-sm sm:text-base font-bold text-white mb-0.5 drop-shadow-md">
+                              <h3 className="text-xs sm:text-base font-bold text-white mb-0.5 drop-shadow-md">
                                 {banner.title}
                               </h3>
                             )}
                             {banner.description && (
-                              <p className="text-[11px] sm:text-xs text-slate-200 line-clamp-2 drop-shadow">
+                              <p className="text-[10px] sm:text-xs text-slate-200 line-clamp-1 sm:line-clamp-2 drop-shadow">
                                 {banner.description}
                               </p>
                             )}
@@ -245,7 +228,6 @@ export default function HeroSlider() {
                     );
                   })
                 ) : (
-                  /* Fallback when no CMS banners exist */
                   <div className="relative w-full h-full">
                     <Image
                       src={heroSettings.hero_image_url || "/banner.png"}
@@ -260,29 +242,28 @@ export default function HeroSlider() {
                   </div>
                 )}
 
-                {/* Navigation Arrows (if > 1 banner) */}
+                {/* Slider Controls */}
                 {totalSlides > 1 && (
                   <>
                     <button
                       type="button"
                       onClick={prevSlide}
                       aria-label="Previous slide"
-                      className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-950/60 hover:bg-[#155EEF] text-white border border-white/20 flex items-center justify-center backdrop-blur-xs transition-all opacity-80 group-hover/banner:opacity-100"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-950/60 hover:bg-[#155EEF] text-white border border-white/20 flex items-center justify-center backdrop-blur-xs transition-all opacity-80 group-hover/banner:opacity-100"
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
 
                     <button
                       type="button"
                       onClick={nextSlide}
                       aria-label="Next slide"
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-950/60 hover:bg-[#155EEF] text-white border border-white/20 flex items-center justify-center backdrop-blur-xs transition-all opacity-80 group-hover/banner:opacity-100"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-950/60 hover:bg-[#155EEF] text-white border border-white/20 flex items-center justify-center backdrop-blur-xs transition-all opacity-80 group-hover/banner:opacity-100"
                     >
-                      <ChevronRight className="w-4 h-4" />
+                      <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
 
-                    {/* Dots */}
-                    <div className="absolute bottom-2 right-3 z-20 flex items-center gap-1.5 bg-slate-950/70 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
+                    <div className="absolute bottom-2 right-2.5 z-20 flex items-center gap-1.5 bg-slate-950/70 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
                       {banners.map((_, idx) => (
                         <button
                           key={idx}
@@ -291,7 +272,7 @@ export default function HeroSlider() {
                           aria-label={`Go to slide ${idx + 1}`}
                           className={`h-1.5 rounded-full transition-all duration-300 ${
                             idx === currentIndex
-                              ? "w-5 bg-[#155EEF]"
+                              ? "w-4 sm:w-5 bg-[#155EEF]"
                               : "w-1.5 bg-white/50 hover:bg-white"
                           }`}
                         />
