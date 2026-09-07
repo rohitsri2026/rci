@@ -1,5 +1,4 @@
 import Header from "@/components/Header";
-import QuickActions from "@/components/QuickActions";
 import HeroSlider from "@/components/HeroSlider";
 import BenefitsStrip from "@/components/BenefitsStrip";
 import PopularCourses from "@/components/PopularCourses";
@@ -22,10 +21,7 @@ export default function Home() {
       <Header />
 
       <main className="pb-16 sm:pb-0 overflow-x-hidden">
-        {/* 4. Quick Actions: Explore Courses | Student Login | Verify Certificate */}
-        <QuickActions />
-
-        {/* 5. Large Hero Slider */}
+        {/* Large Hero Slider */}
         <HeroSlider />
 
         {/* 6. Trust Highlights */}

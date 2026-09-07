@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { 
   ChevronLeft, ChevronRight, BookOpen, ArrowRight, 
-  Sparkles, CheckCircle2 
+  Sparkles, CheckCircle2, Award 
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { DEFAULT_HOMEPAGE_SETTINGS } from "@/lib/cms-defaults";
@@ -117,17 +117,17 @@ export default function HeroSlider() {
     >
       {/* Deep Ambient Glows */}
       <div className="absolute inset-0 pointer-events-none opacity-30">
-        <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-blue-600/35 rounded-full blur-[130px]" />
+        <div className="absolute top-[-10%] left-[-5%] w-[550px] h-[550px] bg-blue-600/35 rounded-full blur-[130px]" />
         <div className="absolute bottom-[-10%] right-[-5%] w-[450px] h-[450px] bg-indigo-600/25 rounded-full blur-[130px]" />
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10 py-8 sm:py-12 md:py-16 flex items-center">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10 pt-[118px] sm:pt-32 md:pt-36 pb-10 sm:pb-14 md:pb-16 flex items-center">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-center w-full">
           
           {/* LEFT: Core Message & CTAs */}
           <div className="lg:col-span-7 space-y-3.5 sm:space-y-5 text-left">
             {/* Small Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[10px] sm:text-xs font-bold text-blue-200">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[10.5px] sm:text-xs font-bold text-blue-200">
               <Sparkles className="w-3 h-3 text-[#D4A72C]" />
               <span className="tracking-wider uppercase">
                 {heroSettings.hero_badge || "Trusted Computer Education"}
@@ -142,14 +142,14 @@ export default function HeroSlider() {
               </span>
             </h1>
 
-            {/* Description (Concise on mobile to reduce content density) */}
+            {/* Description */}
             <p className="text-xs sm:text-base md:text-lg text-slate-300 leading-relaxed max-w-xl font-normal line-clamp-2 sm:line-clamp-none">
               {heroSettings.hero_description ||
                 "Master modern computer applications, Tally Prime accounting, and software skills with hands-on lab practice and QR-verifiable certificates."}
             </p>
 
-            {/* Clean Dual CTAs on Mobile */}
-            <div className="flex items-center gap-2.5 sm:gap-3.5 pt-1 sm:pt-2">
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3.5 pt-1 sm:pt-2">
               <Link
                 href={heroSettings.primary_cta_url || "/courses"}
                 className="inline-flex items-center justify-center gap-1.5 bg-[#155EEF] hover:bg-blue-600 text-white px-5 sm:px-7 py-3 sm:py-3.5 rounded-xl font-extrabold text-xs sm:text-base transition-all shadow-lg shadow-blue-600/30 active:scale-98"
@@ -165,10 +165,18 @@ export default function HeroSlider() {
               >
                 <span>{heroSettings.secondary_cta_text || "Apply Now"}</span>
               </Link>
+
+              <Link
+                href="/verify"
+                className="inline-flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 px-4 sm:px-5 py-3 sm:py-3.5 rounded-xl font-bold text-xs sm:text-sm transition-all backdrop-blur-xs active:scale-98"
+              >
+                <Award className="w-4 h-4 text-[#D4A72C]" />
+                <span>Verify Certificate</span>
+              </Link>
             </div>
 
             {/* Trust Highlights Strip */}
-            <div className="pt-2 border-t border-white/10 flex flex-wrap items-center gap-x-4 sm:gap-x-6 gap-y-1.5 text-[11px] sm:text-xs text-slate-300">
+            <div className="pt-2.5 border-t border-white/10 flex flex-wrap items-center gap-x-4 sm:gap-x-6 gap-y-1.5 text-[11px] sm:text-xs text-slate-300">
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                 <span className="font-semibold">ISO 9001:2015 Registered</span>
@@ -176,6 +184,10 @@ export default function HeroSlider() {
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                 <span className="font-semibold">100% Practical Lab Training</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#D4A72C] shrink-0" />
+                <span className="font-semibold">QR Verifiable Credentials</span>
               </div>
             </div>
           </div>
