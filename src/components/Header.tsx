@@ -201,7 +201,8 @@ export default function Header() {
             <div className="flex items-center gap-1.5 text-slate-300 truncate">
               <MapPin className="w-3.5 h-3.5 text-[#D4A72C] shrink-0" />
               <span className="truncate font-medium">
-                {contactSettings.address || "Sanjay Nagar Cantt, Kanpur, Uttar Pradesh"}
+                {(contactSettings.address || "Sanjay Nagar Cantt, Kanpur, UP")
+                  .replace(/Uttar Pradesh/gi, "UP")}
               </span>
             </div>
 
@@ -272,10 +273,10 @@ export default function Header() {
         >
           <div className="container mx-auto px-3.5 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-3">
             
-            {/* Institute Compact Logo & Name (Single line on mobile, CMS driven) */}
+            {/* Institute Compact Logo & Name (CMS driven) */}
             <Link
               href="/"
-              className="flex items-center gap-2 sm:gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-xl p-0.5 shrink-0 min-w-0"
+              className="flex items-center gap-2 sm:gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-xl p-0.5 shrink min-w-0"
             >
               <Image
                 src={siteSettings.logo_url || "/logo.png"}
@@ -287,10 +288,17 @@ export default function Header() {
                 unoptimized
               />
               
-              {/* Mobile Single-line Institute Name */}
+              {/* Mobile Institute Name */}
               <div className="sm:hidden flex items-center min-w-0">
-                <span className="text-sm font-black text-[#07152F] tracking-tight truncate max-w-[210px]">
-                  {siteSettings.short_name || siteSettings.site_name}
+                <span className="text-xs xs:text-[13px] font-black text-[#07152F] tracking-tight leading-tight truncate">
+                  {siteSettings.site_name || "Rohit Computer Institute"}
+                  {siteSettings.short_name && !siteSettings.site_name.includes(siteSettings.short_name) ? (
+                    <span className="text-blue-600 font-extrabold ml-1">({siteSettings.short_name})</span>
+                  ) : (
+                    !siteSettings.site_name.includes("RCI") && (
+                      <span className="text-blue-600 font-extrabold ml-1">(RCI)</span>
+                    )
+                  )}
                 </span>
               </div>
 
