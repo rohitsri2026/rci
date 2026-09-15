@@ -14,8 +14,8 @@ export class RCIConfig {
   static readonly phoneFormatted = "+91 73768 93097";
   static readonly phoneRaw = "+917376893097";
   static readonly whatsappNumber = "917376893097";
-  static readonly email = "info@rciknp.com";
-  static readonly address = "Sanjay Nagar Cantt, Kanpur, Uttar Pradesh — 208004";
+  static readonly email = "rciknp01@gmail.com";
+  static readonly address = "Sanjay Nagar Cantt, Kanpur, UP";
   static readonly mapsUrl = "https://maps.google.com/?q=Sanjay+Nagar+Cantt+Kanpur";
 
   // Leadership Details

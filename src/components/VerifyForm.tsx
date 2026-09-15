@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { 
-  Search, Award, ShieldCheck, QrCode, ArrowRight, Sparkles, 
+import {
+  Search, Award, ShieldCheck, QrCode, ArrowRight, Sparkles,
   HelpCircle, MessageCircle, Phone, CheckCircle2, Loader2, FileText
 } from "lucide-react";
 import Link from "next/link";
@@ -44,12 +44,12 @@ export default function VerifyForm() {
   const whatsappUrl = `https://wa.me/${whatsappNum}?text=${encodeURIComponent("Hello RCI, I am having trouble verifying my certificate online. Please assist me.")}`;
 
   return (
-    <main className="min-h-screen bg-slate-50 pt-28 sm:pt-32 pb-16">
+    <main className="min-h-screen bg-slate-50 pt-6 sm:pt-24 pb-16">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
-        
+
         {/* 1. Verification Hero */}
-        <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
-          <span className="text-xs font-black uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100 px-3.5 py-1.5 rounded-full inline-flex items-center gap-1.5 mb-3.5">
+        <div className="text-center max-w-3xl mx-auto mb-4 sm:mb-10">
+          <span className="text-xs font-black uppercase tracking-widest text-blue-600 bg-blue-50 border border-blue-100 px-3.5 py-1.5 rounded-full inline-flex items-center gap-1.5 mb-2.5">
             <Award className="w-4 h-4 text-blue-600" />
             Certificate Verification System
           </span>
@@ -57,7 +57,7 @@ export default function VerifyForm() {
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black font-display text-slate-900 mb-3.5 leading-tight tracking-tight">
             Verify Your RCI Certificate
           </h1>
-          
+
           <p className="text-slate-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
             Enter the certificate number printed on your RCI certificate to verify its validity and view the official record.
           </p>
@@ -79,12 +79,12 @@ export default function VerifyForm() {
                   <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
                   Official RCI Verification Portal
                 </div>
-                <h2 className="text-2xl font-black font-display text-slate-900 tracking-tight">
+                {/* <h2 className="text-2xl font-black font-display text-slate-900 tracking-tight">
                   Certificate Verification
                 </h2>
                 <p className="text-slate-600 text-xs sm:text-sm mt-1">
                   Enter the certificate number printed on your certificate.
-                </p>
+                </p> */}
               </div>
 
               {/* Form */}
@@ -93,7 +93,7 @@ export default function VerifyForm() {
                   <label htmlFor="certId" className="block text-xs sm:text-sm font-extrabold text-slate-800 mb-1.5">
                     Certificate Number <span className="text-red-500">*</span>
                   </label>
-                  
+
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                       <FileText className="w-4.5 h-4.5" />
@@ -161,7 +161,7 @@ export default function VerifyForm() {
         <div className="max-w-4xl mx-auto mb-14">
           <div className="bg-white/90 border border-slate-200/90 rounded-2xl p-4 sm:px-6 shadow-2xs">
             <div className="grid sm:grid-cols-3 gap-4 text-left">
-              
+
               <div className="flex items-start gap-2.5">
                 <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">✓</div>
                 <div>
