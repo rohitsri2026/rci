@@ -1,78 +1,69 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, GraduationCap, ShieldCheck, ArrowRight } from "lucide-react";
+import { BookOpen, GraduationCap, ShieldCheck, ChevronRight } from "lucide-react";
 
 export default function QuickActions() {
   const actions = [
     {
       id: "explore-courses",
       title: "Explore Courses",
-      description: "Browse certified computer & IT programs",
+      subtitle: "Certified IT programs",
       href: "/courses",
       icon: BookOpen,
-      iconBg: "bg-[#155EEF] text-white",
-      hoverBorder: "hover:border-blue-400",
-      arrowColor: "text-blue-600",
+      iconColor: "text-blue-600",
+      bgColor: "bg-blue-50/80 group-hover:bg-blue-600 group-hover:text-white",
     },
     {
       id: "student-login",
       title: "Student Login",
-      description: "Access portal, attendance & exam updates",
+      subtitle: "Portal, notes & exams",
       href: "/student/login",
       icon: GraduationCap,
-      iconBg: "bg-[#07152F] text-white",
-      hoverBorder: "hover:border-slate-400",
-      arrowColor: "text-[#07152F]",
+      iconColor: "text-[#07152F]",
+      bgColor: "bg-slate-100 group-hover:bg-[#07152F] group-hover:text-white",
     },
     {
       id: "verify-certificate",
       title: "Verify Certificate",
-      description: "Authenticate official ISO & MSME credentials",
+      subtitle: "Instant QR check",
       href: "/verify",
       icon: ShieldCheck,
-      iconBg: "bg-emerald-600 text-white",
-      hoverBorder: "hover:border-emerald-400",
-      arrowColor: "text-emerald-600",
+      iconColor: "text-emerald-600",
+      bgColor: "bg-emerald-50 group-hover:bg-emerald-600 group-hover:text-white",
     },
   ];
 
   return (
     <section 
-      aria-label="Institute Quick Actions"
-      className="relative z-20 pt-[112px] sm:pt-[118px] pb-2.5 sm:pb-3.5 bg-slate-50/90 border-b border-slate-200/70"
+      aria-label="Quick Actions"
+      className="relative z-20 py-2 sm:py-3 bg-slate-100/70 border-b border-slate-200/80"
     >
       <div className="container mx-auto px-3.5 sm:px-6 lg:px-8 max-w-7xl">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-3">
           {actions.map((item) => {
             const Icon = item.icon;
             return (
               <Link
                 key={item.id}
                 href={item.href}
-                className={`flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group ${item.hoverBorder} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 min-h-[52px] sm:min-h-[64px]`}
+                className="flex items-center justify-between px-3.5 py-2.5 sm:py-3 rounded-xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-xs hover:border-blue-300 transition-all duration-150 group min-h-[44px]"
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={`w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 shadow-2xs transition-transform duration-200 group-hover:scale-105 ${item.iconBg}`}
-                  >
-                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${item.bgColor}`}>
+                    <Icon className="w-4 h-4" />
                   </div>
-                  <div className="min-w-0 pr-1">
-                    <h3 className="text-xs sm:text-base font-extrabold text-[#07152F] tracking-tight leading-snug group-hover:text-blue-600 transition-colors">
+                  <div className="min-w-0">
+                    <span className="text-xs sm:text-sm font-extrabold text-[#07152F] tracking-tight group-hover:text-blue-600 transition-colors block leading-tight truncate">
                       {item.title}
-                    </h3>
-                    <p className="text-[10.5px] sm:text-xs text-slate-500 leading-snug truncate mt-0.5 hidden xs:block">
-                      {item.description}
-                    </p>
+                    </span>
+                    <span className="text-[10px] sm:text-xs text-slate-500 hidden xs:block sm:hidden md:block leading-none mt-0.5 truncate">
+                      {item.subtitle}
+                    </span>
                   </div>
                 </div>
 
-                <div
-                  className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg bg-slate-50 border border-slate-200/70 flex items-center justify-center shrink-0 transition-colors group-hover:bg-white ${item.arrowColor}`}
-                >
-                  <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all shrink-0" />
               </Link>
             );
           })}

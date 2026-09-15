@@ -183,32 +183,30 @@ export default function Header() {
 
   return (
     <>
-      {/* Announcement system (preserved untouched) */}
-      <AnnouncementBar notices={topStripNotices} settings={announcement} />
-      {tickerNotices.length > 0 && <NoticeRenderer notices={tickerNotices} forcedFormat="ticker" />}
+      {/* Off-header floating notices */}
       {popupNotice && <NoticeRenderer notice={popupNotice} forcedFormat="popup" />}
       {stickyNotice && <NoticeRenderer notice={stickyNotice} forcedFormat="sticky" />}
 
-      <header className="fixed top-0 left-0 right-0 z-40 transition-all duration-300">
+      <header className="sticky top-0 left-0 right-0 z-40 bg-white shadow-2xs transition-all duration-300">
         {/* ============================================================ */}
-        {/* 1. TOP CONTACT / INFORMATION STRIP (~36px height)            */}
+        {/* 1. TOP CONTACT / INFORMATION STRIP (~34px height)            */}
         {/* ============================================================ */}
         <div 
           className={`bg-[#07152F] text-slate-200 border-b border-white/10 transition-all duration-300 ${
-            isScrolled ? "hidden md:block h-8 py-1 opacity-95" : "h-9 py-1.5"
+            isScrolled ? "hidden md:block h-8 py-1 opacity-95" : "h-8 sm:h-9 py-1"
           }`}
         >
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-4 text-[11px] sm:text-xs">
-            {/* Desktop Left: Address */}
-            <div className="flex items-center gap-2 text-slate-300 truncate">
+          <div className="container mx-auto px-3 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-3 text-[11px] sm:text-xs">
+            {/* Left: Address / Location */}
+            <div className="flex items-center gap-1.5 text-slate-300 truncate">
               <MapPin className="w-3.5 h-3.5 text-[#D4A72C] shrink-0" />
               <span className="truncate font-medium">
                 {contactSettings.address || "Sanjay Nagar Cantt, Kanpur, Uttar Pradesh"}
               </span>
             </div>
 
-            {/* Desktop Right: Email, Phone, WhatsApp, Socials */}
-            <div className="flex items-center gap-3.5 sm:gap-4 shrink-0">
+            {/* Right: Phone, WhatsApp, Email, Socials */}
+            <div className="flex items-center gap-3 sm:gap-4 shrink-0">
               {contactSettings.email && (
                 <a
                   href={`mailto:${contactSettings.email}`}
@@ -263,47 +261,56 @@ export default function Header() {
         </div>
 
         {/* ============================================================ */}
-        {/* 2. MAIN NAVIGATION BAR (Target ~70-76px)                     */}
+        {/* 2. MAIN COMPACT NAVBAR (h-14 sm:h-[70px])                    */}
         {/* ============================================================ */}
         <div
           className={`transition-all duration-300 ${
             isScrolled
-              ? "bg-white/95 backdrop-blur-md border-b border-slate-200/90 h-[68px] shadow-sm"
-              : "bg-white border-b border-slate-200/70 h-[74px] shadow-2xs"
+              ? "bg-white/98 backdrop-blur-md border-b border-slate-200/90 h-[56px] sm:h-[66px]"
+              : "bg-white border-b border-slate-200/70 h-[58px] sm:h-[72px]"
           }`}
         >
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-4">
+          <div className="container mx-auto px-3.5 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-3">
             
-            {/* Institute Compact Logo & Name */}
+            {/* Institute Compact Logo & Name (Single line on mobile, CMS driven) */}
             <Link
               href="/"
-              className="flex items-center gap-2.5 sm:gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-xl p-1 shrink-0"
+              className="flex items-center gap-2 sm:gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 rounded-xl p-0.5 shrink-0 min-w-0"
             >
               <Image
                 src={siteSettings.logo_url || "/logo.png"}
                 alt={siteSettings.site_name}
-                width={44}
-                height={44}
-                className="object-contain h-9 sm:h-10 w-auto shrink-0 transition-transform group-hover:scale-105"
+                width={40}
+                height={40}
+                className="object-contain h-8 sm:h-10 w-auto shrink-0 transition-transform group-hover:scale-105"
                 priority
                 unoptimized
               />
-              <div className="flex flex-col justify-center min-w-0">
-                <span className="text-sm sm:text-base font-black text-[#07152F] tracking-tight leading-tight group-hover:text-blue-600 transition-colors truncate max-w-[200px] sm:max-w-[280px]">
+              
+              {/* Mobile Single-line Institute Name */}
+              <div className="sm:hidden flex items-center min-w-0">
+                <span className="text-sm font-black text-[#07152F] tracking-tight truncate max-w-[210px]">
+                  {siteSettings.short_name || siteSettings.site_name}
+                </span>
+              </div>
+
+              {/* Desktop Full Branding */}
+              <div className="hidden sm:flex flex-col justify-center min-w-0">
+                <span className="text-sm sm:text-base font-black text-[#07152F] tracking-tight leading-tight group-hover:text-blue-600 transition-colors truncate max-w-[260px] lg:max-w-[320px]">
                   {siteSettings.site_name}
                   {siteSettings.short_name && !siteSettings.site_name.includes(siteSettings.short_name) && (
                     <span className="text-blue-600 font-extrabold ml-1">({siteSettings.short_name})</span>
                   )}
                 </span>
                 {siteSettings.tagline && (
-                  <span className="text-[9px] sm:text-[10px] font-bold text-blue-600 tracking-wider uppercase truncate max-w-[180px] sm:max-w-[260px] leading-tight mt-0.5">
+                  <span className="text-[9.5px] sm:text-[10px] font-bold text-blue-600 tracking-wider uppercase truncate max-w-[240px] leading-tight mt-0.5">
                     {siteSettings.tagline}
                   </span>
                 )}
               </div>
             </Link>
 
-            {/* Desktop Navigation Links — RENDERED ONLY ONCE FROM CANONICAL CMS SOURCE */}
+            {/* Desktop Navigation Links — CANONICAL CMS SOURCE */}
             <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
               {canonicalNavItems.map((item) => {
                 const isCourses = item.url === "/courses" || item.label.toLowerCase() === "courses";
@@ -446,19 +453,13 @@ export default function Header() {
               </Link>
             </div>
 
-            {/* Mobile Hamburger Toggle */}
-            <div className="lg:hidden flex items-center gap-2 shrink-0">
-              <Link
-                href="/admission"
-                className="hidden xs:inline-flex bg-[#155EEF] text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Apply Now
-              </Link>
+            {/* Mobile Compact Hamburger Toggle Button (min-h-[44px]) */}
+            <div className="lg:hidden flex items-center shrink-0">
               <button
                 type="button"
                 aria-label="Toggle navigation menu"
                 aria-expanded={mobileMenuOpen}
-                className="p-2 text-slate-700 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="p-2 text-slate-700 hover:text-blue-600 hover:bg-slate-100 rounded-xl transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -468,16 +469,22 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Slide-down Drawer — Uses Same Canonical Nav List Once */}
+        {/* ============================================================ */}
+        {/* 3. ANNOUNCEMENT BAR (Rendered below navbar, if active)        */}
+        {/* ============================================================ */}
+        <AnnouncementBar notices={topStripNotices} settings={announcement} />
+        {tickerNotices.length > 0 && <NoticeRenderer notices={tickerNotices} forcedFormat="ticker" />}
+
+        {/* Mobile Slide-down Drawer — Single Consolidated Navigation Source */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-[102px] bg-white/98 backdrop-blur-xl border-b border-slate-200 shadow-2xl py-4 px-5 flex flex-col gap-2.5 max-h-[calc(100vh-105px)] overflow-y-auto animate-in slide-in-from-top-4 duration-300">
+          <div className="lg:hidden absolute left-0 right-0 top-full bg-white/98 backdrop-blur-xl border-b border-slate-200 shadow-2xl py-4 px-4 sm:px-6 flex flex-col gap-2 max-h-[calc(100vh-120px)] overflow-y-auto animate-in slide-in-from-top-3 duration-200 z-50">
             {canonicalNavItems.map((item) => {
               const isCourses = item.url === "/courses" || item.label.toLowerCase() === "courses";
               const isActive = pathname === item.url || (isCourses && pathname.startsWith("/courses"));
 
               if (isCourses) {
                 return (
-                  <div key={item.id || item.url} className="border border-slate-100 rounded-2xl overflow-hidden">
+                  <div key={item.id || item.url} className="border border-slate-100 rounded-xl overflow-hidden">
                     <button
                       type="button"
                       aria-expanded={mobileCourseOpen}
@@ -503,11 +510,11 @@ export default function Header() {
                                 setMobileCourseOpen(false);
                                 setMobileMenuOpen(false);
                               }}
-                              className={`flex items-center gap-2.5 p-2 rounded-xl text-xs font-semibold transition-colors min-h-[44px] ${
+                              className={`flex items-center gap-2.5 p-2.5 rounded-lg text-xs font-semibold transition-colors min-h-[44px] ${
                                 active ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-700 hover:bg-slate-50"
                               }`}
                             >
-                              <span className={`w-2 h-2 rounded-full ${active ? "bg-blue-600" : "bg-slate-300"}`} />
+                              <span className={`w-2 h-2 rounded-full shrink-0 ${active ? "bg-blue-600" : "bg-slate-300"}`} />
                               <span className="line-clamp-2 leading-snug">{course.course_name}</span>
                             </Link>
                           );
@@ -518,7 +525,7 @@ export default function Header() {
                             setMobileCourseOpen(false);
                             setMobileMenuOpen(false);
                           }}
-                          className="block text-center py-2 text-blue-600 text-xs font-extrabold uppercase tracking-wider bg-blue-50 rounded-xl mt-1 min-h-[44px] flex items-center justify-center"
+                          className="text-center py-2 text-blue-600 text-xs font-extrabold uppercase tracking-wider bg-blue-50 rounded-lg mt-1 min-h-[44px] flex items-center justify-center"
                         >
                           View All Courses →
                         </Link>
@@ -533,7 +540,7 @@ export default function Header() {
                   key={item.id || item.url}
                   href={item.url}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-2.5 p-3 rounded-xl text-sm font-semibold min-h-[44px] ${
+                  className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold min-h-[44px] ${
                     isActive ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-700 hover:bg-slate-50"
                   }`}
                 >

@@ -77,27 +77,27 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-[#07152F] text-white pt-10 md:pt-16 pb-8 md:pb-12 border-t border-slate-800 relative overflow-hidden">
+    <footer className="bg-[#07152F] text-white pt-8 sm:pt-12 md:pt-16 pb-24 sm:pb-12 border-t border-slate-800 relative overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-12 mb-10 md:mb-14">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-12 mb-8 md:mb-12">
           
           {/* Col 1: Brand & About */}
-          <div className="lg:col-span-2 space-y-3.5">
+          <div className="lg:col-span-2 space-y-3">
             <Link href="/" className="inline-block bg-white p-2 rounded-xl shadow-xs group">
               <Image
                 src={siteSettings.logo_url || "/logo.png"}
                 alt={siteSettings.site_name}
                 width={140}
                 height={50}
-                className="object-contain h-8 sm:h-10 w-auto"
+                className="object-contain h-8 sm:h-9 w-auto"
                 unoptimized
               />
             </Link>
 
             <div>
               <h3 className="text-sm sm:text-base font-bold text-white mb-1">{siteSettings.site_name}</h3>
-              <p className="text-slate-400 text-xs leading-relaxed max-w-sm font-normal">
-                Empowering students with practical computer education, recognized certifications, modern computer lab practice, and digital career guidance.
+              <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-sm font-normal">
+                Empowering students with practical computer education, recognized certifications, modern lab training, and career guidance.
               </p>
             </div>
 

@@ -24,7 +24,7 @@ export default function StickyNotice({ notice, onDismiss }: StickyNoticeProps) {
     <aside
       role="region"
       aria-label="Sticky Notice"
-      className="fixed bottom-4 right-4 left-4 sm:left-auto sm:max-w-md z-40 animate-in slide-in-from-bottom-5 duration-300"
+      className="fixed bottom-[72px] sm:bottom-4 right-4 left-4 sm:left-auto sm:max-w-md z-40 animate-in slide-in-from-bottom-5 duration-300"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <div

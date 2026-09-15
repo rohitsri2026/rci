@@ -154,43 +154,43 @@ export default function AnnouncementBar({ settings, notices, target = "global" }
       }`}
       style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
     >
-      <div className="container mx-auto px-3 sm:px-6 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        {/* Top / Left Section: Badge & Message */}
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+      <div className="container mx-auto px-3 sm:px-6 py-1.5 sm:py-2 flex items-center justify-between gap-2">
+        {/* Left Section: Badge & Message */}
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           {/* Priority Badge */}
           {currentNotice.priority === "urgent" ? (
-            <span className="bg-red-600 text-white px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider shrink-0 flex items-center gap-1 shadow-2xs">
+            <span className="bg-red-600 text-white px-2 py-0.5 rounded-md text-[9.5px] sm:text-[10px] font-black uppercase tracking-wider shrink-0 flex items-center gap-1 shadow-2xs">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
               URGENT
             </span>
           ) : currentNotice.priority === "important" ? (
-            <span className="bg-[#D4A72C] text-slate-950 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider shrink-0 flex items-center gap-1">
-              <Star className="w-3 h-3 text-slate-950 fill-slate-950" />
+            <span className="bg-[#D4A72C] text-slate-950 px-2 py-0.5 rounded-md text-[9.5px] sm:text-[10px] font-black uppercase tracking-wider shrink-0 flex items-center gap-1">
+              <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-slate-950 fill-slate-950" />
               IMPORTANT
             </span>
           ) : (
-            <span className="bg-blue-600/30 text-blue-200 border border-blue-400/30 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider shrink-0 flex items-center gap-1">
-              <IconComp className="w-3 h-3 text-blue-300" />
+            <span className="bg-blue-600/40 text-blue-100 border border-blue-400/30 px-2 py-0.5 rounded-md text-[9.5px] sm:text-[10px] font-black uppercase tracking-wider shrink-0 flex items-center gap-1">
+              <IconComp className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-blue-300" />
               NOTICE
             </span>
           )}
 
           {/* Title & Description Message */}
           <div className="min-w-0 flex-1 overflow-hidden">
-            <p className="truncate text-xs text-slate-200 font-medium">
-              <strong className="font-bold text-white mr-1.5">{currentNotice.title}:</strong>
+            <p className="truncate text-[11.5px] sm:text-xs text-slate-200 font-medium">
+              <strong className="font-bold text-white mr-1">{currentNotice.title}:</strong>
               <span className="text-slate-300">{currentNotice.message}</span>
             </p>
           </div>
         </div>
 
-        {/* Bottom / Right Section: CTA Button, Multi-notice Nav & Close */}
-        <div className="flex items-center justify-end gap-2 sm:gap-3 shrink-0">
+        {/* Right Section: CTA Button, Multi-notice Nav & Close */}
+        <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 shrink-0">
           {/* CTA Link Button */}
           {currentNotice.button_url && currentNotice.button_text && (
             <Link
               href={currentNotice.button_url}
-              className={`px-3 py-1 rounded-full text-[11px] font-extrabold transition-all flex items-center gap-1.5 shrink-0 min-h-[32px] sm:min-h-[36px] ${
+              className={`px-2.5 sm:px-3 py-1 rounded-full text-[10.5px] sm:text-[11px] font-extrabold transition-all flex items-center gap-1 shrink-0 min-h-[30px] sm:min-h-[34px] ${
                 currentNotice.priority === "urgent"
                   ? "bg-red-600 hover:bg-red-500 text-white shadow-xs"
                   : currentNotice.priority === "important"
@@ -205,25 +205,25 @@ export default function AnnouncementBar({ settings, notices, target = "global" }
 
           {/* Navigation Controls (ONLY IF > 1 NOTICE) */}
           {activeList.length > 1 && (
-            <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-full text-[10.5px] font-mono text-slate-300 shrink-0">
+            <div className="flex items-center gap-0.5 sm:gap-1 bg-white/10 px-1.5 sm:px-2 py-0.5 rounded-full text-[10px] sm:text-[10.5px] font-mono text-slate-300 shrink-0">
               <button
                 type="button"
                 onClick={handlePrev}
-                className="hover:text-white p-1 cursor-pointer transition-colors"
+                className="hover:text-white p-0.5 cursor-pointer transition-colors"
                 aria-label="Previous notice"
                 title="Previous notice"
               >
-                <ChevronLeft className="w-3.5 h-3.5" />
+                <ChevronLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </button>
-              <span className="font-bold px-1">{safeIndex + 1} / {activeList.length}</span>
+              <span className="font-bold px-0.5">{safeIndex + 1}/{activeList.length}</span>
               <button
                 type="button"
                 onClick={handleNext}
-                className="hover:text-white p-1 cursor-pointer transition-colors"
+                className="hover:text-white p-0.5 cursor-pointer transition-colors"
                 aria-label="Next notice"
                 title="Next notice"
               >
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </button>
             </div>
           )}
@@ -233,11 +233,11 @@ export default function AnnouncementBar({ settings, notices, target = "global" }
             <button
               type="button"
               onClick={() => handleDismiss(currentNotice.id)}
-              className="text-slate-300 hover:text-white p-1.5 rounded-lg transition-colors cursor-pointer shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center"
+              className="text-slate-300 hover:text-white p-1 rounded-lg transition-colors cursor-pointer shrink-0 min-w-[30px] min-h-[30px] sm:min-w-[34px] sm:min-h-[34px] flex items-center justify-center"
               aria-label="Dismiss announcement notice"
               title="Dismiss notice"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           )}
         </div>

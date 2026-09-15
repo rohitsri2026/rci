@@ -65,25 +65,26 @@ export default function BenefitsStrip() {
   }, []);
 
   return (
-    <section aria-label="Key Benefits and Features" className="py-8 sm:py-10 bg-white border-b border-slate-200/80">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+    <section aria-label="Key Benefits and Features" className="py-6 sm:py-8 lg:py-10 bg-white border-b border-slate-200/80">
+      <div className="container mx-auto px-3.5 sm:px-6 lg:px-8 max-w-7xl">
+        {/* Clean 2-column mobile grid, 4-column on desktop */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6">
           {benefits.map((item, idx) => {
             const IconComp = ICON_MAP[item.icon] || CheckCircle2;
             return (
               <div
                 key={idx}
-                className="bg-slate-50/70 border border-slate-200/70 rounded-2xl p-4 sm:p-5 hover:bg-blue-50/40 hover:border-blue-200 transition-all duration-300 group flex flex-col justify-between"
+                className="bg-slate-50/80 border border-slate-200/80 rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:bg-blue-50/40 hover:border-blue-200 transition-all duration-200 group flex flex-col justify-between shadow-2xs"
               >
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white border border-slate-200/80 text-[#155EEF] flex items-center justify-center shrink-0 shadow-2xs group-hover:bg-[#155EEF] group-hover:text-white transition-colors">
-                    <IconComp className="w-5 h-5" />
+                <div className="flex items-start gap-2.5 sm:gap-3.5">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white border border-slate-200/90 text-[#155EEF] flex items-center justify-center shrink-0 shadow-2xs group-hover:bg-[#155EEF] group-hover:text-white transition-colors">
+                    <IconComp className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-xs sm:text-sm md:text-base font-extrabold text-[#07152F] tracking-tight leading-snug group-hover:text-blue-700 transition-colors">
+                    <h3 className="text-xs sm:text-sm font-extrabold text-[#07152F] tracking-tight leading-snug group-hover:text-blue-700 transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed mt-1 line-clamp-2">
+                    <p className="text-[10.5px] sm:text-xs text-slate-500 leading-snug mt-0.5 line-clamp-2">
                       {item.description}
                     </p>
                   </div>

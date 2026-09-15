@@ -21,7 +21,7 @@ export default function Home() {
       <Header />
 
       <main className="pb-16 sm:pb-0 overflow-x-hidden">
-        {/* Large Hero Slider */}
+        {/* Hero Slider with Explore Courses, Student Login & Verify Certificate */}
         <HeroSlider />
 
         {/* 6. Trust Highlights */}
