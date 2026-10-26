@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import { 
-  Menu, X, ChevronDown, ChevronRight, BookOpen, GraduationCap, 
-  Award, Home, User, PhoneCall, ShieldCheck
+  Menu, X, ChevronDown
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,17 +35,106 @@ function getSocialIcon(platform: string) {
   return <i className="bi bi-globe2 text-slate-300 text-sm" aria-hidden="true" />;
 }
 
-function getNavIcon(url: string, label: string) {
+// Ultra-Refined Context-Aware Nav Icon Badges
+function getNavIcon(url: string, label: string, isActive: boolean = false) {
   const l = label.toLowerCase();
   const u = url.toLowerCase();
-  if (u === "/" || l === "home") return <i className="bi bi-house-door-fill text-xs" />;
-  if (u === "/about" || l.includes("about")) return <i className="bi bi-info-circle-fill text-xs" />;
-  if (u.includes("course") || l.includes("course")) return <i className="fa-solid fa-graduation-cap text-xs" />;
-  if (u.includes("verify") || l.includes("verify") || l.includes("certificate")) return <i className="bi bi-patch-check-fill text-amber-500 text-xs" />;
-  if (u.includes("admission") || l.includes("admission") || l.includes("apply")) return <i className="fa-solid fa-file-signature text-xs" />;
-  if (u.includes("notice") || l.includes("notice")) return <i className="bi bi-megaphone-fill text-xs" />;
-  if (u.includes("contact") || l.includes("contact")) return <i className="bi bi-telephone-fill text-xs" />;
-  return <i className="bi bi-chevron-right text-[10px]" />;
+
+  let iconNode: React.ReactNode;
+  let badgeStyle: string;
+
+  if (u === "/" || l === "home") {
+    iconNode = <i className="bi bi-house-door-fill text-xs" />;
+    badgeStyle = isActive
+      ? "bg-[#155EEF] text-white shadow-xs"
+      : "bg-blue-50 text-[#155EEF] group-hover:bg-[#155EEF] group-hover:text-white";
+  } else if (u === "/about" || l.includes("about")) {
+    iconNode = <i className="bi bi-info-circle-fill text-xs" />;
+    badgeStyle = isActive
+      ? "bg-indigo-600 text-white shadow-xs"
+      : "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white";
+  } else if (u.includes("course") || l.includes("course") || l.includes("program")) {
+    iconNode = <i className="fa-solid fa-graduation-cap text-[11px]" />;
+    badgeStyle = isActive
+      ? "bg-sky-600 text-white shadow-xs"
+      : "bg-sky-50 text-sky-600 group-hover:bg-sky-600 group-hover:text-white";
+  } else if (u.includes("verify") || l.includes("verify") || l.includes("certificate")) {
+    iconNode = <i className="bi bi-patch-check-fill text-xs" />;
+    badgeStyle = isActive
+      ? "bg-amber-500 text-white shadow-xs"
+      : "bg-amber-50 text-amber-600 group-hover:bg-amber-500 group-hover:text-white";
+  } else if (u.includes("admission") || l.includes("admission") || l.includes("apply")) {
+    iconNode = <i className="fa-solid fa-file-signature text-[11px]" />;
+    badgeStyle = isActive
+      ? "bg-emerald-600 text-white shadow-xs"
+      : "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white";
+  } else if (u.includes("notice") || l.includes("notice")) {
+    iconNode = <i className="bi bi-megaphone-fill text-xs" />;
+    badgeStyle = isActive
+      ? "bg-rose-600 text-white shadow-xs"
+      : "bg-rose-50 text-rose-600 group-hover:bg-rose-600 group-hover:text-white";
+  } else if (u.includes("contact") || l.includes("contact")) {
+    iconNode = <i className="bi bi-telephone-fill text-xs" />;
+    badgeStyle = isActive
+      ? "bg-violet-600 text-white shadow-xs"
+      : "bg-violet-50 text-violet-600 group-hover:bg-violet-600 group-hover:text-white";
+  } else {
+    iconNode = <i className="bi bi-compass-fill text-xs" />;
+    badgeStyle = isActive
+      ? "bg-slate-700 text-white shadow-xs"
+      : "bg-slate-100 text-slate-600 group-hover:bg-slate-700 group-hover:text-white";
+  }
+
+  return (
+    <span className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 ${badgeStyle}`}>
+      {iconNode}
+    </span>
+  );
+}
+
+// Course-Specific Vibrant Category Icons for Mega Dropdown
+function getCourseDropdownIcon(courseName: string, active: boolean = false) {
+  const name = courseName.toLowerCase();
+  let icon: React.ReactNode;
+  let colorClass: string;
+
+  if (name.includes("tally") || name.includes("gst") || name.includes("account")) {
+    icon = <i className="fa-solid fa-calculator text-[11px]" />;
+    colorClass = active
+      ? "bg-emerald-600 text-white"
+      : "bg-emerald-50 text-emerald-600 border border-emerald-200/60 group-hover/item:bg-emerald-600 group-hover/item:text-white";
+  } else if (name.includes("web") || name.includes("html") || name.includes("full stack")) {
+    icon = <i className="fa-solid fa-code text-[11px]" />;
+    colorClass = active
+      ? "bg-blue-600 text-white"
+      : "bg-blue-50 text-blue-600 border border-blue-200/60 group-hover/item:bg-blue-600 group-hover/item:text-white";
+  } else if (name.includes("python") || name.includes("program")) {
+    icon = <i className="fa-brands fa-python text-[12px]" />;
+    colorClass = active
+      ? "bg-amber-500 text-white"
+      : "bg-amber-50 text-amber-600 border border-amber-200/60 group-hover/item:bg-amber-500 group-hover/item:text-white";
+  } else if (name.includes("adca") || name.includes("dca") || name.includes("diploma")) {
+    icon = <i className="bi bi-award-fill text-[11px]" />;
+    colorClass = active
+      ? "bg-indigo-600 text-white"
+      : "bg-indigo-50 text-indigo-600 border border-indigo-200/60 group-hover/item:bg-indigo-600 group-hover/item:text-white";
+  } else if (name.includes("ccc") || name.includes("basic") || name.includes("concept") || name.includes("typing")) {
+    icon = <i className="bi bi-display-fill text-[11px]" />;
+    colorClass = active
+      ? "bg-sky-600 text-white"
+      : "bg-sky-50 text-sky-600 border border-sky-200/60 group-hover/item:bg-sky-600 group-hover/item:text-white";
+  } else {
+    icon = <i className="fa-solid fa-laptop-code text-[11px]" />;
+    colorClass = active
+      ? "bg-slate-700 text-white"
+      : "bg-slate-100 text-slate-700 border border-slate-200/60 group-hover/item:bg-slate-700 group-hover/item:text-white";
+  }
+
+  return (
+    <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 ${colorClass}`}>
+      {icon}
+    </div>
+  );
 }
 
 export default function Header() {
@@ -211,7 +299,7 @@ export default function Header() {
       <header className="sticky top-0 left-0 right-0 z-40 transition-all duration-300">
         
         {/* ============================================================ */}
-        {/* 1. TOP INFORMATION STRIP                                     */}
+        {/* 1. TOP INFORMATION STRIP WITH ENHANCED ICON BADGES           */}
         {/* ============================================================ */}
         <div 
           className={`bg-[#07152F] text-slate-200 border-b border-white/10 transition-all duration-300 ${
@@ -221,15 +309,17 @@ export default function Header() {
           <div className="container mx-auto px-3 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-3 text-[11px] sm:text-xs">
             {/* Left: Address / Location + Trust Badge */}
             <div className="flex items-center gap-2 text-slate-300 truncate">
-              <span className="flex items-center gap-1.5 font-medium truncate">
-                <i className="fa-solid fa-location-dot text-[#D4A72C] text-xs shrink-0 animate__animated animate__pulse animate__infinite" />
+              <span className="flex items-center gap-2 font-medium truncate">
+                <span className="w-5 h-5 rounded-md bg-amber-400/20 text-[#D4A72C] flex items-center justify-center shrink-0 shadow-2xs">
+                  <i className="fa-solid fa-location-dot text-[10px] animate__animated animate__pulse animate__infinite" />
+                </span>
                 <span className="truncate">
                   {(contactSettings.address || "Sanjay Nagar Cantt, Kanpur, UP")
                     .replace(/Uttar Pradesh/gi, "UP")}
                 </span>
               </span>
 
-              <span className="hidden xl:inline-flex items-center gap-1 bg-white/10 text-blue-200 px-2 py-0.5 rounded-full text-[10px] font-bold border border-white/10">
+              <span className="hidden xl:inline-flex items-center gap-1.5 bg-white/10 text-blue-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-white/10">
                 <i className="bi bi-patch-check-fill text-[#D4A72C] text-[10px]" />
                 ISO 9001:2015 Certified
               </span>
@@ -242,7 +332,9 @@ export default function Header() {
                   href={`mailto:${contactSettings.email}`}
                   className="hidden md:inline-flex items-center gap-1.5 text-slate-300 hover:text-white transition-colors"
                 >
-                  <i className="bi bi-envelope-fill text-blue-400 text-xs" />
+                  <span className="w-5 h-5 rounded-md bg-blue-400/20 text-blue-300 flex items-center justify-center shrink-0 shadow-2xs">
+                    <i className="bi bi-envelope-fill text-[10px]" />
+                  </span>
                   <span className="truncate max-w-[180px]">{contactSettings.email}</span>
                 </a>
               )}
@@ -252,7 +344,9 @@ export default function Header() {
                   href={`tel:${cleanPhone}`}
                   className="inline-flex items-center gap-1.5 text-slate-300 hover:text-white transition-colors font-semibold"
                 >
-                  <i className="fa-solid fa-phone-volume text-emerald-400 text-xs" />
+                  <span className="w-5 h-5 rounded-md bg-emerald-400/20 text-emerald-300 flex items-center justify-center shrink-0 shadow-2xs">
+                    <i className="fa-solid fa-phone-volume text-[10px]" />
+                  </span>
                   <span>{contactSettings.phone}</span>
                 </a>
               )}
@@ -264,7 +358,9 @@ export default function Header() {
                   rel="noopener noreferrer"
                   className="hidden sm:inline-flex items-center gap-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 hover:text-emerald-200 px-2.5 py-0.5 rounded-full border border-emerald-500/30 transition-all font-bold"
                 >
-                  <i className="fa-brands fa-whatsapp text-emerald-400 text-sm" />
+                  <span className="w-5 h-5 rounded-md bg-emerald-500/30 text-emerald-300 flex items-center justify-center shrink-0">
+                    <i className="fa-brands fa-whatsapp text-xs" />
+                  </span>
                   <span>WhatsApp</span>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                 </a>
@@ -278,7 +374,7 @@ export default function Header() {
                       href={soc.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-6 h-6 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-slate-400 hover:text-[#D4A72C] transition-all hover:scale-110"
+                      className="w-6 h-6 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-slate-400 hover:text-[#D4A72C] transition-all hover:scale-110 shadow-2xs"
                       title={soc.platform}
                       aria-label={`Visit RCI on ${soc.platform}`}
                     >
@@ -292,7 +388,7 @@ export default function Header() {
         </div>
 
         {/* ============================================================ */}
-        {/* 2. MAIN ULTRA-BEAUTIFUL NAVBAR WITH GLASSMORPHISM & EFFECTS   */}
+        {/* 2. MAIN ULTRA-BEAUTIFUL NAVBAR WITH ICON BADGES & EFFECTS     */}
         {/* ============================================================ */}
         <div
           className={`transition-all duration-300 relative ${
@@ -355,7 +451,7 @@ export default function Header() {
               </div>
             </Link>
 
-            {/* Desktop Navigation Links with Pill Indicator & Hover Effects */}
+            {/* Desktop Navigation Links with Icon Badges & Underline Indicator */}
             <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5">
               {canonicalNavItems.map((item) => {
                 const isCourses = item.url === "/courses" || item.label.toLowerCase() === "courses";
@@ -375,15 +471,19 @@ export default function Header() {
                         onClick={() => setCoursesOpen((prev) => !prev)}
                         aria-expanded={coursesOpen}
                         aria-haspopup="menu"
-                        className={`group relative flex items-center gap-1.5 text-xs xl:text-sm font-bold tracking-tight transition-all rounded-xl px-3 py-2 cursor-pointer ${
+                        className={`group relative flex items-center gap-2 text-xs xl:text-sm font-bold tracking-tight transition-all rounded-xl px-3 py-2 cursor-pointer ${
                           isActive || coursesOpen
                             ? "text-[#155EEF] bg-blue-50/90 shadow-2xs border border-blue-200/60"
                             : "text-slate-700 hover:text-[#155EEF] hover:bg-slate-100/70"
                         }`}
                       >
-                        <i className={`fa-solid fa-graduation-cap text-xs transition-colors ${
-                          isActive || coursesOpen ? "text-[#155EEF]" : "text-slate-400 group-hover:text-[#155EEF]"
-                        }`} />
+                        <span className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 ${
+                          isActive || coursesOpen
+                            ? "bg-[#155EEF] text-white shadow-xs"
+                            : "bg-sky-50 text-sky-600 group-hover:bg-[#155EEF] group-hover:text-white"
+                        }`}>
+                          <i className="fa-solid fa-graduation-cap text-[10px]" />
+                        </span>
                         <span>{item.label}</span>
                         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${
                           coursesOpen ? "rotate-180 text-[#155EEF]" : "text-slate-400 group-hover:text-[#155EEF]"
@@ -392,20 +492,20 @@ export default function Header() {
                         <span className="absolute bottom-1 left-3 right-3 h-[2px] bg-gradient-to-r from-[#155EEF] to-sky-400 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center" />
                       </button>
 
-                      {/* Mega Dropdown Card with Glassmorphism */}
+                      {/* Mega Dropdown Card with Category Badges */}
                       {coursesOpen && (
                         <div
                           role="menu"
                           aria-label="Courses menu"
-                          className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 w-[360px] bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-slate-200/90 py-3 px-2.5 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200"
+                          className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 w-[380px] bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-slate-200/90 py-3 px-2.5 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200"
                         >
                           <div className="px-3 py-2 border-b border-slate-100 mb-2 flex items-center justify-between">
                             <p className="text-[11px] font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                               <i className="bi bi-stars text-amber-500" />
                               Programs Offered
                             </p>
-                            <span className="text-[10px] bg-blue-50 text-[#155EEF] border border-blue-100 px-2 py-0.5 rounded-full font-bold">
-                              {courses.length} Programs
+                            <span className="text-[10px] bg-blue-50 text-[#155EEF] border border-blue-100 px-2.5 py-0.5 rounded-full font-bold">
+                              {courses.length} Certified Courses
                             </span>
                           </div>
 
@@ -427,15 +527,7 @@ export default function Header() {
                                   }`}
                                 >
                                   <div className="flex items-center gap-2.5 min-w-0">
-                                    <div
-                                      className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 ${
-                                        courseActive
-                                          ? "bg-[#155EEF] text-white shadow-xs"
-                                          : "bg-slate-100 text-slate-500 group-hover/item:bg-[#155EEF] group-hover/item:text-white"
-                                      }`}
-                                    >
-                                      <BookOpen className="w-3.5 h-3.5" />
-                                    </div>
+                                    {getCourseDropdownIcon(course.course_name, courseActive)}
                                     <span className="text-xs font-semibold leading-snug line-clamp-1 group-hover/item:translate-x-0.5 transition-transform">
                                       {course.course_name}
                                     </span>
@@ -470,17 +562,13 @@ export default function Header() {
                     href={item.url}
                     target={item.open_new_tab ? "_blank" : undefined}
                     rel={item.open_new_tab ? "noopener noreferrer" : undefined}
-                    className={`group relative flex items-center gap-1.5 text-xs xl:text-sm font-bold tracking-tight rounded-xl px-3 py-2 transition-all ${
+                    className={`group relative flex items-center gap-2 text-xs xl:text-sm font-bold tracking-tight rounded-xl px-3 py-2 transition-all ${
                       isActive
                         ? "text-[#155EEF] bg-blue-50/90 shadow-2xs border border-blue-200/60"
                         : "text-slate-700 hover:text-[#155EEF] hover:bg-slate-100/70"
                     }`}
                   >
-                    <span className={`transition-colors ${
-                      isActive ? "text-[#155EEF]" : "text-slate-400 group-hover:text-[#155EEF]"
-                    }`}>
-                      {getNavIcon(item.url, item.label)}
-                    </span>
+                    {getNavIcon(item.url, item.label, isActive)}
                     <span>{item.label}</span>
                     {/* Animated underline indicator */}
                     <span className="absolute bottom-1 left-3 right-3 h-[2px] bg-gradient-to-r from-[#155EEF] to-sky-400 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center" />
@@ -489,33 +577,39 @@ export default function Header() {
               })}
             </nav>
 
-            {/* Desktop Action Buttons: Student Login, Admin Login & Shimmer Apply Now */}
+            {/* Desktop Action Buttons with Styled Icon Badges */}
             <div className="hidden lg:flex items-center gap-2 shrink-0">
               <Link
                 href="/student/login"
-                className="flex items-center gap-1.5 border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs hover:shadow-xs hover:border-blue-400 group"
+                className="flex items-center gap-2 border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-800 px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs hover:shadow-xs hover:border-blue-400 group"
               >
-                <i className="fa-solid fa-graduation-cap text-[#155EEF] text-xs transition-transform group-hover:scale-110" />
+                <span className="w-6 h-6 rounded-lg bg-blue-50 text-[#155EEF] flex items-center justify-center shrink-0 text-xs shadow-2xs group-hover:bg-[#155EEF] group-hover:text-white transition-colors">
+                  <i className="fa-solid fa-user-graduate" />
+                </span>
                 <span>Student Login</span>
               </Link>
 
               <Link
                 href="/admin/login"
-                className="flex items-center gap-1.5 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-[#155EEF] px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs"
+                className="flex items-center gap-1.5 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-[#155EEF] px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs group"
                 title="Admin Management Portal"
               >
-                <i className="bi bi-shield-lock-fill text-slate-500 text-xs" />
+                <span className="w-5 h-5 rounded-md bg-slate-200/80 text-slate-600 flex items-center justify-center shrink-0 text-[10px] group-hover:bg-slate-700 group-hover:text-white transition-colors">
+                  <i className="bi bi-shield-lock-fill" />
+                </span>
                 <span>Admin</span>
               </Link>
 
-              {/* Apply Now with Shimmer Light Sweep Effect */}
+              {/* Apply Now with Shimmer Light Sweep Effect & Icon */}
               <Link
                 href="/admission"
                 className="relative overflow-hidden group flex items-center gap-2 bg-gradient-to-r from-[#155EEF] via-blue-600 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-black transition-all shadow-md shadow-blue-600/30 hover:shadow-lg hover:shadow-blue-500/40 hover:scale-[1.03] active:scale-98"
               >
                 {/* Diagonal Shimmer Sweep */}
                 <span className="absolute inset-0 w-1/2 h-full bg-white/25 -skew-x-12 -translate-x-full group-hover:translate-x-[350%] transition-transform duration-700 pointer-events-none" />
-                <i className="fa-solid fa-file-signature text-xs" />
+                <span className="w-5 h-5 rounded-md bg-white/20 text-white flex items-center justify-center shrink-0 text-[10px] shadow-2xs">
+                  <i className="fa-solid fa-paper-plane" />
+                </span>
                 <span>Apply Now</span>
               </Link>
             </div>
@@ -530,7 +624,7 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? (
-                  <X className="w-6 h-6 animate__animated animate__rotateIn animate__faster" />
+                  <X className="w-6 h-6 animate__animated animate__rotateIn animate__faster text-blue-600" />
                 ) : (
                   <Menu className="w-6 h-6" />
                 )}
@@ -546,7 +640,7 @@ export default function Header() {
         <AnnouncementBar notices={topStripNotices} settings={announcement} />
         {tickerNotices.length > 0 && <NoticeRenderer notices={tickerNotices} forcedFormat="ticker" />}
 
-        {/* Mobile Slide-down Drawer with Glassmorphism */}
+        {/* Mobile Slide-down Drawer with Icon Badges */}
         {mobileMenuOpen && (
           <div className="lg:hidden absolute left-0 right-0 top-full bg-white/98 backdrop-blur-2xl border-b border-slate-200 shadow-2xl py-4 px-4 sm:px-6 flex flex-col gap-2 max-h-[calc(100vh-120px)] overflow-y-auto animate-in slide-in-from-top-3 duration-200 z-50">
             {canonicalNavItems.map((item) => {
@@ -563,7 +657,9 @@ export default function Header() {
                       className="flex items-center justify-between w-full p-3.5 bg-slate-50 text-slate-800 text-sm font-bold min-h-[44px]"
                     >
                       <span className="flex items-center gap-2.5">
-                        <i className="fa-solid fa-graduation-cap text-[#155EEF]" />
+                        <span className="w-6 h-6 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center text-xs">
+                          <i className="fa-solid fa-graduation-cap" />
+                        </span>
                         <span>{item.label} Offered</span>
                       </span>
                       <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${mobileCourseOpen ? "rotate-180 text-blue-600" : ""}`} />
@@ -582,11 +678,11 @@ export default function Header() {
                                 setMobileCourseOpen(false);
                                 setMobileMenuOpen(false);
                               }}
-                              className={`flex items-center gap-2.5 p-2.5 rounded-xl text-xs font-semibold transition-colors min-h-[44px] ${
+                              className={`flex items-center gap-2.5 p-2 rounded-xl text-xs font-semibold transition-colors min-h-[44px] ${
                                 active ? "bg-blue-50 text-[#155EEF] font-bold" : "text-slate-700 hover:bg-slate-50"
                               }`}
                             >
-                              <span className={`w-2 h-2 rounded-full shrink-0 ${active ? "bg-[#155EEF]" : "bg-slate-300"}`} />
+                              {getCourseDropdownIcon(course.course_name, active)}
                               <span className="line-clamp-2 leading-snug">{course.course_name}</span>
                             </Link>
                           );
@@ -619,9 +715,7 @@ export default function Header() {
                       : "text-slate-700 hover:bg-slate-50 hover:text-[#155EEF]"
                   }`}
                 >
-                  <span className={isActive ? "text-[#155EEF]" : "text-slate-400"}>
-                    {getNavIcon(item.url, item.label)}
-                  </span>
+                  {getNavIcon(item.url, item.label, isActive)}
                   <span>{item.label}</span>
                 </Link>
               );
@@ -635,7 +729,9 @@ export default function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center justify-center gap-2 border border-slate-200 text-slate-800 bg-white py-2.5 rounded-xl font-bold text-xs shadow-2xs min-h-[44px]"
                 >
-                  <i className="fa-solid fa-graduation-cap text-[#155EEF] text-xs" />
+                  <span className="w-5 h-5 rounded-md bg-blue-50 text-[#155EEF] flex items-center justify-center text-[10px]">
+                    <i className="fa-solid fa-user-graduate" />
+                  </span>
                   <span>Student Login</span>
                 </Link>
 
@@ -644,7 +740,9 @@ export default function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center justify-center gap-2 border border-slate-200 text-slate-800 bg-slate-50 py-2.5 rounded-xl font-bold text-xs shadow-2xs min-h-[44px]"
                 >
-                  <i className="bi bi-shield-lock-fill text-slate-600 text-xs" />
+                  <span className="w-5 h-5 rounded-md bg-slate-200 text-slate-700 flex items-center justify-center text-[10px]">
+                    <i className="bi bi-shield-lock-fill" />
+                  </span>
                   <span>Admin</span>
                 </Link>
               </div>
@@ -654,7 +752,9 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#155EEF] to-blue-600 text-white py-3 rounded-xl font-black text-sm shadow-md shadow-blue-500/25 min-h-[44px]"
               >
-                <i className="fa-solid fa-file-signature text-xs" />
+                <span className="w-5 h-5 rounded-md bg-white/20 text-white flex items-center justify-center text-[10px]">
+                  <i className="fa-solid fa-paper-plane" />
+                </span>
                 <span>Apply for Admission</span>
               </Link>
             </div>
