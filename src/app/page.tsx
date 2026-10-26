@@ -2,7 +2,6 @@ import Header from "@/components/Header";
 import HeroSlider from "@/components/HeroSlider";
 import BenefitsStrip from "@/components/BenefitsStrip";
 import PopularCourses from "@/components/PopularCourses";
-import MasonryShowcase from "@/components/MasonryShowcase";
 import StatsSection from "@/components/StatsSection";
 import AboutSection from "@/components/AboutSection";
 import WhyRCI from "@/components/WhyRCI";
@@ -31,9 +30,6 @@ export default function Home() {
 
         {/* Popular Courses with Swiper touch carousel & View All */}
         <PopularCourses />
-
-        {/* Responsive Masonry Showcase (Labs, ISO Certificates, Tally & Web Projects, Student Life) */}
-        <MasonryShowcase />
 
         {/* Institute Statistics */}
         <StatsSection />

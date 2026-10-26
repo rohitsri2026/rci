@@ -157,28 +157,6 @@ body {
   background: #155EEF !important;
 }
 
-/* Masonry Layout Utilities */
-.masonry-columns {
-  column-count: 1;
-  column-gap: 1.25rem;
-}
-@media (min-width: 640px) {
-  .masonry-columns {
-    column-count: 2;
-  }
-}
-@media (min-width: 1024px) {
-  .masonry-columns {
-    column-count: 3;
-  }
-}
-.masonry-item {
-  break-inside: avoid;
-  margin-bottom: 1.25rem;
-  display: inline-block;
-  width: 100%;
-}
-
 /* Animate.css Timing Customization */
 :root {
   --animate-duration: 0.75s;
