@@ -2,9 +2,11 @@ import Header from "@/components/Header";
 import HeroSlider from "@/components/HeroSlider";
 import BenefitsStrip from "@/components/BenefitsStrip";
 import PopularCourses from "@/components/PopularCourses";
+import MasonryShowcase from "@/components/MasonryShowcase";
 import StatsSection from "@/components/StatsSection";
 import AboutSection from "@/components/AboutSection";
 import WhyRCI from "@/components/WhyRCI";
+import Testimonials from "@/components/Testimonials";
 import DirectorMessage from "@/components/DirectorMessage";
 import LatestNoticesSection from "@/components/LatestNoticesSection";
 import CertificateCTA from "@/components/CertificateCTA";
@@ -21,41 +23,47 @@ export default function Home() {
       <Header />
 
       <main className="pb-16 sm:pb-0 overflow-x-hidden">
-        {/* Hero Slider with Explore Courses, Student Login & Verify Certificate */}
+        {/* Hero Slider with Swiper, Explore Courses, Student Login & Verify Certificate */}
         <HeroSlider />
 
-        {/* 6. Trust Highlights */}
+        {/* Key Benefits and Trust Highlights */}
         <BenefitsStrip />
 
-        {/* 7. Popular Courses (3 courses with mobile swipe carousel & View All) */}
+        {/* Popular Courses with Swiper touch carousel & View All */}
         <PopularCourses />
 
-        {/* 8. Stats (Compact 2x2 grid on mobile) */}
+        {/* Responsive Masonry Showcase (Labs, ISO Certificates, Tally & Web Projects, Student Life) */}
+        <MasonryShowcase />
+
+        {/* Institute Statistics */}
         <StatsSection />
 
-        {/* 9. About RCI (Compact with image-first mobile layout & Learn More) */}
+        {/* About RCI */}
         <AboutSection />
 
-        {/* 10. Why Choose RCI (Compact 2-column on mobile) */}
+        {/* Why Choose RCI */}
         <WhyRCI />
 
-        {/* 11. Director Profile (Compact with link to full message on About page) */}
+        {/* Student Testimonials with Swiper Carousel & Star Ratings */}
+        <Testimonials />
+
+        {/* Director Profile & Message */}
         <DirectorMessage />
 
-        {/* 12. Latest Notices (Max 3 notices with priority badges) */}
+        {/* Latest Notices */}
         <LatestNoticesSection />
 
-        {/* 13. Certificate CTA (Compact, high-conversion verification) */}
+        {/* Certificate Verification CTA */}
         <CertificateCTA />
 
-        {/* 14. Student Portal CTA (Dedicated clearly visible portal CTA) */}
+        {/* Student Portal CTA */}
         <StudentPortalCTA />
 
-        {/* 15. Final Admission CTA (Strengthened Apply Now) */}
+        {/* Final Admission CTA */}
         <CTA />
       </main>
 
-      {/* 16. Footer (Simplified mobile footer with clean accordions) */}
+      {/* Footer with Font Awesome brands & Bootstrap icons */}
       <Footer />
 
       {/* Persistent WhatsApp & Mobile Action Floaters */}

@@ -1,19 +1,35 @@
 import type { Metadata } from "next";
-import { Inter, Outfit, Geist } from "next/font/google";
+import { Inter, Outfit, Plus_Jakarta_Sans } from "next/font/google";
+import "animate.css/animate.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "swiper/css/effect-fade";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { getSeoSettings, getSiteSettings } from "@/lib/cms";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "600", "700", "800", "900"],
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -128,7 +144,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", inter.variable, outfit.variable, "font-sans", geist.variable)}
+      className={cn("h-full", "antialiased", plusJakarta.variable, outfit.variable, inter.variable, "font-sans")}
     >
       <head>
         <script

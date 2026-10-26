@@ -7,7 +7,7 @@
 @theme inline {
   --font-sans: var(--font-sans);
   --font-display: var(--font-outfit);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-outfit);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -134,4 +134,104 @@ body {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* Custom Swiper Styles */
+.swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.6) !important;
+  opacity: 0.75 !important;
+  transition: all 0.3s ease !important;
+}
+.swiper-pagination-bullet-active {
+  background: #155EEF !important;
+  opacity: 1 !important;
+  width: 22px !important;
+  border-radius: 9999px !important;
+}
+
+/* Dark variant swiper pagination */
+.swiper-pagination-dark .swiper-pagination-bullet {
+  background: rgba(15, 23, 42, 0.3) !important;
+}
+.swiper-pagination-dark .swiper-pagination-bullet-active {
+  background: #155EEF !important;
+}
+
+/* Masonry Layout Utilities */
+.masonry-columns {
+  column-count: 1;
+  column-gap: 1.25rem;
+}
+@media (min-width: 640px) {
+  .masonry-columns {
+    column-count: 2;
+  }
+}
+@media (min-width: 1024px) {
+  .masonry-columns {
+    column-count: 3;
+  }
+}
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: 1.25rem;
+  display: inline-block;
+  width: 100%;
+}
+
+/* Animate.css Timing Customization */
+:root {
+  --animate-duration: 0.75s;
+  --animate-delay: 0.15s;
+}
+
+/* High-Performance Institute Loader Keyframes */
+@keyframes institute-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes institute-spin-reverse {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes shimmer-slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+@keyframes institute-pulse-glow {
+  0%, 100% { transform: scale(1); opacity: 0.95; filter: drop-shadow(0 0 8px rgba(21, 94, 239, 0.3)); }
+  50% { transform: scale(1.04); opacity: 1; filter: drop-shadow(0 0 18px rgba(21, 94, 239, 0.55)); }
+}
+
+.animate-institute-spin {
+  animation: institute-spin 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.animate-institute-spin-reverse {
+  animation: institute-spin-reverse 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.animate-shimmer-slide {
+  animation: shimmer-slide 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.animate-pulse-glow {
+  animation: institute-pulse-glow 2s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-institute-spin,
+  .animate-institute-spin-reverse,
+  .animate-shimmer-slide,
+  .animate-pulse-glow {
+    animation: none !important;
+    opacity: 1 !important;
+  }
 }

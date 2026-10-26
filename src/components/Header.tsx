@@ -25,7 +25,16 @@ function toSlug(name: string) {
 }
 
 function getSocialIcon(platform: string) {
-  return <Globe className="w-3.5 h-3.5" aria-hidden="true" />;
+  const p = platform.toLowerCase();
+  if (p.includes("whatsapp")) return <i className="fa-brands fa-whatsapp text-emerald-400 text-sm" aria-hidden="true" />;
+  if (p.includes("youtube")) return <i className="fa-brands fa-youtube text-red-500 text-sm" aria-hidden="true" />;
+  if (p.includes("facebook") || p.includes("fb")) return <i className="fa-brands fa-facebook text-blue-400 text-sm" aria-hidden="true" />;
+  if (p.includes("instagram") || p.includes("insta")) return <i className="fa-brands fa-instagram text-pink-400 text-sm" aria-hidden="true" />;
+  if (p.includes("telegram")) return <i className="fa-brands fa-telegram text-sky-400 text-sm" aria-hidden="true" />;
+  if (p.includes("twitter") || p.includes("x")) return <i className="fa-brands fa-x-twitter text-slate-300 text-sm" aria-hidden="true" />;
+  if (p.includes("linkedin")) return <i className="fa-brands fa-linkedin text-blue-400 text-sm" aria-hidden="true" />;
+  if (p.includes("github")) return <i className="fa-brands fa-github text-slate-300 text-sm" aria-hidden="true" />;
+  return <i className="bi bi-globe2 text-slate-300 text-sm" aria-hidden="true" />;
 }
 
 export default function Header() {
@@ -199,7 +208,7 @@ export default function Header() {
           <div className="container mx-auto px-3 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-3 text-[11px] sm:text-xs">
             {/* Left: Address / Location */}
             <div className="flex items-center gap-1.5 text-slate-300 truncate">
-              <MapPin className="w-3.5 h-3.5 text-[#D4A72C] shrink-0" />
+              <i className="fa-solid fa-location-dot text-[#D4A72C] text-xs shrink-0" />
               <span className="truncate font-medium">
                 {(contactSettings.address || "Sanjay Nagar Cantt, Kanpur, UP")
                   .replace(/Uttar Pradesh/gi, "UP")}
@@ -213,7 +222,7 @@ export default function Header() {
                   href={`mailto:${contactSettings.email}`}
                   className="hidden md:inline-flex items-center gap-1.5 text-slate-300 hover:text-white transition-colors"
                 >
-                  <Mail className="w-3.5 h-3.5 text-blue-400" />
+                  <i className="bi bi-envelope-fill text-blue-400 text-xs" />
                   <span className="truncate max-w-[180px]">{contactSettings.email}</span>
                 </a>
               )}
@@ -223,7 +232,7 @@ export default function Header() {
                   href={`tel:${cleanPhone}`}
                   className="inline-flex items-center gap-1.5 text-slate-300 hover:text-white transition-colors font-semibold"
                 >
-                  <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                  <i className="fa-solid fa-phone-volume text-emerald-400 text-xs" />
                   <span>{contactSettings.phone}</span>
                 </a>
               )}
@@ -235,7 +244,7 @@ export default function Header() {
                   rel="noopener noreferrer"
                   className="hidden sm:inline-flex items-center gap-1.5 text-emerald-300 hover:text-emerald-200 transition-colors font-bold"
                 >
-                  <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                  <i className="fa-brands fa-whatsapp text-emerald-400 text-sm" />
                   <span>WhatsApp</span>
                 </a>
               )}
@@ -440,7 +449,7 @@ export default function Header() {
                 href="/student/login"
                 className="flex items-center gap-1.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs hover:border-blue-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
               >
-                <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
+                <i className="fa-solid fa-graduation-cap text-[#155EEF] text-xs" />
                 <span>Student Login</span>
               </Link>
 
@@ -449,7 +458,7 @@ export default function Header() {
                 className="flex items-center gap-1.5 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 hover:text-blue-600 px-3 py-2 rounded-xl text-xs font-bold transition-all shadow-2xs focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
                 title="Admin Management Portal"
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                <i className="bi bi-shield-lock-fill text-slate-500 text-xs" />
                 <span>Admin Login</span>
               </Link>
 
@@ -457,6 +466,7 @@ export default function Header() {
                 href="/admission"
                 className="flex items-center gap-1.5 bg-[#155EEF] hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-extrabold transition-all shadow-md shadow-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 active:scale-98"
               >
+                <i className="fa-solid fa-file-signature text-xs" />
                 <span>Apply Now</span>
               </Link>
             </div>

@@ -15,6 +15,19 @@ import {
   DEFAULT_NAV_LINKS,
 } from "@/lib/cms-defaults";
 
+function getFooterSocialIcon(platform: string) {
+  const p = platform.toLowerCase();
+  if (p.includes("whatsapp")) return <i className="fa-brands fa-whatsapp text-emerald-400 text-sm" />;
+  if (p.includes("youtube")) return <i className="fa-brands fa-youtube text-red-500 text-sm" />;
+  if (p.includes("facebook") || p.includes("fb")) return <i className="fa-brands fa-facebook text-blue-400 text-sm" />;
+  if (p.includes("instagram") || p.includes("insta")) return <i className="fa-brands fa-instagram text-pink-400 text-sm" />;
+  if (p.includes("telegram")) return <i className="fa-brands fa-telegram text-sky-400 text-sm" />;
+  if (p.includes("twitter") || p.includes("x")) return <i className="fa-brands fa-x-twitter text-slate-300 text-sm" />;
+  if (p.includes("linkedin")) return <i className="fa-brands fa-linkedin text-blue-400 text-sm" />;
+  if (p.includes("github")) return <i className="fa-brands fa-github text-slate-300 text-sm" />;
+  return <i className="bi bi-globe2 text-slate-300 text-sm" />;
+}
+
 export default function Footer() {
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [siteSettings, setSiteSettings] = useState(DEFAULT_SITE_SETTINGS);
@@ -101,7 +114,7 @@ export default function Footer() {
               </p>
             </div>
 
-            {/* Social Links */}
+            {/* Social Links with Font Awesome Brands */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
               {cleanWhatsapp && (
                 <a
@@ -109,10 +122,10 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="WhatsApp RCI"
-                  className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-emerald-600 hover:text-white hover:border-emerald-500 transition-colors"
+                  className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-emerald-600 hover:text-white hover:border-emerald-500 transition-colors shadow-2xs"
                   title="Chat on WhatsApp"
                 >
-                  <MessageCircle className="w-4 h-4" />
+                  <i className="fa-brands fa-whatsapp text-sm" />
                 </a>
               )}
 
@@ -123,10 +136,10 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={soc.platform}
-                  className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-[#155EEF] hover:text-white hover:border-blue-500 transition-colors"
+                  className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:bg-[#155EEF] hover:text-white hover:border-blue-500 transition-colors shadow-2xs"
                   title={soc.platform}
                 >
-                  <Globe className="w-4 h-4" />
+                  {getFooterSocialIcon(soc.platform)}
                 </a>
               ))}
             </div>
@@ -224,37 +237,37 @@ export default function Footer() {
                 openSection === "contactUs" ? "block" : "hidden md:block"
               }`}
             >
-              <li className="flex items-start gap-2">
-                <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+              <li className="flex items-start gap-2.5">
+                <i className="fa-solid fa-location-dot text-[#D4A72C] text-xs shrink-0 mt-0.5" />
                 <span className="leading-snug">{contactSettings.address}</span>
               </li>
 
-              <li className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <li className="flex items-center gap-2.5">
+                <i className="fa-solid fa-phone-volume text-emerald-400 text-xs shrink-0" />
                 <a href={`tel:${contactSettings.phone.replace(/\s+/g, "")}`} className="hover:text-white transition-colors">
                   {contactSettings.phone}
                 </a>
               </li>
 
               {cleanWhatsapp && (
-                <li className="flex items-center gap-2">
-                  <MessageCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <li className="flex items-center gap-2.5">
+                  <i className="fa-brands fa-whatsapp text-emerald-400 text-sm shrink-0" />
                   <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
                     {contactSettings.whatsapp}
                   </a>
                 </li>
               )}
 
-              <li className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <li className="flex items-center gap-2.5">
+                <i className="bi bi-envelope-fill text-blue-400 text-xs shrink-0" />
                 <a href={`mailto:${contactSettings.email}`} className="hover:text-white transition-colors break-all">
                   {contactSettings.email}
                 </a>
               </li>
 
               {contactSettings.office_hours && (
-                <li className="flex items-center gap-2 text-slate-400">
-                  <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <li className="flex items-center gap-2.5 text-slate-400">
+                  <i className="bi bi-clock-fill text-amber-400 text-xs shrink-0" />
                   <span>{contactSettings.office_hours}</span>
                 </li>
               )}

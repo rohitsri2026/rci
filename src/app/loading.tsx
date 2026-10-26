@@ -1,10 +1,14 @@
-import { Loader2 } from "lucide-react";
+import InstituteLoader from "@/components/ui/InstituteLoader";
 
 export default function Loading() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-      <Loader2 className="size-12 animate-spin text-blue-600" />
-      <p className="text-lg font-medium text-slate-600 animate-pulse">Loading...</p>
-    </div>
+    <main className="flex-1 flex items-center justify-center min-h-[70vh] bg-slate-50">
+      <InstituteLoader
+        size="lg"
+        title="Rohit Computer Institute"
+        subtitle="Loading institute page & curriculum..."
+        showBadge={true}
+      />
+    </main>
   );
 }

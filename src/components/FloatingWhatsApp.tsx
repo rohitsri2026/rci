@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { RCIConfig } from "@/lib/config";
 
@@ -30,10 +29,10 @@ export default function FloatingWhatsApp() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat on WhatsApp with RCI"
-      className="hidden sm:flex fixed bottom-8 right-8 z-40 bg-emerald-500 hover:bg-emerald-600 text-white p-3.5 sm:p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 items-center justify-center group"
+      className="hidden sm:flex fixed bottom-8 right-8 z-40 bg-emerald-500 hover:bg-emerald-600 text-white p-3.5 sm:p-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 items-center justify-center group animate__animated animate__pulse animate__infinite animate__slower"
     >
-      <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7" />
-      <span className="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out text-xs font-bold pl-0 group-hover:pl-2">
+      <i className="fa-brands fa-whatsapp text-2xl sm:text-3xl" />
+      <span className="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out text-xs font-bold pl-0 group-hover:pl-2.5">
         Chat with Us
       </span>
     </a>

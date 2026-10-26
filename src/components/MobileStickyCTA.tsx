@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { MessageCircle, GraduationCap } from "lucide-react";
 import { RCIConfig } from "@/lib/config";
 import { createClient } from "@/lib/supabase/client";
 
@@ -33,9 +32,9 @@ export default function MobileStickyCTA() {
       <div className="grid grid-cols-2 gap-2 max-w-md mx-auto">
         <Link
           href="/admission"
-          className="flex items-center justify-center gap-1.5 bg-[#155EEF] active:bg-blue-700 text-white py-2.5 rounded-xl text-xs font-bold shadow-2xs min-h-[44px]"
+          className="flex items-center justify-center gap-2 bg-[#155EEF] active:bg-blue-700 text-white py-2.5 rounded-xl text-xs font-bold shadow-md shadow-blue-500/25 min-h-[44px]"
         >
-          <GraduationCap className="w-4 h-4" />
+          <i className="fa-solid fa-graduation-cap text-xs" />
           <span>Apply Now</span>
         </Link>
 
@@ -43,9 +42,9 @@ export default function MobileStickyCTA() {
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-1.5 bg-emerald-600 active:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-bold shadow-2xs min-h-[44px]"
+          className="flex items-center justify-center gap-2 bg-emerald-600 active:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-bold shadow-md shadow-emerald-500/25 min-h-[44px]"
         >
-          <MessageCircle className="w-4 h-4" />
+          <i className="fa-brands fa-whatsapp text-sm" />
           <span>WhatsApp RCI</span>
         </a>
       </div>

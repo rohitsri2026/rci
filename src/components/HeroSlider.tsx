@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ChevronLeft, ChevronRight, BookOpen, ArrowRight,
-  Sparkles, CheckCircle2, Award, ShieldCheck
-} from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, EffectFade, Pagination, Navigation } from "swiper/modules";
 import { createClient } from "@/lib/supabase/client";
 import { DEFAULT_HOMEPAGE_SETTINGS } from "@/lib/cms-defaults";
 import { HomepageBanner, HomepageSettings } from "@/types/cms";
@@ -14,11 +12,6 @@ import { HomepageBanner, HomepageSettings } from "@/types/cms";
 export default function HeroSlider() {
   const [heroSettings, setHeroSettings] = useState<HomepageSettings>(DEFAULT_HOMEPAGE_SETTINGS);
   const [banners, setBanners] = useState<HomepageBanner[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
-  const touchStartX = useRef<number | null>(null);
-  const touchEndX = useRef<number | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -44,76 +37,22 @@ export default function HeroSlider() {
       });
   }, []);
 
-  const totalSlides = banners.length > 0 ? banners.length : 1;
-
-  const nextSlide = useCallback(() => {
-    if (totalSlides <= 1) return;
-    setCurrentIndex((prev) => (prev + 1) % totalSlides);
-  }, [totalSlides]);
-
-  const prevSlide = useCallback(() => {
-    if (totalSlides <= 1) return;
-    setCurrentIndex((prev) => (prev - 1 + totalSlides) % totalSlides);
-  }, [totalSlides]);
-
-  // Auto slide rotation every 5.5s (respects hover, focus & reduced motion)
-  useEffect(() => {
-    if (totalSlides <= 1 || isHovered || isFocused) return;
-
-    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return;
-    }
-
-    const timer = setInterval(() => {
-      nextSlide();
-    }, 5500);
-
-    return () => clearInterval(timer);
-  }, [totalSlides, isHovered, isFocused, nextSlide]);
-
-  // Mobile swipe support
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStartX.current || !touchEndX.current) return;
-    const distance = touchStartX.current - touchEndX.current;
-    if (distance > 45) {
-      nextSlide();
-    } else if (distance < -45) {
-      prevSlide();
-    }
-    touchStartX.current = null;
-    touchEndX.current = null;
-  };
-
-  // Keyboard accessibility
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowLeft") {
-      prevSlide();
-    } else if (e.key === "ArrowRight") {
-      nextSlide();
-    }
-  };
+  const slideBanners = banners.length > 0 ? banners : [
+    {
+      id: "fallback-banner",
+      title: "State-of-the-Art Computer Education",
+      description: "Join Kanpur's most trusted practical IT institute with modern computer labs and ISO recognized certification.",
+      desktop_image_url: heroSettings.hero_image_url || "/banner.png",
+      mobile_image_url: heroSettings.hero_image_url || "/banner.png",
+      display_order: 1,
+      is_active: true,
+    } as HomepageBanner
+  ];
 
   return (
     <section
       aria-label="Institute Hero"
       className="relative bg-[#07152F] text-white overflow-hidden"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onKeyDown={handleKeyDown}
-      tabIndex={0}
     >
       {/* Deep Ambient Glows */}
       <div className="absolute inset-0 pointer-events-none opacity-30">
@@ -126,157 +65,141 @@ export default function HeroSlider() {
 
           {/* Core Message & CTAs */}
           <div className="lg:col-span-7 space-y-3 sm:space-y-4 lg:space-y-5 text-left">
-            {/* Small Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] sm:text-xs font-bold text-blue-200">
-              <Sparkles className="w-3 h-3 text-[#D4A72C]" />
-              <span className="tracking-wider uppercase">
+            {/* Small Badge with Bootstrap Icon & Animate.css */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] sm:text-xs font-bold text-blue-200 animate__animated animate__fadeInDown">
+              <i className="bi bi-stars text-[#D4A72C] text-sm animate__animated animate__pulse animate__infinite" />
+              <span className="tracking-wider uppercase font-semibold">
                 {heroSettings.hero_badge || "Trusted Computer Education"}
               </span>
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
             </div>
 
-            {/* Large Mobile-First Heading (28-34px mobile) */}
-            <h1 className="text-[28px] xs:text-[32px] sm:text-4xl md:text-5xl lg:text-[3.25rem] font-black font-display tracking-tight text-white leading-[1.18] sm:leading-[1.15]">
+            {/* Large Mobile-First Heading with Google Fonts Outfit */}
+            <h1 className="text-[28px] xs:text-[32px] sm:text-4xl md:text-5xl lg:text-[3.25rem] font-black font-display tracking-tight text-white leading-[1.18] sm:leading-[1.15] animate__animated animate__fadeInUp">
               {heroSettings.hero_title || "Build Your Digital Future"}{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-[#D4A72C]">
                 {heroSettings.hero_highlight || "With Practical IT Skills"}
               </span>
             </h1>
 
-            {/* Description (14-16px mobile) */}
-            <p className="text-sm sm:text-base md:text-lg text-slate-300 leading-relaxed max-w-xl font-normal">
+            {/* Description */}
+            <p className="text-sm sm:text-base md:text-lg text-slate-300 leading-relaxed max-w-xl font-normal animate__animated animate__fadeInUp animate__delay-1s">
               {heroSettings.hero_description ||
                 "Master modern computer applications, Tally Prime accounting, and software skills with hands-on lab practice and QR-verifiable certificates."}
             </p>
 
-            {/* CTA Buttons: Explore Courses, Student Login & Verify Certificate */}
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5 sm:gap-3.5 pt-1">
+            {/* CTA Buttons: Explore Courses, Student Login & Verify Certificate with Font Awesome & Bootstrap Icons */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5 sm:gap-3.5 pt-1 animate__animated animate__fadeInUp animate__delay-1s">
               <Link
                 href={heroSettings.primary_cta_url || "/courses"}
-                className="flex items-center justify-center gap-1.5 bg-[#155EEF] hover:bg-blue-600 active:bg-blue-700 text-white px-3 sm:px-6 py-3 sm:py-3.5 rounded-xl font-extrabold text-xs sm:text-base transition-all shadow-lg shadow-blue-600/30 active:scale-98 min-h-[46px]"
+                className="flex items-center justify-center gap-2 bg-[#155EEF] hover:bg-blue-600 active:bg-blue-700 text-white px-3 sm:px-6 py-3 sm:py-3.5 rounded-xl font-extrabold text-xs sm:text-base transition-all shadow-lg shadow-blue-600/35 hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-98 min-h-[46px]"
               >
-                <BookOpen className="w-4 h-4 shrink-0" />
+                <i className="fa-solid fa-book-open text-xs sm:text-sm" />
                 <span className="truncate">{heroSettings.primary_cta_text || "Explore Courses"}</span>
               </Link>
 
               <Link
                 href={heroSettings.secondary_cta_url || "/student/login"}
-                className="flex items-center justify-center gap-1.5 bg-white hover:bg-slate-100 active:bg-slate-200 text-[#07152F] px-3 sm:px-6 py-3 sm:py-3.5 rounded-xl font-extrabold text-xs sm:text-base transition-all shadow-md active:scale-98 min-h-[46px]"
+                className="flex items-center justify-center gap-2 bg-white hover:bg-slate-100 active:bg-slate-200 text-[#07152F] px-3 sm:px-6 py-3 sm:py-3.5 rounded-xl font-extrabold text-xs sm:text-base transition-all shadow-md hover:scale-[1.02] active:scale-98 min-h-[46px]"
               >
+                <i className="fa-solid fa-graduation-cap text-xs sm:text-sm text-[#155EEF]" />
                 <span className="truncate">{heroSettings.secondary_cta_text || "Student Login"}</span>
-                <ArrowRight className="w-4 h-4 ml-0.5 shrink-0" />
+                <i className="fa-solid fa-arrow-right text-[11px] ml-0.5" />
               </Link>
 
               <Link
                 href="/verify"
-                className="col-span-2 sm:col-span-1 flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/15 active:bg-white/20 border border-white/20 text-white px-4 sm:px-6 py-3 sm:py-3.5 rounded-xl font-bold text-xs sm:text-base transition-all backdrop-blur-md active:scale-98 min-h-[46px]"
+                className="col-span-2 sm:col-span-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 active:bg-white/20 border border-white/20 text-white px-4 sm:px-6 py-3 sm:py-3.5 rounded-xl font-bold text-xs sm:text-base transition-all backdrop-blur-md active:scale-98 min-h-[46px]"
               >
-                <ShieldCheck className="w-4 h-4 text-[#D4A72C] shrink-0" />
+                <i className="fa-solid fa-shield-halved text-[#D4A72C] text-sm" />
                 <span className="truncate">Verify Certificate</span>
               </Link>
             </div>
           </div>
 
-          {/* RIGHT: Large Prominent Banner Image Slider */}
-          <div className="lg:col-span-5 relative mt-1 sm:mt-0">
+          {/* RIGHT: Prominent Swiper Banner Slider */}
+          <div className="lg:col-span-5 relative mt-1 sm:mt-0 animate__animated animate__fadeIn">
             <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-white/15 bg-slate-900/80 p-1 sm:p-2 backdrop-blur-sm group/banner">
-              {/* Aspect ratio: 4:3 on mobile, 16:10 on larger screens */}
-              <div className="relative aspect-[4/3] xs:aspect-[16/10] sm:aspect-[16/10] w-full rounded-xl sm:rounded-2xl overflow-hidden bg-slate-950">
+              
+              <Swiper
+                modules={[Autoplay, EffectFade, Pagination, Navigation]}
+                effect="fade"
+                fadeEffect={{ crossFade: true }}
+                speed={750}
+                autoplay={{
+                  delay: 5000,
+                  disableOnInteraction: false,
+                  pauseOnMouseEnter: true,
+                }}
+                pagination={{
+                  clickable: true,
+                  dynamicBullets: true,
+                }}
+                navigation={{
+                  nextEl: ".hero-swiper-next",
+                  prevEl: ".hero-swiper-prev",
+                }}
+                loop={slideBanners.length > 1}
+                className="relative aspect-[4/3] xs:aspect-[16/10] sm:aspect-[16/10] w-full rounded-xl sm:rounded-2xl overflow-hidden bg-slate-950"
+              >
+                {slideBanners.map((banner, index) => {
+                  const imageUrl = banner.mobile_image_url || banner.desktop_image_url || "/banner.png";
+                  return (
+                    <SwiperSlide key={banner.id || index} className="relative w-full h-full">
+                      <Image
+                        src={imageUrl}
+                        alt={banner.title || "Rohit Computer Institute Campus & Training Banner"}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 45vw, 550px"
+                        priority={index === 0}
+                        className="object-cover"
+                        unoptimized
+                      />
 
-                {banners.length > 0 ? (
-                  banners.map((banner, index) => {
-                    const isActive = index === currentIndex;
-                    const imageUrl = banner.mobile_image_url || banner.desktop_image_url || "/banner.png";
-                    return (
-                      <div
-                        key={banner.id || index}
-                        className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${isActive ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-                          }`}
-                      >
-                        <Image
-                          src={imageUrl}
-                          alt={banner.title || "Rohit Computer Institute Campus & Training Banner"}
-                          fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 45vw, 550px"
-                          priority={index === 0}
-                          className="object-cover"
-                          unoptimized
-                        />
+                      {/* Gradient Overlay for Readability */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#07152F]/90 via-[#07152F]/20 to-transparent" />
 
-                        {/* Gradient Overlay for Readability */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#07152F]/90 via-[#07152F]/20 to-transparent" />
+                      {/* Banner Caption */}
+                      {(banner.title || banner.description) && (
+                        <div className="absolute bottom-3 sm:bottom-4 left-3.5 right-3.5 text-left z-10">
+                          {banner.title && (
+                            <h3 className="text-xs sm:text-base font-bold text-white mb-0.5 drop-shadow-md flex items-center gap-1.5">
+                              <i className="bi bi-patch-check-fill text-blue-400 text-xs shrink-0" />
+                              <span>{banner.title}</span>
+                            </h3>
+                          )}
+                          {banner.description && (
+                            <p className="text-[10.5px] sm:text-xs text-slate-200 line-clamp-1 sm:line-clamp-2 drop-shadow">
+                              {banner.description}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </SwiperSlide>
+                  );
+                })}
 
-                        {/* Banner Caption */}
-                        {(banner.title || banner.description) && (
-                          <div className="absolute bottom-2.5 sm:bottom-4 left-3.5 right-3.5 text-left">
-                            {banner.title && (
-                              <h3 className="text-xs sm:text-base font-bold text-white mb-0.5 drop-shadow-md">
-                                {banner.title}
-                              </h3>
-                            )}
-                            {banner.description && (
-                              <p className="text-[10.5px] sm:text-xs text-slate-200 line-clamp-1 sm:line-clamp-2 drop-shadow">
-                                {banner.description}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="relative w-full h-full">
-                    <Image
-                      src={heroSettings.hero_image_url || "/banner.png"}
-                      alt="Rohit Computer Institute Campus & Training Banner"
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 45vw, 550px"
-                      priority
-                      className="object-cover"
-                      unoptimized
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#07152F]/80 via-transparent to-transparent" />
-                  </div>
-                )}
-
-                {/* Slider Controls */}
-                {totalSlides > 1 && (
+                {/* Swiper Navigation Buttons with Font Awesome */}
+                {slideBanners.length > 1 && (
                   <>
                     <button
                       type="button"
-                      onClick={prevSlide}
                       aria-label="Previous slide"
-                      className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-slate-950/60 hover:bg-[#155EEF] text-white border border-white/20 items-center justify-center backdrop-blur-xs transition-all opacity-80 group-hover/banner:opacity-100 cursor-pointer"
+                      className="hero-swiper-prev hidden sm:flex absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-slate-950/60 hover:bg-[#155EEF] text-white border border-white/20 items-center justify-center backdrop-blur-xs transition-all opacity-0 group-hover/banner:opacity-100 cursor-pointer shadow-lg"
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <i className="fa-solid fa-chevron-left text-xs" />
                     </button>
-
                     <button
                       type="button"
-                      onClick={nextSlide}
                       aria-label="Next slide"
-                      className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-slate-950/60 hover:bg-[#155EEF] text-white border border-white/20 items-center justify-center backdrop-blur-xs transition-all opacity-80 group-hover/banner:opacity-100 cursor-pointer"
+                      className="hero-swiper-next hidden sm:flex absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-slate-950/60 hover:bg-[#155EEF] text-white border border-white/20 items-center justify-center backdrop-blur-xs transition-all opacity-0 group-hover/banner:opacity-100 cursor-pointer shadow-lg"
                     >
-                      <ChevronRight className="w-4 h-4" />
+                      <i className="fa-solid fa-chevron-right text-xs" />
                     </button>
-
-                    {/* Pagination Dots Indicator */}
-                    <div className="absolute bottom-2.5 right-3 z-20 flex items-center gap-1.5 bg-slate-950/70 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
-                      {banners.map((_, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => setCurrentIndex(idx)}
-                          aria-label={`Go to slide ${idx + 1}`}
-                          className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${idx === currentIndex
-                            ? "w-4 sm:w-5 bg-[#155EEF]"
-                            : "w-1.5 bg-white/50 hover:bg-white"
-                            }`}
-                        />
-                      ))}
-                    </div>
                   </>
                 )}
-              </div>
+              </Swiper>
+
             </div>
           </div>
 

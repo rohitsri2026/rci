@@ -8,6 +8,7 @@ import { Clock, BadgeIndianRupee, Award, ArrowRight, MessageCircle, BookOpen, Lo
 import { createClient } from "@/lib/supabase/client";
 import { RCIConfig } from "@/lib/config";
 import PublicCourseCard from "@/components/courses/PublicCourseCard";
+import InstituteLoader from "@/components/ui/InstituteLoader";
 
 export type CourseItem = {
   id: string;
@@ -126,10 +127,12 @@ export default function CoursesSection() {
 
         {/* Loading State */}
         {loading ? (
-          <div className="py-16 text-center text-slate-400 space-y-3">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto" />
-            <p className="text-xs font-bold text-slate-500">Loading course offerings...</p>
-          </div>
+          <InstituteLoader
+            size="md"
+            title="Rohit Computer Institute"
+            subtitle="Loading verified diploma programs..."
+            showBadge={false}
+          />
         ) : filteredCourses.length > 0 ? (
           /* Courses Grid */
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">

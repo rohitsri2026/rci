@@ -15,6 +15,7 @@ import CertificateRevokeDialog from "../admin/certificates/CertificateRevokeDial
 import CertificateQRModal from "./CertificateQRModal";
 import CertificateDeleteDialog from "./CertificateDeleteDialog";
 import ActionDropdown from "@/components/ui/ActionDropdown";
+import InstituteLoader from "@/components/ui/InstituteLoader";
 
 interface HistoryTableProps {
   initialCourses: CourseInfo[];
@@ -447,9 +448,13 @@ export default function HistoryTable({ initialCourses, userRole }: HistoryTableP
 
       {/* Main List Container */}
       {loading ? (
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-16 text-center text-slate-400 space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto" />
-          <p className="text-xs font-bold text-slate-500">Loading certificate registry records...</p>
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-8 text-center text-slate-400">
+          <InstituteLoader
+            size="md"
+            title="Rohit Computer Institute"
+            subtitle="Fetching certificate registry records..."
+            showBadge={true}
+          />
         </div>
       ) : certificates.length > 0 ? (
         <>
