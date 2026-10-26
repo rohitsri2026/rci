@@ -137,13 +137,21 @@ function AdmissionFormContent() {
 
   return (
     <div className="relative group">
-      {/* Dynamic Glowing Halo behind card */}
-      <div className="absolute -inset-1.5 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-amber-500/20 rounded-[2.25rem] blur-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      {/* Dynamic Floating Badges (Clean, Modern Academic Accents without blurry gradient stains) */}
+      <div className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-blue-200/90 shadow-md text-xs font-black text-[#155EEF] absolute -top-3.5 -right-2 z-20 animate-gentle-float pointer-events-none">
+        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+        <span>New Batches Starting Monday</span>
+      </div>
 
-      {/* Main Form Surface with Glassmorphic Depth */}
-      <div className="relative bg-white/95 backdrop-blur-2xl rounded-3xl border border-blue-200/90 shadow-2xl shadow-blue-950/10 p-5 sm:p-8 md:p-9 overflow-hidden">
-        {/* Dynamic Gradient Top Accent Line */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#155EEF] via-sky-400 to-[#D4A72C]" />
+      <div className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-amber-200/90 shadow-md text-xs font-black text-amber-800 absolute -bottom-3.5 -left-2 z-20 animate-gentle-float-reverse pointer-events-none">
+        <i className="fa-solid fa-gift text-amber-500 text-xs" />
+        <span>Free Study Kit & Manual</span>
+      </div>
+
+      {/* Main Form Surface - Crisp & High-Contrast without blurry color haze */}
+      <div className="relative bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-900/5 hover:shadow-2xl hover:border-blue-300 p-5 sm:p-8 md:p-9 overflow-hidden transition-all duration-300">
+        {/* Dynamic Top Accent Line */}
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#155EEF] via-blue-600 to-indigo-600" />
 
         <AnimatePresence mode="wait">
           {success ? (
@@ -475,14 +483,20 @@ export default function AdmissionPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-slate-50/70 pt-6 sm:pt-14 pb-20 relative overflow-hidden">
-        {/* Deep Ambient Background Glows */}
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[800px] h-[550px] bg-gradient-to-tr from-blue-500/10 via-indigo-500/10 to-amber-500/10 rounded-full blur-[140px] pointer-events-none" />
-        <div className="absolute top-48 -left-24 w-80 h-80 bg-blue-600/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute top-96 -right-24 w-80 h-80 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
+      <main className="min-h-screen bg-[#f8fafc] pt-6 sm:pt-14 pb-20 relative overflow-hidden">
+        {/* Clean Blueprint Geometry Rings (Zero Blur, Crisp Academic Tech Lines) */}
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[720px] h-[720px] pointer-events-none opacity-[0.05] select-none text-slate-800">
+          <svg viewBox="0 0 720 720" className="w-full h-full animate-[spin_90s_linear_infinite]">
+            <circle cx="360" cy="360" r="330" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 8" />
+            <circle cx="360" cy="360" r="250" fill="none" stroke="currentColor" strokeWidth="1" />
+            <circle cx="360" cy="360" r="160" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" />
+            <line x1="360" y1="0" x2="360" y2="720" stroke="currentColor" strokeWidth="1" strokeDasharray="6 6" />
+            <line x1="0" y1="360" x2="720" y2="360" stroke="currentColor" strokeWidth="1" strokeDasharray="6 6" />
+          </svg>
+        </div>
 
-        {/* Subtle Micro-Grid Overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.22] pointer-events-none" />
+        {/* Clean Subtle Micro-Grid */}
+        <div className="absolute inset-0 bg-[radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.25] pointer-events-none" />
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl relative z-10">
           

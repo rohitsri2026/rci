@@ -43,13 +43,19 @@ export default function VerifyForm() {
 
   return (
     <main className="min-h-screen bg-slate-50/70 pt-6 sm:pt-20 pb-20 relative overflow-hidden">
-      {/* Deep Ambient Background Glows */}
-      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-tr from-blue-500/10 via-indigo-500/10 to-amber-500/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute top-40 -left-20 w-80 h-80 bg-blue-600/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute top-80 -right-20 w-80 h-80 bg-amber-500/10 rounded-full blur-[100px] pointer-events-none" />
+      {/* Clean Technical Blueprint Geometry (Zero Blur, Crisp Architectural Lines) */}
+      <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[680px] h-[680px] pointer-events-none opacity-[0.05] select-none text-slate-800">
+        <svg viewBox="0 0 680 680" className="w-full h-full animate-[spin_90s_linear_infinite]">
+          <circle cx="340" cy="340" r="310" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 8" />
+          <circle cx="340" cy="340" r="230" fill="none" stroke="currentColor" strokeWidth="1" />
+          <circle cx="340" cy="340" r="150" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 4" />
+          <line x1="340" y1="0" x2="340" y2="680" stroke="currentColor" strokeWidth="1" strokeDasharray="6 6" />
+          <line x1="0" y1="340" x2="680" y2="340" stroke="currentColor" strokeWidth="1" strokeDasharray="6 6" />
+        </svg>
+      </div>
 
       {/* Subtle Micro-Grid Overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.25] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.25] pointer-events-none" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl relative z-10">
 
@@ -78,11 +84,14 @@ export default function VerifyForm() {
         {/* 2. Premium Security Verification Card */}
         <div className="max-w-2xl mx-auto mb-12 animate__animated animate__fadeInUp">
           <div className="relative group">
-            {/* Glowing Card Border Halo */}
-            <div className="absolute -inset-1.5 bg-gradient-to-r from-blue-600/25 via-indigo-500/25 to-amber-500/25 rounded-[2.25rem] blur-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            {/* Dynamic Floating Badges (Clean, Crisp Accents without blurry color stains) */}
+            <div className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-blue-200/90 shadow-md text-xs font-black text-[#155EEF] absolute -top-3.5 -right-2 z-20 animate-gentle-float pointer-events-none">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Real-Time Database Verification</span>
+            </div>
 
-            {/* Main Card Surface with Glassmorphic Depth */}
-            <div className="relative bg-white/95 backdrop-blur-2xl rounded-3xl border border-blue-200/90 shadow-2xl shadow-blue-950/10 p-6 sm:p-10 overflow-hidden">
+            {/* Main Card Surface with Crisp High Contrast */}
+            <div className="relative bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-900/5 hover:shadow-2xl hover:border-blue-300 p-6 sm:p-10 overflow-hidden transition-all duration-300">
               
               {/* Dynamic Gradient Top Border */}
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#155EEF] via-sky-400 to-[#D4A72C]" />

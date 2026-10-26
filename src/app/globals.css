@@ -204,11 +204,33 @@ body {
   will-change: transform, filter;
 }
 
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes gentle-float-reverse {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(7px); }
+}
+
+.animate-gentle-float {
+  animation: gentle-float 4s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-gentle-float-reverse {
+  animation: gentle-float-reverse 4.5s ease-in-out infinite;
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-institute-spin,
   .animate-institute-spin-reverse,
   .animate-shimmer-slide,
-  .animate-pulse-glow {
+  .animate-pulse-glow,
+  .animate-gentle-float,
+  .animate-gentle-float-reverse {
     animation: none !important;
     opacity: 1 !important;
   }
