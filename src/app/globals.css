@@ -224,13 +224,25 @@ body {
   will-change: transform;
 }
 
+@keyframes gradient-text-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-text {
+  background-size: 200% auto;
+  animation: gradient-text-flow 6s ease infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-institute-spin,
   .animate-institute-spin-reverse,
   .animate-shimmer-slide,
   .animate-pulse-glow,
   .animate-gentle-float,
-  .animate-gentle-float-reverse {
+  .animate-gentle-float-reverse,
+  .animate-gradient-text {
     animation: none !important;
     opacity: 1 !important;
   }

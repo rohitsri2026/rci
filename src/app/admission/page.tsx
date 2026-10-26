@@ -6,10 +6,41 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/client";
 import { RCIConfig } from "@/lib/config";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, type Variants } from "framer-motion";
 import Link from "next/link";
 import { submitAdmission } from "@/components/admin/admission-actions-server";
 import WhatsAppCounsellingBanner from "@/components/whatsapp-counselling-banner";
+
+// Animation Variants for Smooth, Lightweight Motion
+const fadeUpVariant: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: (custom: number = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.35, delay: custom * 0.08, ease: "easeOut" as const },
+  }),
+};
+
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.04,
+    },
+  },
+};
+
+const benefitItemVariant: Variants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3, ease: "easeOut" as const },
+  },
+};
+
 
 function AdmissionFormContent() {
   const searchParams = useSearchParams();
@@ -98,7 +129,7 @@ function AdmissionFormContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loading) return;
+    if (loading) return; // Prevent duplicate submissions
 
     if (!validateForm()) {
       return;
@@ -137,7 +168,7 @@ function AdmissionFormContent() {
 
   return (
     <div className="relative group">
-      {/* Dynamic Floating Badges (Clean, Modern Academic Accents without blurry gradient stains) */}
+      {/* Dynamic Floating Badges (Subtle, Clean Educational Accents) */}
       <div className="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-blue-200/90 shadow-md text-xs font-black text-[#155EEF] absolute -top-3.5 -right-2 z-20 animate-gentle-float pointer-events-none">
         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
         <span>New Batches Starting Monday</span>
@@ -148,7 +179,7 @@ function AdmissionFormContent() {
         <span>Free Study Kit & Manual</span>
       </div>
 
-      {/* Main Form Surface - Crisp & High-Contrast without blurry color haze */}
+      {/* Main Form Surface - Crisp & High-Contrast */}
       <div className="relative bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-900/5 hover:shadow-2xl hover:border-blue-300 p-5 sm:p-8 md:p-9 overflow-hidden transition-all duration-300">
         {/* Dynamic Top Accent Line */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#155EEF] via-blue-600 to-indigo-600" />
@@ -157,13 +188,13 @@ function AdmissionFormContent() {
           {success ? (
             <motion.div
               key="success"
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              initial={{ opacity: 0, scale: 0.96, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
               className="text-center py-6 sm:py-10"
             >
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-emerald-50 border-2 border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-emerald-500/10 animate__animated animate__bounceIn">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-emerald-50 border-2 border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-emerald-500/10">
                 <i className="bi bi-patch-check-fill text-3xl sm:text-4xl text-emerald-600" />
               </div>
 
@@ -240,7 +271,7 @@ function AdmissionFormContent() {
 
               {/* Error Alert Box */}
               {error && (
-                <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2.5 shadow-2xs animate__animated animate__shakeX">
+                <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2.5 shadow-2xs">
                   <i className="bi bi-exclamation-triangle-fill text-rose-500 text-sm shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -273,16 +304,17 @@ function AdmissionFormContent() {
                   <input
                     id="student_name"
                     type="text"
+                    disabled={loading}
                     value={form.student_name}
                     onChange={(e) => {
                       setForm({ ...form, student_name: e.target.value });
                       if (fieldErrors.student_name) setFieldErrors((prev) => ({ ...prev, student_name: undefined }));
                     }}
-                    placeholder="Enter student's full name"
+                    placeholder="Enter your full name"
                     aria-required="true"
                     aria-invalid={!!fieldErrors.student_name}
                     aria-describedby={fieldErrors.student_name ? "student_name_error" : undefined}
-                    className={`w-full h-12 sm:h-13 pl-12 pr-4 border-2 rounded-2xl text-[#07152F] placeholder-slate-400 text-sm font-semibold transition-all shadow-inner ${
+                    className={`w-full h-12 sm:h-13 pl-12 pr-4 border-2 rounded-2xl text-[#07152F] placeholder-slate-400 text-sm font-semibold transition-all duration-200 outline-none shadow-inner disabled:bg-slate-100 disabled:cursor-not-allowed ${
                       fieldErrors.student_name 
                         ? "border-rose-300 bg-rose-50/50 focus:ring-4 focus:ring-rose-500/15 focus:border-rose-500" 
                         : "border-slate-200/90 bg-slate-50/50 focus:bg-white focus:border-[#155EEF] focus:ring-4 focus:ring-blue-500/15"
@@ -290,12 +322,21 @@ function AdmissionFormContent() {
                     required
                   />
                 </div>
-                {fieldErrors.student_name && (
-                  <p id="student_name_error" className="text-rose-500 text-xs font-bold mt-1.5 flex items-center gap-1">
-                    <i className="bi bi-exclamation-circle text-xs" />
-                    <span>{fieldErrors.student_name}</span>
-                  </p>
-                )}
+                <AnimatePresence>
+                  {fieldErrors.student_name && (
+                    <motion.p
+                      id="student_name_error"
+                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                      animate={{ opacity: 1, height: "auto", marginTop: 6 }}
+                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="text-rose-500 text-xs font-bold overflow-hidden flex items-center gap-1.5"
+                    >
+                      <i className="bi bi-exclamation-circle text-xs shrink-0" />
+                      <span>{fieldErrors.student_name}</span>
+                    </motion.p>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Phone & Email Fields Grid */}
@@ -315,6 +356,7 @@ function AdmissionFormContent() {
                       id="phone"
                       type="tel"
                       maxLength={10}
+                      disabled={loading}
                       value={form.phone}
                       onChange={(e) => {
                         const val = e.target.value.replace(/\D/g, "");
@@ -325,7 +367,7 @@ function AdmissionFormContent() {
                       aria-required="true"
                       aria-invalid={!!fieldErrors.phone}
                       aria-describedby={fieldErrors.phone ? "phone_error" : undefined}
-                      className={`w-full h-12 sm:h-13 pl-12 pr-4 border-2 rounded-2xl text-[#07152F] placeholder-slate-400 text-sm font-semibold transition-all shadow-inner tracking-wide ${
+                      className={`w-full h-12 sm:h-13 pl-12 pr-4 border-2 rounded-2xl text-[#07152F] placeholder-slate-400 text-sm font-semibold transition-all duration-200 outline-none shadow-inner tracking-wide disabled:bg-slate-100 disabled:cursor-not-allowed ${
                         fieldErrors.phone 
                           ? "border-rose-300 bg-rose-50/50 focus:ring-4 focus:ring-rose-500/15 focus:border-rose-500" 
                           : "border-slate-200/90 bg-slate-50/50 focus:bg-white focus:border-[#155EEF] focus:ring-4 focus:ring-blue-500/15"
@@ -333,12 +375,21 @@ function AdmissionFormContent() {
                       required
                     />
                   </div>
-                  {fieldErrors.phone && (
-                    <p id="phone_error" className="text-rose-500 text-xs font-bold mt-1.5 flex items-center gap-1">
-                      <i className="bi bi-exclamation-circle text-xs" />
-                      <span>{fieldErrors.phone}</span>
-                    </p>
-                  )}
+                  <AnimatePresence>
+                    {fieldErrors.phone && (
+                      <motion.p
+                        id="phone_error"
+                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                        animate={{ opacity: 1, height: "auto", marginTop: 6 }}
+                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="text-rose-500 text-xs font-bold overflow-hidden flex items-center gap-1.5"
+                      >
+                        <i className="bi bi-exclamation-circle text-xs shrink-0" />
+                        <span>{fieldErrors.phone}</span>
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Email Field */}
@@ -355,6 +406,7 @@ function AdmissionFormContent() {
                     <input
                       id="email"
                       type="email"
+                      disabled={loading}
                       value={form.email}
                       onChange={(e) => {
                         setForm({ ...form, email: e.target.value });
@@ -363,19 +415,28 @@ function AdmissionFormContent() {
                       placeholder="name@example.com"
                       aria-invalid={!!fieldErrors.email}
                       aria-describedby={fieldErrors.email ? "email_error" : undefined}
-                      className={`w-full h-12 sm:h-13 pl-12 pr-4 border-2 rounded-2xl text-[#07152F] placeholder-slate-400 text-sm font-semibold transition-all shadow-inner ${
+                      className={`w-full h-12 sm:h-13 pl-12 pr-4 border-2 rounded-2xl text-[#07152F] placeholder-slate-400 text-sm font-semibold transition-all duration-200 outline-none shadow-inner disabled:bg-slate-100 disabled:cursor-not-allowed ${
                         fieldErrors.email 
                           ? "border-rose-300 bg-rose-50/50 focus:ring-4 focus:ring-rose-500/15 focus:border-rose-500" 
                           : "border-slate-200/90 bg-slate-50/50 focus:bg-white focus:border-[#155EEF] focus:ring-4 focus:ring-blue-500/15"
                       }`}
                     />
                   </div>
-                  {fieldErrors.email && (
-                    <p id="email_error" className="text-rose-500 text-xs font-bold mt-1.5 flex items-center gap-1">
-                      <i className="bi bi-exclamation-circle text-xs" />
-                      <span>{fieldErrors.email}</span>
-                    </p>
-                  )}
+                  <AnimatePresence>
+                    {fieldErrors.email && (
+                      <motion.p
+                        id="email_error"
+                        initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                        animate={{ opacity: 1, height: "auto", marginTop: 6 }}
+                        exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="text-rose-500 text-xs font-bold overflow-hidden flex items-center gap-1.5"
+                      >
+                        <i className="bi bi-exclamation-circle text-xs shrink-0" />
+                        <span>{fieldErrors.email}</span>
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
@@ -392,6 +453,7 @@ function AdmissionFormContent() {
                   </div>
                   <select
                     id="selected_course"
+                    disabled={loading}
                     value={form.selected_course}
                     onChange={(e) => {
                       setForm({ ...form, selected_course: e.target.value });
@@ -401,14 +463,14 @@ function AdmissionFormContent() {
                     aria-invalid={!!fieldErrors.selected_course}
                     aria-describedby={fieldErrors.selected_course ? "course_error" : undefined}
                     required
-                    className={`w-full h-12 sm:h-13 pl-12 pr-10 border-2 rounded-2xl text-[#07152F] font-semibold text-sm transition-all appearance-none shadow-inner cursor-pointer ${
+                    className={`w-full h-12 sm:h-13 pl-12 pr-10 border-2 rounded-2xl text-[#07152F] font-semibold text-sm transition-all duration-200 outline-none appearance-none shadow-inner cursor-pointer disabled:bg-slate-100 disabled:cursor-not-allowed ${
                       fieldErrors.selected_course 
                         ? "border-rose-300 bg-rose-50/50 focus:ring-4 focus:ring-rose-500/15 focus:border-rose-500" 
                         : "border-slate-200/90 bg-slate-50/50 focus:bg-white focus:border-[#155EEF] focus:ring-4 focus:ring-blue-500/15"
                     }`}
                   >
                     <option value="">
-                      {courses.length === 0 ? "Loading course catalog..." : "Choose a course program (DCA, ADCA, Tally Prime...)"}
+                      {courses.length === 0 ? "Loading course catalog..." : "Choose a course program"}
                     </option>
                     {courses.map((c) => (
                       <option key={c.id} value={c.course_name}>
@@ -420,19 +482,52 @@ function AdmissionFormContent() {
                     <i className="fa-solid fa-chevron-down text-xs" />
                   </div>
                 </div>
-                {fieldErrors.selected_course && (
-                  <p id="course_error" className="text-rose-500 text-xs font-bold mt-1.5 flex items-center gap-1">
-                    <i className="bi bi-exclamation-circle text-xs" />
-                    <span>{fieldErrors.selected_course}</span>
-                  </p>
-                )}
+
+                {/* Animated Selected Course Confirmation Pill */}
+                <AnimatePresence>
+                  {form.selected_course && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: "auto" }}
+                      exit={{ opacity: 0, y: -4, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden mt-2"
+                    >
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50/90 border border-blue-200 text-blue-900 text-xs font-bold shadow-2xs">
+                        <span className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-black">
+                          ✓
+                        </span>
+                        <span>Course Selected: <strong className="font-black text-[#155EEF]">{form.selected_course}</strong></span>
+                        <span className="text-[10px] bg-white text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded font-semibold ml-1">
+                          Ready to Enroll
+                        </span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                  {fieldErrors.selected_course && (
+                    <motion.p
+                      id="course_error"
+                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                      animate={{ opacity: 1, height: "auto", marginTop: 6 }}
+                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="text-rose-500 text-xs font-bold overflow-hidden flex items-center gap-1.5"
+                    >
+                      <i className="bi bi-exclamation-circle text-xs shrink-0" />
+                      <span>{fieldErrors.selected_course}</span>
+                    </motion.p>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Primary CTA Submit Button with Shimmer Sweep */}
               <button
                 type="submit"
                 disabled={loading}
-                className="relative overflow-hidden w-full h-13 sm:h-14 flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#155EEF] via-blue-600 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 active:from-blue-700 active:to-indigo-800 text-white rounded-2xl font-black text-sm sm:text-base transition-all shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-[1.01] active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed group/btn cursor-pointer mt-2"
+                className="relative overflow-hidden w-full h-13 sm:h-14 flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#155EEF] via-blue-600 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 active:from-blue-700 active:to-indigo-800 text-white rounded-2xl font-black text-sm sm:text-base transition-all duration-200 shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-500/40 hover:scale-[1.01] active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed group/btn cursor-pointer mt-2"
               >
                 {/* Light Sweep Reflection */}
                 <span className="absolute inset-0 w-1/2 h-full bg-white/20 -skew-x-12 -translate-x-full group-hover/btn:translate-x-[350%] transition-transform duration-700 pointer-events-none" />
@@ -440,12 +535,12 @@ function AdmissionFormContent() {
                 {loading ? (
                   <div className="flex items-center gap-2.5">
                     <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                    <span>Submitting Application to Registry...</span>
+                    <span>Submitting your Application...</span>
                   </div>
                 ) : (
                   <>
                     <i className="fa-solid fa-paper-plane text-sm" />
-                    <span>Submit Admission Application</span>
+                    <span>Submit Application</span>
                     <i className="fa-solid fa-arrow-right text-xs transition-transform group-hover/btn:translate-x-1" />
                   </>
                 )}
@@ -484,8 +579,11 @@ export default function AdmissionPage() {
     <>
       <Header />
       <main className="min-h-screen bg-[#f8fafc] pt-6 sm:pt-14 pb-20 relative overflow-hidden">
-        {/* Clean Blueprint Geometry Rings (Zero Blur, Crisp Academic Tech Lines) */}
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[720px] h-[720px] pointer-events-none opacity-[0.05] select-none text-slate-800">
+        {/* Subtle, Tasteful Background Ambient Gradient (Zero Murky Blurs) */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-50/40 via-white to-slate-50/70 pointer-events-none" />
+
+        {/* Clean Blueprint Geometry Rings (Crisp Architectural Tech Lines) */}
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[720px] h-[720px] pointer-events-none opacity-[0.04] select-none text-slate-800">
           <svg viewBox="0 0 720 720" className="w-full h-full animate-[spin_90s_linear_infinite]">
             <circle cx="360" cy="360" r="330" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="8 8" />
             <circle cx="360" cy="360" r="250" fill="none" stroke="currentColor" strokeWidth="1" />
@@ -496,54 +594,78 @@ export default function AdmissionPage() {
         </div>
 
         {/* Clean Subtle Micro-Grid */}
-        <div className="absolute inset-0 bg-[radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.25] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.22] pointer-events-none" />
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl relative z-10">
           
-          {/* 1. Academic Hero Header */}
-          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-blue-200/80 shadow-xs text-xs font-black uppercase tracking-wider text-[#155EEF] mb-3.5 animate__animated animate__fadeInDown">
-              <span className="w-5 h-5 rounded-md bg-blue-50 text-[#155EEF] flex items-center justify-center">
-                <i className="bi bi-mortarboard-fill text-xs text-[#D4A72C] animate__animated animate__pulse animate__infinite" />
-              </span>
-              <span>Online Admissions Open Session 2026-27</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-            </div>
+          {/* 1. Academic Hero Header with Framer Motion Entrance */}
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer}
+            className="text-center max-w-3xl mx-auto mb-8 sm:mb-12"
+          >
+            <motion.div variants={fadeUpVariant} custom={0}>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-blue-200/80 shadow-xs text-xs font-black uppercase tracking-wider text-[#155EEF] mb-3.5">
+                <span className="w-5 h-5 rounded-md bg-blue-50 text-[#155EEF] flex items-center justify-center">
+                  <i className="bi bi-mortarboard-fill text-xs text-[#D4A72C]" />
+                </span>
+                <span>Online Admissions Open Session 2026-27</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+              </div>
+            </motion.div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-black font-display tracking-tight text-[#07152F] mb-3 leading-[1.15] animate__animated animate__fadeInUp">
+            <motion.h1
+              variants={fadeUpVariant}
+              custom={1}
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.25rem] font-black font-display tracking-tight text-[#07152F] mb-3 leading-[1.15]"
+            >
               Launch Your Career with{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#155EEF] via-sky-500 to-[#D4A72C]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-emerald-500 animate-gradient-text font-black">
                 Rohit Computer Institute
               </span>
-            </h1>
+            </motion.h1>
             
-            <p className="text-slate-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl mx-auto font-normal animate__animated animate__fadeInUp animate__delay-1s">
+            <motion.p
+              variants={fadeUpVariant}
+              custom={2}
+              className="text-slate-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-2xl mx-auto font-normal"
+            >
               Fill out the quick admission form below. Our academic counselors will contact you to explain the curriculum, batch timings, and career pathways.
-            </p>
+            </motion.p>
 
             {/* Quick Feature Badges Strip */}
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-4 animate__animated animate__fadeInUp animate__delay-1s">
-              <span className="inline-flex items-center gap-1.5 bg-blue-50/80 text-blue-900 border border-blue-200/60 px-3 py-1 rounded-full text-xs font-bold">
+            <motion.div
+              variants={fadeUpVariant}
+              custom={3}
+              className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mt-4"
+            >
+              <span className="inline-flex items-center gap-1.5 bg-blue-50/90 text-blue-900 border border-blue-200/60 px-3 py-1 rounded-full text-xs font-bold shadow-2xs">
                 <i className="fa-solid fa-check text-emerald-600 text-[11px]" />
                 100% Practical Lab Training
               </span>
-              <span className="inline-flex items-center gap-1.5 bg-indigo-50/80 text-indigo-900 border border-indigo-200/60 px-3 py-1 rounded-full text-xs font-bold">
+              <span className="inline-flex items-center gap-1.5 bg-indigo-50/90 text-indigo-900 border border-indigo-200/60 px-3 py-1 rounded-full text-xs font-bold shadow-2xs">
                 <i className="fa-solid fa-check text-emerald-600 text-[11px]" />
-                ISO 9001:2015 & MSME Certified
+                MSME Certified
               </span>
-              <span className="inline-flex items-center gap-1.5 bg-amber-50/80 text-amber-900 border border-amber-200/60 px-3 py-1 rounded-full text-xs font-bold">
+              <span className="inline-flex items-center gap-1.5 bg-amber-50/90 text-amber-900 border border-amber-200/60 px-3 py-1 rounded-full text-xs font-bold shadow-2xs">
                 <i className="fa-solid fa-check text-emerald-600 text-[11px]" />
                 Flexible Batch Timings
               </span>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* 2. Two-Column Admission Workspace */}
           {/* Mobile: Form First, Desktop: Left 42% (lg:col-span-5), Right 58% (lg:col-span-7) */}
           <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-10 items-start mb-14 sm:mb-20">
             
             {/* RIGHT COLUMN (FIRST on Mobile / 58% on Desktop): Admission Form */}
-            <div className="order-1 lg:order-2 w-full lg:col-span-7 animate__animated animate__fadeInUp">
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.1, ease: "easeOut" }}
+              className="order-1 lg:order-2 w-full lg:col-span-7"
+            >
               <Suspense fallback={
                 <div className="bg-white/95 backdrop-blur-md p-10 rounded-3xl border border-blue-100 shadow-xl text-center text-slate-500 font-bold">
                   <div className="w-8 h-8 rounded-full border-3 border-blue-600 border-t-transparent animate-spin mx-auto mb-3" />
@@ -557,7 +679,7 @@ export default function AdmissionPage() {
               <div className="mt-5 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl p-4 sm:px-6 sm:py-4 shadow-sm">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 items-center">
                   <div className="flex items-center gap-2.5 group">
-                    <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#155EEF] flex items-center justify-center shrink-0 border border-blue-100 group-hover:scale-110 transition-transform">
+                    <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#155EEF] flex items-center justify-center shrink-0 border border-blue-100 group-hover:scale-110 group-hover:rotate-2 transition-transform duration-200">
                       <i className="fa-solid fa-desktop text-xs" />
                     </div>
                     <div>
@@ -567,7 +689,7 @@ export default function AdmissionPage() {
                   </div>
 
                   <div className="flex items-center gap-2.5 group">
-                    <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100 group-hover:scale-110 transition-transform">
+                    <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-100 group-hover:scale-110 group-hover:rotate-2 transition-transform duration-200">
                       <i className="fa-solid fa-chalkboard-user text-xs" />
                     </div>
                     <div>
@@ -577,17 +699,17 @@ export default function AdmissionPage() {
                   </div>
 
                   <div className="flex items-center gap-2.5 group">
-                    <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100 group-hover:scale-110 transition-transform">
+                    <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100 group-hover:scale-110 group-hover:rotate-2 transition-transform duration-200">
                       <i className="fa-solid fa-award text-xs" />
                     </div>
                     <div>
-                      <h5 className="text-xs font-extrabold text-[#07152F] leading-tight">ISO Certified</h5>
+                      <h5 className="text-xs font-extrabold text-[#07152F] leading-tight">RCI Certified</h5>
                       <p className="text-[10px] text-slate-500">Valid Diploma</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2.5 group">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 group-hover:scale-110 transition-transform">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100 group-hover:scale-110 group-hover:rotate-2 transition-transform duration-200">
                       <i className="bi bi-person-workspace text-xs" />
                     </div>
                     <div>
@@ -597,12 +719,12 @@ export default function AdmissionPage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            {/* LEFT COLUMN (SECOND on Mobile / 42% on Desktop): Why Choose RCI & Urgency Cards */}
-            <div className="order-2 lg:order-1 w-full lg:col-span-5 space-y-5 animate__animated animate__fadeInUp animate__delay-1s">
+            {/* LEFT COLUMN (SECOND on Mobile / 42% on Desktop): Why Choose RCI Benefits */}
+            <div className="order-2 lg:order-1 w-full lg:col-span-5 space-y-5">
               
-              {/* Why Choose RCI Card */}
+              {/* Why Choose RCI Card with Staggered Viewport Reveal */}
               <div className="bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-xs font-black uppercase tracking-wider text-[#155EEF] bg-blue-50 px-3 py-1 rounded-full border border-blue-100 inline-flex items-center gap-1.5">
@@ -616,7 +738,13 @@ export default function AdmissionPage() {
                   Why Study at Rohit Computer Institute?
                 </h3>
 
-                <div className="space-y-4">
+                <motion.div
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-30px" }}
+                  variants={staggerContainer}
+                  className="space-y-4"
+                >
                   {[
                     {
                       title: "Individual Desktop Labs",
@@ -643,11 +771,12 @@ export default function AdmissionPage() {
                       color: "bg-emerald-50 text-emerald-600 border-emerald-100",
                     },
                   ].map((feat, idx) => (
-                    <div
+                    <motion.div
                       key={idx}
-                      className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-100 hover:border-blue-200 hover:bg-white transition-all duration-300 flex items-start gap-3.5 group shadow-2xs hover:shadow-xs hover:-translate-y-0.5"
+                      variants={benefitItemVariant}
+                      className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-100 hover:border-blue-200 hover:bg-white transition-all duration-200 flex items-start gap-3.5 group shadow-2xs hover:shadow-xs hover:-translate-y-0.5"
                     >
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${feat.color} shadow-2xs group-hover:scale-110 transition-transform`}>
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${feat.color} shadow-2xs group-hover:scale-110 group-hover:rotate-2 transition-transform duration-200`}>
                         <i className={`${feat.icon} text-xs`} />
                       </div>
                       <div>
@@ -658,9 +787,9 @@ export default function AdmissionPage() {
                           {feat.desc}
                         </p>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               </div>
 
               {/* Limited Batch Seats Urgency Card */}
@@ -696,7 +825,7 @@ export default function AdmissionPage() {
 
           </div>
 
-          {/* 3. What Happens After You Apply (3-Step Roadmap) */}
+          {/* 3. What Happens After You Apply (3-Step Roadmap) with Viewport Reveal */}
           <div className="border-t border-slate-200/90 pt-14 mb-16">
             <div className="text-center max-w-2xl mx-auto mb-10">
               <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#155EEF] bg-blue-50 px-3.5 py-1.5 rounded-full border border-blue-100">
@@ -711,7 +840,13 @@ export default function AdmissionPage() {
               </p>
             </div>
 
-            <div className="grid sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-30px" }}
+              variants={staggerContainer}
+              className="grid sm:grid-cols-3 gap-5 max-w-4xl mx-auto"
+            >
               {[
                 {
                   number: "01",
@@ -735,8 +870,9 @@ export default function AdmissionPage() {
                   color: "text-emerald-600 bg-emerald-50 border-emerald-200",
                 },
               ].map((step, i) => (
-                <div
+                <motion.div
                   key={i}
+                  variants={benefitItemVariant}
                   className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-2xs hover:shadow-xl hover:border-blue-300 transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5"
                 >
                   <div>
@@ -760,9 +896,9 @@ export default function AdmissionPage() {
                     <span>Smooth Onboarding</span>
                     <i className="fa-solid fa-arrow-right text-[9px] group-hover:translate-x-1 transition-transform" />
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
 
           {/* 4. Direct Assistance Helpline Bar */}
