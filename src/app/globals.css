@@ -235,6 +235,55 @@ body {
   animation: gradient-text-flow 6s ease infinite;
 }
 
+/* Animated Blue-Cyan-Violet Gradient Mesh for Homepage Hero */
+@keyframes hero-mesh-1 {
+  0%, 100% {
+    transform: translate(0%, 0%) scale(1);
+  }
+  33% {
+    transform: translate(10%, 14%) scale(1.12);
+  }
+  66% {
+    transform: translate(-8%, 10%) scale(0.95);
+  }
+}
+
+@keyframes hero-mesh-2 {
+  0%, 100% {
+    transform: translate(0%, 0%) scale(1);
+  }
+  33% {
+    transform: translate(-12%, -10%) scale(1.08);
+  }
+  66% {
+    transform: translate(12%, -14%) scale(0.92);
+  }
+}
+
+@keyframes hero-mesh-3 {
+  0%, 100% {
+    transform: translate(0%, 0%) scale(1);
+  }
+  50% {
+    transform: translate(-10%, 12%) scale(1.15);
+  }
+}
+
+.animate-hero-mesh-1 {
+  animation: hero-mesh-1 22s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-hero-mesh-2 {
+  animation: hero-mesh-2 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-hero-mesh-3 {
+  animation: hero-mesh-3 24s ease-in-out infinite;
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-institute-spin,
   .animate-institute-spin-reverse,
@@ -242,7 +291,10 @@ body {
   .animate-pulse-glow,
   .animate-gentle-float,
   .animate-gentle-float-reverse,
-  .animate-gradient-text {
+  .animate-gradient-text,
+  .animate-hero-mesh-1,
+  .animate-hero-mesh-2,
+  .animate-hero-mesh-3 {
     animation: none !important;
     opacity: 1 !important;
   }

@@ -8,6 +8,7 @@ import { Autoplay, EffectFade, Pagination, Navigation } from "swiper/modules";
 import { createClient } from "@/lib/supabase/client";
 import { DEFAULT_HOMEPAGE_SETTINGS } from "@/lib/cms-defaults";
 import { HomepageBanner, HomepageSettings } from "@/types/cms";
+import HeroTypingTagline from "./HeroTypingTagline";
 
 export default function HeroSlider() {
   const [heroSettings, setHeroSettings] = useState<HomepageSettings>(DEFAULT_HOMEPAGE_SETTINGS);
@@ -54,10 +55,19 @@ export default function HeroSlider() {
       aria-label="Institute Hero"
       className="relative bg-[#07152F] text-white overflow-hidden"
     >
-      {/* Deep Ambient Glows */}
-      <div className="absolute inset-0 pointer-events-none opacity-30">
-        <div className="absolute top-[-10%] left-[-5%] w-[550px] h-[550px] bg-blue-600/35 rounded-full blur-[130px]" />
-        <div className="absolute bottom-[-10%] right-[-5%] w-[450px] h-[450px] bg-indigo-600/25 rounded-full blur-[130px]" />
+      {/* Animated Blue-Cyan-Violet Ambient Gradient Mesh Background */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
+        {/* Layer 1: Royal Blue Mesh */}
+        <div className="absolute -top-[15%] -left-[10%] w-[680px] h-[680px] bg-gradient-to-br from-blue-600/35 via-blue-500/20 to-transparent rounded-full blur-[140px] animate-hero-mesh-1" />
+
+        {/* Layer 2: Electric Cyan Mesh */}
+        <div className="absolute top-[20%] -right-[10%] w-[620px] h-[620px] bg-gradient-to-bl from-cyan-400/25 via-sky-500/15 to-transparent rounded-full blur-[130px] animate-hero-mesh-2" />
+
+        {/* Layer 3: Deep Violet Mesh */}
+        <div className="absolute -bottom-[20%] left-[15%] w-[640px] h-[640px] bg-gradient-to-tr from-violet-600/25 via-purple-500/15 to-transparent rounded-full blur-[150px] animate-hero-mesh-3" />
+
+        {/* Subtle Micro-Grid Texture */}
+        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:24px_24px] opacity-60" />
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10 py-6 sm:py-10 lg:py-14">
@@ -81,6 +91,11 @@ export default function HeroSlider() {
                 {heroSettings.hero_highlight || "With Practical IT Skills"}
               </span>
             </h1>
+
+            {/* Dynamic Typing Tagline: Learn Computer Skills | Build Your Career | Get Job Ready */}
+            <div className="animate__animated animate__fadeInUp">
+              <HeroTypingTagline />
+            </div>
 
             {/* Description */}
             <p className="text-sm sm:text-base md:text-lg text-slate-300 leading-relaxed max-w-xl font-normal animate__animated animate__fadeInUp animate__delay-1s">
