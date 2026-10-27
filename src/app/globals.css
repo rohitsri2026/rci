@@ -284,6 +284,16 @@ body {
   will-change: transform;
 }
 
+@keyframes border-beam-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-border-beam-slow {
+  animation: border-beam-rotate 8s linear infinite;
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-institute-spin,
   .animate-institute-spin-reverse,
@@ -294,7 +304,8 @@ body {
   .animate-gradient-text,
   .animate-hero-mesh-1,
   .animate-hero-mesh-2,
-  .animate-hero-mesh-3 {
+  .animate-hero-mesh-3,
+  .animate-border-beam-slow {
     animation: none !important;
     opacity: 1 !important;
   }
