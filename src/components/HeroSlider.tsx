@@ -9,10 +9,12 @@ import { createClient } from "@/lib/supabase/client";
 import { DEFAULT_HOMEPAGE_SETTINGS } from "@/lib/cms-defaults";
 import { HomepageBanner, HomepageSettings } from "@/types/cms";
 import HeroTypingTagline from "./HeroTypingTagline";
+import { RCIConfig } from "@/lib/config";
 
 export default function HeroSlider() {
   const [heroSettings, setHeroSettings] = useState<HomepageSettings>(DEFAULT_HOMEPAGE_SETTINGS);
   const [banners, setBanners] = useState<HomepageBanner[]>([]);
+  const [whatsappNum, setWhatsappNum] = useState(RCIConfig.whatsappNumber);
 
   useEffect(() => {
     const supabase = createClient();
@@ -36,6 +38,17 @@ export default function HeroSlider() {
           setBanners(data);
         }
       });
+
+    supabase
+      .from("contact_settings")
+      .select("whatsapp")
+      .eq("id", "default")
+      .single()
+      .then(({ data }) => {
+        if (data?.whatsapp) {
+          setWhatsappNum(data.whatsapp.replace(/\D/g, ""));
+        }
+      });
   }, []);
 
   const slideBanners = banners.length > 0 ? banners : [
@@ -50,44 +63,66 @@ export default function HeroSlider() {
     } as HomepageBanner
   ];
 
+  const whatsappInquiryUrl = `https://wa.me/${whatsappNum}?text=${encodeURIComponent("Hello RCI Admissions Team, I would like to get information regarding courses, fees, and batch timings.")}`;
+
   return (
     <section
       aria-label="Institute Hero"
-      className="relative bg-[#07152F] text-white overflow-hidden"
+      className="relative bg-[#050C1A] text-white overflow-hidden pt-4 sm:pt-6 pb-8 sm:pb-12"
     >
-      {/* Animated Blue-Cyan-Violet Ambient Gradient Mesh Background */}
+      {/* 1. Cinematic Ambient Gradient Mesh Background (Layered Aurora) */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
-        {/* Layer 1: Royal Blue Mesh */}
-        <div className="absolute -top-[15%] -left-[10%] w-[680px] h-[680px] bg-gradient-to-br from-blue-600/35 via-blue-500/20 to-transparent rounded-full blur-[140px] animate-hero-mesh-1" />
+        {/* Layer 1: Royal Blue Aurora */}
+        <div className="absolute -top-[20%] -left-[10%] w-[720px] h-[720px] bg-gradient-to-br from-blue-600/40 via-blue-500/25 to-transparent rounded-full blur-[150px] animate-hero-mesh-1" />
 
-        {/* Layer 2: Electric Cyan Mesh */}
-        <div className="absolute top-[20%] -right-[10%] w-[620px] h-[620px] bg-gradient-to-bl from-cyan-400/25 via-sky-500/15 to-transparent rounded-full blur-[130px] animate-hero-mesh-2" />
+        {/* Layer 2: Electric Cyan Aurora */}
+        <div className="absolute top-[15%] -right-[10%] w-[680px] h-[680px] bg-gradient-to-bl from-cyan-400/30 via-sky-500/20 to-transparent rounded-full blur-[140px] animate-hero-mesh-2" />
 
-        {/* Layer 3: Deep Violet Mesh */}
-        <div className="absolute -bottom-[20%] left-[15%] w-[640px] h-[640px] bg-gradient-to-tr from-violet-600/25 via-purple-500/15 to-transparent rounded-full blur-[150px] animate-hero-mesh-3" />
+        {/* Layer 3: Deep Violet Neon Glow */}
+        <div className="absolute -bottom-[25%] left-[20%] w-[700px] h-[700px] bg-gradient-to-tr from-violet-600/30 via-purple-500/20 to-transparent rounded-full blur-[160px] animate-hero-mesh-3" />
 
-        {/* Subtle Micro-Grid Texture */}
-        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:24px_24px] opacity-60" />
+        {/* Rotating Geometric Blueprint Ring (Subtle Architectural Tech Accent) */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[850px] pointer-events-none opacity-[0.035] select-none text-cyan-300">
+          <svg viewBox="0 0 850 850" className="w-full h-full animate-[spin_120s_linear_infinite]">
+            <circle cx="425" cy="425" r="400" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="10 10" />
+            <circle cx="425" cy="425" r="300" fill="none" stroke="currentColor" strokeWidth="1" />
+            <circle cx="425" cy="425" r="200" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="6 6" />
+            <line x1="425" y1="0" x2="425" y2="850" stroke="currentColor" strokeWidth="1" strokeDasharray="8 8" />
+            <line x1="0" y1="425" x2="850" y2="425" stroke="currentColor" strokeWidth="1" strokeDasharray="8 8" />
+          </svg>
+        </div>
+
+        {/* Subtle Micro-Grid Pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:24px_24px] opacity-70" />
+        
+        {/* Soft Vignette Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050C1A]/30 to-[#050C1A]" />
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10 py-6 sm:py-10 lg:py-14">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-8 lg:gap-12 items-center w-full">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10 py-4 sm:py-8 lg:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
 
-          {/* Core Message & CTAs */}
-          <div className="lg:col-span-7 space-y-3 sm:space-y-4 lg:space-y-5 text-left">
-            {/* Small Badge with Bootstrap Icon & Animate.css */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[11px] sm:text-xs font-bold text-blue-200 animate__animated animate__fadeInDown">
-              <i className="bi bi-stars text-[#D4A72C] text-sm animate__animated animate__pulse animate__infinite" />
-              <span className="tracking-wider uppercase font-semibold">
-                {heroSettings.hero_badge || "Trusted Computer Education"}
+          {/* LEFT: Core Message, Dynamic Typing & Premium CTAs */}
+          <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-left">
+            
+            {/* Live Session Announcement Pill */}
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-[11px] sm:text-xs font-bold text-blue-200 animate__animated animate__fadeInDown shadow-lg shadow-blue-950/30">
+              <span className="w-5 h-5 rounded-md bg-blue-500/20 text-[#D4A72C] flex items-center justify-center border border-blue-400/30">
+                <i className="bi bi-mortarboard-fill text-xs" />
               </span>
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+              <span className="tracking-wider uppercase font-extrabold text-slate-100">
+                {heroSettings.hero_badge || "Online Admissions Open Session 2026-27"}
+              </span>
+              <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full font-bold border border-emerald-500/30">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                Live
+              </span>
             </div>
 
-            {/* Large Mobile-First Heading with Google Fonts Outfit */}
-            <h1 className="text-[28px] xs:text-[32px] sm:text-4xl md:text-5xl lg:text-[3.25rem] font-black font-display tracking-tight text-white leading-[1.18] sm:leading-[1.15] animate__animated animate__fadeInUp">
+            {/* Immersive Mobile-First Headline */}
+            <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-[3.5rem] lg:text-[3.75rem] font-black font-display tracking-tight text-white leading-[1.12] sm:leading-[1.1] animate__animated animate__fadeInUp">
               {heroSettings.hero_title || "Build Your Digital Future"}{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-[#D4A72C]">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-[#D4A72C] drop-shadow-sm">
                 {heroSettings.hero_highlight || "With Practical IT Skills"}
               </span>
             </h1>
@@ -100,42 +135,111 @@ export default function HeroSlider() {
             {/* Description */}
             <p className="text-sm sm:text-base md:text-lg text-slate-300 leading-relaxed max-w-xl font-normal animate__animated animate__fadeInUp animate__delay-1s">
               {heroSettings.hero_description ||
-                "Master modern computer applications, Tally Prime accounting, and software skills with hands-on lab practice and QR-verifiable certificates."}
+                "Master modern computer applications, Tally Prime accounting, web design, and programming with 100% individual lab practice and government-recognized certifications."}
             </p>
 
-            {/* CTA Buttons: Explore Courses, Student Login & Verify Certificate with Font Awesome & Bootstrap Icons */}
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5 sm:gap-3.5 pt-1 animate__animated animate__fadeInUp animate__delay-1s">
+            {/* 3 Micro-Proof Badges */}
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3.5 pt-1 text-xs text-slate-300 animate__animated animate__fadeInUp animate__delay-1s">
+              <span className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1 rounded-full text-slate-200">
+                <i className="fa-solid fa-check text-emerald-400 text-[11px]" />
+                100% Practical Desktop Labs
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1 rounded-full text-slate-200">
+                <i className="fa-solid fa-check text-emerald-400 text-[11px]" />
+                ISO 9001:2015 & MSME Accredited
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1 rounded-full text-slate-200">
+                <i className="fa-solid fa-check text-emerald-400 text-[11px]" />
+                Small Batches: Max 15 Seats
+              </span>
+            </div>
+
+            {/* CTA Buttons: Explore Courses, Student Login & Verify Certificate */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3 pt-2 animate__animated animate__fadeInUp animate__delay-1s">
               <Link
                 href={heroSettings.primary_cta_url || "/courses"}
-                className="flex items-center justify-center gap-2 bg-[#155EEF] hover:bg-blue-600 active:bg-blue-700 text-white px-3 sm:px-6 py-3 sm:py-3.5 rounded-xl font-extrabold text-xs sm:text-base transition-all shadow-lg shadow-blue-600/35 hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-98 min-h-[46px]"
+                className="relative overflow-hidden flex items-center justify-center gap-2 bg-gradient-to-r from-[#155EEF] via-blue-600 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 active:from-blue-700 active:to-indigo-800 text-white px-4 sm:px-7 py-3.5 rounded-2xl font-black text-xs sm:text-base transition-all shadow-xl shadow-blue-600/35 hover:shadow-2xl hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-98 min-h-[48px] group/btn cursor-pointer"
               >
+                {/* Light Sweep Reflection */}
+                <span className="absolute inset-0 w-1/2 h-full bg-white/20 -skew-x-12 -translate-x-full group-hover/btn:translate-x-[350%] transition-transform duration-700 pointer-events-none" />
                 <i className="fa-solid fa-book-open text-xs sm:text-sm" />
                 <span className="truncate">{heroSettings.primary_cta_text || "Explore Courses"}</span>
+                <i className="fa-solid fa-arrow-right text-[11px] transition-transform group-hover/btn:translate-x-1" />
               </Link>
 
               <Link
                 href={heroSettings.secondary_cta_url || "/student/login"}
-                className="flex items-center justify-center gap-2 bg-white hover:bg-slate-100 active:bg-slate-200 text-[#07152F] px-3 sm:px-6 py-3 sm:py-3.5 rounded-xl font-extrabold text-xs sm:text-base transition-all shadow-md hover:scale-[1.02] active:scale-98 min-h-[46px]"
+                className="flex items-center justify-center gap-2 bg-white/95 hover:bg-white text-[#07152F] px-4 sm:px-6 py-3.5 rounded-2xl font-black text-xs sm:text-base transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-98 min-h-[48px]"
               >
                 <i className="fa-solid fa-graduation-cap text-xs sm:text-sm text-[#155EEF]" />
                 <span className="truncate">{heroSettings.secondary_cta_text || "Student Login"}</span>
-                <i className="fa-solid fa-arrow-right text-[11px] ml-0.5" />
               </Link>
 
               <Link
                 href="/verify"
-                className="col-span-2 sm:col-span-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 active:bg-white/20 border border-white/20 text-white px-4 sm:px-6 py-3 sm:py-3.5 rounded-xl font-bold text-xs sm:text-base transition-all backdrop-blur-md active:scale-98 min-h-[46px]"
+                className="col-span-2 sm:col-span-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 active:bg-white/20 border border-white/20 text-white px-4 sm:px-5 py-3.5 rounded-2xl font-bold text-xs sm:text-base transition-all backdrop-blur-md active:scale-98 min-h-[48px]"
               >
                 <i className="fa-solid fa-shield-halved text-[#D4A72C] text-sm" />
                 <span className="truncate">Verify Certificate</span>
               </Link>
             </div>
+
+            {/* Quick Counselor Chat Line */}
+            <div className="pt-1 flex items-center gap-2 text-xs text-slate-400">
+              <i className="fa-brands fa-whatsapp text-emerald-400 text-sm" />
+              <span>Have questions about fees or syllabus?</span>
+              <a
+                href={whatsappInquiryUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-emerald-400 font-bold hover:underline"
+              >
+                Chat with Counselor →
+              </a>
+            </div>
+
           </div>
 
-          {/* RIGHT: Prominent Swiper Banner Slider */}
-          <div className="lg:col-span-5 relative mt-1 sm:mt-0 animate__animated animate__fadeIn">
-            <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-white/15 bg-slate-900/80 p-1 sm:p-2 backdrop-blur-sm group/banner">
+          {/* RIGHT: Immersive 3D Showcase Frame with Floating Badges */}
+          <div className="lg:col-span-5 relative mt-4 sm:mt-0 animate__animated animate__fadeIn">
+            
+            {/* Glowing Border Halo behind card */}
+            <div className="absolute -inset-1.5 bg-gradient-to-r from-blue-500/30 via-cyan-400/25 to-violet-500/30 rounded-[2.5rem] blur-2xl opacity-75 pointer-events-none" />
+
+            {/* Floating Top-Left Badge: Rating & Alumni */}
+            <div className="hidden sm:inline-flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-[#07152F]/90 backdrop-blur-xl border border-white/20 text-white shadow-2xl absolute -top-4 -left-4 z-30 animate-gentle-float pointer-events-none">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-400/30 shrink-0">
+                <i className="fa-solid fa-star text-xs" />
+              </div>
+              <div className="text-left">
+                <div className="flex items-center gap-1 text-[11px] font-black leading-tight">
+                  <span>4.9 / 5.0 Rating</span>
+                  <span className="text-amber-400 text-[10px]">★★★★★</span>
+                </div>
+                <p className="text-[10px] text-slate-300">1,200+ Alumni Certified</p>
+              </div>
+            </div>
+
+            {/* Floating Bottom-Right Badge: 1:1 Lab Seat */}
+            <div className="hidden sm:inline-flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-[#07152F]/90 backdrop-blur-xl border border-white/20 text-white shadow-2xl absolute -bottom-4 -right-3 z-30 animate-gentle-float-reverse pointer-events-none">
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-400/30 shrink-0">
+                <i className="fa-solid fa-desktop text-xs" />
+              </div>
+              <div className="text-left">
+                <div className="flex items-center gap-1.5 text-[11px] font-black leading-tight">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>1:1 Dedicated PC</span>
+                </div>
+                <p className="text-[10px] text-slate-300">Individual Student Seat</p>
+              </div>
+            </div>
+
+            {/* Main Showcase Swiper Box with Illuminated Bevel */}
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/20 bg-gradient-to-b from-white/10 to-slate-900/90 p-1.5 sm:p-2 backdrop-blur-xl group/banner">
               
+              {/* Dynamic Gradient Top Accent Bar */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-cyan-400 to-[#D4A72C] z-20" />
+
               <Swiper
                 modules={[Autoplay, EffectFade, Pagination, Navigation]}
                 effect="fade"
@@ -155,7 +259,7 @@ export default function HeroSlider() {
                   prevEl: ".hero-swiper-prev",
                 }}
                 loop={slideBanners.length > 1}
-                className="relative aspect-[4/3] xs:aspect-[16/10] sm:aspect-[16/10] w-full rounded-xl sm:rounded-2xl overflow-hidden bg-slate-950"
+                className="relative aspect-[4/3] xs:aspect-[16/10] sm:aspect-[16/10] w-full rounded-2xl overflow-hidden bg-slate-950"
               >
                 {slideBanners.map((banner, index) => {
                   const imageUrl = banner.mobile_image_url || banner.desktop_image_url || "/banner.png";
@@ -171,20 +275,22 @@ export default function HeroSlider() {
                         unoptimized
                       />
 
-                      {/* Gradient Overlay for Readability */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#07152F]/90 via-[#07152F]/20 to-transparent" />
+                      {/* Cinematic Multi-Stop Gradient Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#050C1A] via-[#050C1A]/30 to-transparent" />
 
-                      {/* Banner Caption */}
+                      {/* Banner Caption with Illuminated Tag */}
                       {(banner.title || banner.description) && (
                         <div className="absolute bottom-3 sm:bottom-4 left-3.5 right-3.5 text-left z-10">
                           {banner.title && (
-                            <h3 className="text-xs sm:text-base font-bold text-white mb-0.5 drop-shadow-md flex items-center gap-1.5">
-                              <i className="bi bi-patch-check-fill text-blue-400 text-xs shrink-0" />
+                            <h3 className="text-xs sm:text-base font-extrabold text-white mb-0.5 drop-shadow-md flex items-center gap-1.5">
+                              <span className="w-4 h-4 rounded-full bg-blue-500/80 text-white flex items-center justify-center text-[9px] shrink-0">
+                                <i className="fa-solid fa-award" />
+                              </span>
                               <span>{banner.title}</span>
                             </h3>
                           )}
                           {banner.description && (
-                            <p className="text-[10.5px] sm:text-xs text-slate-200 line-clamp-1 sm:line-clamp-2 drop-shadow">
+                            <p className="text-[10.5px] sm:text-xs text-slate-200 line-clamp-1 sm:line-clamp-2 drop-shadow font-normal">
                               {banner.description}
                             </p>
                           )}
@@ -200,14 +306,14 @@ export default function HeroSlider() {
                     <button
                       type="button"
                       aria-label="Previous slide"
-                      className="hero-swiper-prev hidden sm:flex absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-slate-950/60 hover:bg-[#155EEF] text-white border border-white/20 items-center justify-center backdrop-blur-xs transition-all opacity-0 group-hover/banner:opacity-100 cursor-pointer shadow-lg"
+                      className="hero-swiper-prev hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-slate-950/70 hover:bg-[#155EEF] text-white border border-white/20 items-center justify-center backdrop-blur-md transition-all opacity-0 group-hover/banner:opacity-100 cursor-pointer shadow-lg"
                     >
                       <i className="fa-solid fa-chevron-left text-xs" />
                     </button>
                     <button
                       type="button"
                       aria-label="Next slide"
-                      className="hero-swiper-next hidden sm:flex absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-slate-950/60 hover:bg-[#155EEF] text-white border border-white/20 items-center justify-center backdrop-blur-xs transition-all opacity-0 group-hover/banner:opacity-100 cursor-pointer shadow-lg"
+                      className="hero-swiper-next hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-slate-950/70 hover:bg-[#155EEF] text-white border border-white/20 items-center justify-center backdrop-blur-md transition-all opacity-0 group-hover/banner:opacity-100 cursor-pointer shadow-lg"
                     >
                       <i className="fa-solid fa-chevron-right text-xs" />
                     </button>
@@ -219,6 +325,52 @@ export default function HeroSlider() {
           </div>
 
         </div>
+
+        {/* 4. Bottom Fast-Fact Ribbon (Integrated into Hero Base) */}
+        <div className="mt-8 sm:mt-12 pt-6 border-t border-white/10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
+            <div className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-cyan-400 border border-blue-400/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <i className="fa-solid fa-graduation-cap text-base" />
+              </div>
+              <div>
+                <h4 className="text-sm sm:text-base font-black text-white leading-tight">10,000+</h4>
+                <p className="text-[11px] text-slate-400">Students Certified</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-400/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <i className="fa-solid fa-laptop-code text-base" />
+              </div>
+              <div>
+                <h4 className="text-sm sm:text-base font-black text-white leading-tight">1:1 Practical</h4>
+                <p className="text-[11px] text-slate-400">Individual PC Desks</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-400/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <i className="fa-solid fa-stamp text-base" />
+              </div>
+              <div>
+                <h4 className="text-sm sm:text-base font-black text-white leading-tight">ISO 9001:2015</h4>
+                <p className="text-[11px] text-slate-400">Govt. Registered MSME</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-400/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <i className="fa-solid fa-qrcode text-base" />
+              </div>
+              <div>
+                <h4 className="text-sm sm:text-base font-black text-white leading-tight">Online QR</h4>
+                <p className="text-[11px] text-slate-400">Verifiable Diplomas</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
   );
