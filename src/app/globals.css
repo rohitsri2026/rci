@@ -294,6 +294,23 @@ body {
   will-change: transform;
 }
 
+/* Ambient Particles Slow Float Animation */
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 0.7;
+  }
+}
+
+.animate-particle-float {
+  animation: particle-float 14s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-institute-spin,
   .animate-institute-spin-reverse,
@@ -305,7 +322,8 @@ body {
   .animate-hero-mesh-1,
   .animate-hero-mesh-2,
   .animate-hero-mesh-3,
-  .animate-border-beam-slow {
+  .animate-border-beam-slow,
+  .animate-particle-float {
     animation: none !important;
     opacity: 1 !important;
   }

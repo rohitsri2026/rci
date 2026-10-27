@@ -5,12 +5,37 @@ import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectFade, Pagination, Navigation } from "swiper/modules";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, type Variants } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { DEFAULT_HOMEPAGE_SETTINGS } from "@/lib/cms-defaults";
 import { HomepageBanner, HomepageSettings } from "@/types/cms";
 import HeroTypingTagline from "./HeroTypingTagline";
+import HeroParticles from "./HeroParticles";
 import { RCIConfig } from "@/lib/config";
+
+// Staggered Entrance Animation Variants (500–800ms duration per element)
+const heroContainerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const heroItemVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.65,
+      ease: [0.16, 1, 0.3, 1] as const, // Smooth, modern easeOut curve
+    },
+  },
+};
 
 const TRENDING_COURSES = [
   { name: "ADCA (1 Year)", icon: "fa-solid fa-laptop-code", color: "hover:border-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/15" },
@@ -25,7 +50,7 @@ export default function HeroSlider() {
   const [banners, setBanners] = useState<HomepageBanner[]>([]);
   const [whatsappNum, setWhatsappNum] = useState(RCIConfig.whatsappNumber);
 
-  // 3D Interactive Mouse Tilt Setup
+  // 3D Interactive Mouse Tilt Setup for Showcase Card
   const containerRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -100,24 +125,31 @@ export default function HeroSlider() {
 
   const whatsappInquiryUrl = `https://wa.me/${whatsappNum}?text=${encodeURIComponent("Hello RCI Admissions Team, I would like to get information regarding courses, fees, and batch timings.")}`;
 
+  // Formatted main heading with RCI suffix
+  const highlightText = heroSettings.hero_highlight
+    ? heroSettings.hero_highlight.includes("with RCI")
+      ? heroSettings.hero_highlight
+      : `${heroSettings.hero_highlight} with RCI.`
+    : "With Practical IT Skills with RCI.";
+
   return (
     <section
       aria-label="Institute Hero"
       className="relative bg-[#050C1A] text-white overflow-hidden pt-4 sm:pt-6 pb-8 sm:pb-12"
     >
-      {/* 1. Cinematic Ambient Gradient Mesh Background (Layered Aurora) */}
+      {/* 1. Animated Gradient Background (15–25s cycle, low-opacity soft atmospheric glow) */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-0">
-        {/* Layer 1: Royal Blue Aurora */}
-        <div className="absolute -top-[20%] -left-[10%] w-[720px] h-[720px] bg-gradient-to-br from-blue-600/40 via-blue-500/25 to-transparent rounded-full blur-[150px] animate-hero-mesh-1" />
+        {/* Layer 1: Royal Blue Aurora (22s loop) */}
+        <div className="absolute -top-[20%] -left-[10%] w-[720px] h-[720px] bg-gradient-to-br from-blue-600/30 via-blue-500/18 to-transparent rounded-full blur-[140px] animate-hero-mesh-1" />
 
-        {/* Layer 2: Electric Cyan Aurora */}
-        <div className="absolute top-[15%] -right-[10%] w-[680px] h-[680px] bg-gradient-to-bl from-cyan-400/30 via-sky-500/20 to-transparent rounded-full blur-[140px] animate-hero-mesh-2" />
+        {/* Layer 2: Electric Cyan Aurora (20s loop) */}
+        <div className="absolute top-[15%] -right-[10%] w-[680px] h-[680px] bg-gradient-to-bl from-cyan-400/22 via-sky-500/15 to-transparent rounded-full blur-[130px] animate-hero-mesh-2" />
 
-        {/* Layer 3: Deep Violet Neon Glow */}
-        <div className="absolute -bottom-[25%] left-[20%] w-[700px] h-[700px] bg-gradient-to-tr from-violet-600/30 via-purple-500/20 to-transparent rounded-full blur-[160px] animate-hero-mesh-3" />
+        {/* Layer 3: Deep Violet Neon Glow (24s loop) */}
+        <div className="absolute -bottom-[25%] left-[20%] w-[700px] h-[700px] bg-gradient-to-tr from-violet-600/22 via-purple-500/15 to-transparent rounded-full blur-[150px] animate-hero-mesh-3" />
 
-        {/* Rotating Geometric Blueprint Ring (Architectural Tech Accent) */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[850px] pointer-events-none opacity-[0.035] select-none text-cyan-300">
+        {/* Rotating Geometric Blueprint Ring (Subtle Architectural Tech Accent) */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[850px] pointer-events-none opacity-[0.03] select-none text-cyan-300">
           <svg viewBox="0 0 850 850" className="w-full h-full animate-[spin_120s_linear_infinite]">
             <circle cx="425" cy="425" r="400" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="10 10" />
             <circle cx="425" cy="425" r="300" fill="none" stroke="currentColor" strokeWidth="1" />
@@ -127,21 +159,30 @@ export default function HeroSlider() {
           </svg>
         </div>
 
-        {/* Subtle Micro-Grid Pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:24px_24px] opacity-70" />
+        {/* Subtle Micro-Grid Texture */}
+        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:24px_24px] opacity-60" />
         
         {/* Soft Vignette Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050C1A]/30 to-[#050C1A]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050C1A]/20 to-[#050C1A]" />
       </div>
 
+      {/* 2. Subtle Particles with Desktop Mouse Parallax (z-[1], pointer-events-none) */}
+      <HeroParticles />
+
+      {/* 3. Hero Content Container with Sequential Entrance Animation (z-10) */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10 py-4 sm:py-8 lg:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center w-full">
 
-          {/* LEFT: Attention-Grabbing Hero Content & Interactive Quick-Pills */}
-          <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-left">
+          {/* LEFT: Sequential Entrance Animation for Hero Content */}
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={heroContainerVariants}
+            className="lg:col-span-7 space-y-4 sm:space-y-5 text-left"
+          >
             
-            {/* Live Session Announcement Pill + Urgency Chip */}
-            <div className="flex flex-wrap items-center gap-2.5 animate__animated animate__fadeInDown">
+            {/* 1. Trust / Announcement Badges */}
+            <motion.div variants={heroItemVariants} className="flex flex-wrap items-center gap-2.5">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 text-[11px] sm:text-xs font-bold text-blue-200 shadow-lg shadow-blue-950/30">
                 <span className="w-5 h-5 rounded-md bg-blue-500/20 text-[#D4A72C] flex items-center justify-center border border-blue-400/30">
                   <i className="bi bi-mortarboard-fill text-xs" />
@@ -155,34 +196,38 @@ export default function HeroSlider() {
                 </span>
               </div>
 
-              {/* Urgency Badge */}
+              {/* Urgency Chip */}
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/40 text-amber-200 text-[11px] font-bold shadow-xs">
                 <i className="fa-solid fa-fire text-amber-400 text-xs animate-pulse" />
                 <span>Next Lab Batch Starts Monday</span>
               </div>
-            </div>
+            </motion.div>
 
-            {/* Immersive Mobile-First Headline */}
-            <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-[3.5rem] lg:text-[3.75rem] font-black font-display tracking-tight text-white leading-[1.12] sm:leading-[1.1] animate__animated animate__fadeInUp">
+            {/* 2. Main Heading: “Build Your Digital Future With Practical IT Skills with RCI.” */}
+            <motion.h1
+              variants={heroItemVariants}
+              className="text-3xl xs:text-4xl sm:text-5xl md:text-[3.5rem] lg:text-[3.75rem] font-black font-display tracking-tight text-white leading-[1.12] sm:leading-[1.1]"
+            >
               {heroSettings.hero_title || "Build Your Digital Future"}{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-[#D4A72C] drop-shadow-sm">
-                {heroSettings.hero_highlight || "With Practical IT Skills"}
+                {highlightText}
               </span>
-            </h1>
+            </motion.h1>
 
-            {/* Dynamic Typing Tagline: Learn Computer Skills | Build Your Career | Get Job Ready */}
-            <div className="animate__animated animate__fadeInUp">
+            {/* 3. Supporting Description (including Typing Tagline) */}
+            <motion.div variants={heroItemVariants} className="space-y-3">
+              {/* Dynamic Typing Tagline: Learn Computer Skills | Build Your Career | Get Job Ready */}
               <HeroTypingTagline />
-            </div>
 
-            {/* Description */}
-            <p className="text-sm sm:text-base md:text-lg text-slate-300 leading-relaxed max-w-xl font-normal animate__animated animate__fadeInUp animate__delay-1s">
-              {heroSettings.hero_description ||
-                "Master modern computer applications, Tally Prime accounting, web design, and programming with 100% individual lab practice and government-recognized certifications."}
-            </p>
+              {/* Description Paragraph */}
+              <p className="text-sm sm:text-base md:text-lg text-slate-300 leading-relaxed max-w-xl font-normal">
+                {heroSettings.hero_description ||
+                  "Master modern computer applications, Tally Prime accounting, web design, and programming with 100% individual lab practice and government-recognized certifications."}
+              </p>
+            </motion.div>
 
-            {/* Interactive Trending Course Quick Tags for Students */}
-            <div className="pt-1 animate__animated animate__fadeInUp animate__delay-1s">
+            {/* 4. Popular Career Course Badges */}
+            <motion.div variants={heroItemVariants} className="pt-1">
               <div className="flex items-center gap-2 mb-2.5">
                 <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
                 <span className="text-[11px] uppercase tracking-wider font-extrabold text-cyan-300">
@@ -201,10 +246,13 @@ export default function HeroSlider() {
                   </Link>
                 ))}
               </div>
-            </div>
+            </motion.div>
 
-            {/* CTA Buttons: Explore Courses, Student Login & Verify Certificate */}
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3 pt-2 animate__animated animate__fadeInUp animate__delay-1s">
+            {/* 5. CTA Buttons */}
+            <motion.div
+              variants={heroItemVariants}
+              className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-3 pt-2"
+            >
               <Link
                 href={heroSettings.primary_cta_url || "/courses"}
                 className="relative overflow-hidden flex items-center justify-center gap-2 bg-gradient-to-r from-[#155EEF] via-blue-600 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 active:from-blue-700 active:to-indigo-800 text-white px-4 sm:px-7 py-3.5 rounded-2xl font-black text-xs sm:text-base transition-all shadow-xl shadow-blue-600/35 hover:shadow-2xl hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-98 min-h-[48px] group/btn cursor-pointer"
@@ -231,25 +279,43 @@ export default function HeroSlider() {
                 <i className="fa-solid fa-shield-halved text-[#D4A72C] text-sm" />
                 <span className="truncate">Verify Certificate</span>
               </Link>
-            </div>
+            </motion.div>
 
-            {/* Quick Counselor Chat Line */}
-            <div className="pt-1 flex items-center gap-2 text-xs text-slate-400">
-              <i className="fa-brands fa-whatsapp text-emerald-400 text-sm" />
-              <span>Have questions about fees or syllabus?</span>
-              <a
-                href={whatsappInquiryUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-emerald-400 font-bold hover:underline"
-              >
-                Chat with Counselor →
-              </a>
-            </div>
+            {/* 6. Supporting Trust & Contact Information */}
+            <motion.div variants={heroItemVariants} className="space-y-2.5 pt-1">
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <i className="fa-brands fa-whatsapp text-emerald-400 text-sm" />
+                <span>Have questions about fees or syllabus?</span>
+                <a
+                  href={whatsappInquiryUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-emerald-400 font-bold hover:underline"
+                >
+                  Chat with Counselor →
+                </a>
+              </div>
 
-          </div>
+              {/* 3 Micro-Proof Badges */}
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 text-xs text-slate-300">
+                <span className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1 rounded-full text-slate-200">
+                  <i className="fa-solid fa-check text-emerald-400 text-[11px]" />
+                  100% Practical Desktop Labs
+                </span>
+                <span className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1 rounded-full text-slate-200">
+                  <i className="fa-solid fa-check text-emerald-400 text-[11px]" />
+                  ISO 9001:2015 & MSME Accredited
+                </span>
+                <span className="inline-flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1 rounded-full text-slate-200">
+                  <i className="fa-solid fa-check text-emerald-400 text-[11px]" />
+                  Small Batches: Max 15 Seats
+                </span>
+              </div>
+            </motion.div>
 
-          {/* RIGHT: Interactive 3D Tilt Showcase Frame with Floating Badges */}
+          </motion.div>
+
+          {/* RIGHT: Interactive 3D Showcase Card with Floating Badges */}
           <div
             ref={containerRef}
             onMouseMove={handleMouseMove}
@@ -257,12 +323,14 @@ export default function HeroSlider() {
             className="lg:col-span-5 relative mt-4 sm:mt-0 [perspective:1200px]"
           >
             <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
               style={{
                 rotateX,
                 rotateY,
                 transformStyle: "preserve-3d",
               }}
-              transition={{ type: "spring", stiffness: 200, damping: 25 }}
               className="relative"
             >
               {/* Glowing Border Halo behind card */}
