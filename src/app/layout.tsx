@@ -147,6 +147,7 @@ export default function RootLayout({
       className={cn("h-full", "antialiased", plusJakarta.variable, outfit.variable, inter.variable, "font-sans")}
     >
       <head>
+        <meta name="google-site-verification" content="74hTG6vfVhVKfbwSxn36-eezOYlbU7fD2I3PCGmWZCE" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
