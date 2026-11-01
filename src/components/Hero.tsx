@@ -164,14 +164,13 @@ export default function Hero() {
                 src={
                   currentBanner?.desktop_image_url ||
                   heroSettings.hero_image_url ||
-                  "/banner.png"
+                  "/banner.webp"
                 }
                 alt={currentBanner?.title || "Rohit Computer Institute Campus & Training Banner"}
                 fill
                 sizes="(max-width: 1280px) 100vw, 1280px"
                 className="object-cover transition-all duration-700"
                 priority
-                unoptimized
               />
 
               {/* Slider Dots */}

@@ -205,12 +205,12 @@ export default function VerifyForm() {
                     <i className="fa-solid fa-qrcode text-lg" />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="text-xs sm:text-sm font-extrabold text-[#07152F] flex items-center gap-1.5">
+                    <p className="text-xs sm:text-sm font-extrabold text-[#07152F] flex items-center gap-1.5">
                       <span>QR Code Direct Verification</span>
                       <span className="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-bold">
                         Instant
                       </span>
-                    </h4>
+                    </p>
                     <p className="text-[11px] sm:text-xs text-slate-500 leading-snug mt-0.5 line-clamp-2">
                       Scan the tamper-proof QR code printed on your physical RCI diploma with any mobile camera.
                     </p>
@@ -239,9 +239,9 @@ export default function VerifyForm() {
                   <i className="fa-solid fa-database text-xs" />
                 </div>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-extrabold text-[#07152F] group-hover:text-[#155EEF] transition-colors">
+                  <p className="text-xs sm:text-sm font-extrabold text-[#07152F] group-hover:text-[#155EEF] transition-colors">
                     Official Central Record
-                  </h4>
+                  </p>
                   <p className="text-[11.5px] text-slate-500 mt-0.5 leading-snug font-normal">
                     Verified directly against RCI's official student database.
                   </p>
@@ -253,9 +253,9 @@ export default function VerifyForm() {
                   <i className="fa-solid fa-qrcode text-xs" />
                 </div>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-extrabold text-[#07152F] group-hover:text-amber-600 transition-colors">
+                  <p className="text-xs sm:text-sm font-extrabold text-[#07152F] group-hover:text-amber-600 transition-colors">
                     Encrypted QR Signature
-                  </h4>
+                  </p>
                   <p className="text-[11.5px] text-slate-500 mt-0.5 leading-snug font-normal">
                     Certificates feature scannable QR verification with unique cryptographic hash.
                   </p>
@@ -267,9 +267,9 @@ export default function VerifyForm() {
                   <i className="bi bi-shield-check text-sm" />
                 </div>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-extrabold text-[#07152F] group-hover:text-emerald-700 transition-colors">
+                  <p className="text-xs sm:text-sm font-extrabold text-[#07152F] group-hover:text-emerald-700 transition-colors">
                     Employer Authentication
-                  </h4>
+                  </p>
                   <p className="text-[11.5px] text-slate-500 mt-0.5 leading-snug font-normal">
                     Employers and government recruiters can check validity 24/7 online.
                   </p>
@@ -287,9 +287,9 @@ export default function VerifyForm() {
               <i className="bi bi-stars text-amber-500" />
               <span>Simple 3-Step Process</span>
             </span>
-            <h3 className="text-2xl sm:text-3xl md:text-4xl font-black font-display text-[#07152F] mt-2.5 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-display text-[#07152F] mt-2.5 tracking-tight">
               How Certificate Verification Works
-            </h3>
+            </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-1.5 font-normal">
               Validate student credentials in seconds with our transparent verification workflow.
             </p>
@@ -332,9 +332,9 @@ export default function VerifyForm() {
                       <i className={`${step.icon} text-xs`} />
                     </div>
                   </div>
-                  <h4 className="text-sm sm:text-base font-extrabold text-[#07152F] mb-1.5 group-hover:text-[#155EEF] transition-colors leading-snug">
+                  <h3 className="text-sm sm:text-base font-extrabold text-[#07152F] mb-1.5 group-hover:text-[#155EEF] transition-colors leading-snug">
                     {step.title}
-                  </h4>
+                  </h3>
                   <p className="text-xs text-slate-500 leading-relaxed font-normal">
                     {step.desc}
                   </p>
@@ -360,9 +360,9 @@ export default function VerifyForm() {
                 <i className="bi bi-question-circle-fill text-xs" />
                 <span>Verification Support</span>
               </span>
-              <h3 className="text-xl sm:text-2xl font-black font-display tracking-tight text-white leading-snug">
+              <h2 className="text-xl sm:text-2xl font-black font-display tracking-tight text-white leading-snug">
                 Having trouble verifying your certificate?
-              </h3>
+              </h2>
               <p className="text-slate-300 text-xs sm:text-sm leading-relaxed font-normal">
                 Make sure you have entered the certificate number exactly as printed on your diploma, or chat directly with our helpdesk team.
               </p>

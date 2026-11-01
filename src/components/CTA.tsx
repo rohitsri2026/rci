@@ -35,11 +35,12 @@ export default function CTA() {
         {/* Institutional Quality Seal Badge */}
         <div className="mb-3 inline-flex items-center justify-center bg-slate-50 p-2 rounded-2xl border border-slate-200/80 shadow-2xs">
           <Image
-            src="/badge.png"
+            src="/badge.webp"
             alt="RCI MSME & ISO Certified Badge"
             width={64}
             height={64}
             className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+            loading="lazy"
           />
         </div>
 

@@ -17,10 +17,17 @@ function toSlug(name: string) {
 }
 
 // Map course thumbnail URL with safe local default fallback
-function getSafeCourseImage(thumbnailUrl?: string | null): string {
+function getSafeCourseImage(courseName?: string, thumbnailUrl?: string | null): string {
   if (thumbnailUrl && thumbnailUrl.trim().length > 0) {
     return thumbnailUrl.trim();
   }
+  const lower = (courseName || "").toLowerCase();
+  if (lower.includes("dca") || lower.includes("diploma")) return "/courses/dca.jpg";
+  if (lower.includes("tally") || lower.includes("gst") || lower.includes("account")) return "/courses/tally.jpg";
+  if (lower.includes("web") || lower.includes("react") || lower.includes("frontend")) return "/courses/web-dev.jpg";
+  if (lower.includes("python") || lower.includes("code") || lower.includes("prog")) return "/courses/python.jpg";
+  if (lower.includes("typing") || lower.includes("hindi") || lower.includes("english")) return "/courses/typing.jpg";
+  if (lower.includes("graphic") || lower.includes("dtp") || lower.includes("design")) return "/courses/graphic.jpg";
   return "/courses/dca.jpg";
 }
 
@@ -30,7 +37,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   
   let { data: course } = await supabase
     .from("courses")
-    .select("course_name, description, slug, seo_metadata, status")
+    .select("course_name, description, slug, thumbnail_url, fees, discount, duration, seo_metadata, status")
     .or("status.eq.Active,status.is.null")
     .eq("slug", slug)
     .maybeSingle();
@@ -39,17 +46,59 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!course) {
     const { data: allCourses } = await supabase
       .from("courses")
-      .select("course_name, description, slug, seo_metadata, status")
+      .select("course_name, description, slug, thumbnail_url, fees, discount, duration, seo_metadata, status")
       .or("status.eq.Active,status.is.null");
     course = allCourses?.find((c: any) => toSlug(c.slug || c.course_name) === slug) || null;
   }
 
-  if (!course) return { title: "Course Not Found | RCI" };
+  if (!course || course.status === "Inactive") {
+    return {
+      title: "Course Not Found",
+      robots: { index: false, follow: false },
+    };
+  }
   
   const seo = (course.seo_metadata || {}) as any;
+  const courseSlug = course.slug || toSlug(course.course_name) || slug;
+  const canonicalUrl = `https://rciknp.vercel.app/courses/${courseSlug}`;
+
+  const segmentTitle = seo?.title ? seo.title.replace(/ \| Rohit Computer Institute.*$/i, "") : `${course.course_name} Course`;
+  const fullTitle = `${segmentTitle} | Rohit Computer Institute`;
+
+  const rawDesc = seo?.description || course.description || `Master ${course.course_name} at Rohit Computer Institute Kanpur with practical lab training, certified faculty, and job-ready skills.`;
+  const metaDescription = rawDesc.length > 160 ? `${rawDesc.slice(0, 157)}...` : rawDesc;
+
+  const imgPath = getSafeCourseImage(course.course_name, course.thumbnail_url);
+  const imageUrl = imgPath.startsWith("http") ? imgPath : `https://rciknp.vercel.app${imgPath}`;
+
   return {
-    title: seo?.title || `${course.course_name} | Rohit Computer Institute`,
-    description: seo?.description || course.description || `Learn ${course.course_name} at Rohit Computer Institute. Expert faculty, hands-on training, and placement assistance.`,
+    title: segmentTitle,
+    description: metaDescription,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: fullTitle,
+      description: metaDescription,
+      url: canonicalUrl,
+      siteName: "Rohit Computer Institute",
+      locale: "en_IN",
+      type: "website",
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${course.course_name} Course Training - Rohit Computer Institute Kanpur`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: fullTitle,
+      description: metaDescription,
+      images: [imageUrl],
+    },
   };
 }
 
@@ -94,10 +143,105 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
   const originalFee = rawFee;
 
   const totalLessons = curriculum.reduce((acc, m) => acc + (m.lessons?.length || 0), 0);
-  const courseImage = getSafeCourseImage(course.thumbnail_url);
+  const courseImage = getSafeCourseImage(course.course_name, course.thumbnail_url);
+
+  const courseSlug = course.slug || toSlug(course.course_name) || slug;
+  const courseUrl = `https://rciknp.vercel.app/courses/${courseSlug}`;
+  const fullCourseImg = courseImage.startsWith("http") ? courseImage : `https://rciknp.vercel.app${courseImage}`;
+
+  const courseSchema = {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: course.course_name,
+    description: course.description || `Practical training in ${course.course_name} at Rohit Computer Institute.`,
+    url: courseUrl,
+    image: fullCourseImg,
+    provider: {
+      "@type": "EducationalOrganization",
+      name: "Rohit Computer Institute",
+      sameAs: "https://rciknp.vercel.app",
+    },
+    educationalCredentialAwarded: `Certificate in ${course.course_name}`,
+    offers: {
+      "@type": "Offer",
+      category: "Paid",
+      priceCurrency: "INR",
+      price: finalFee > 0 ? String(finalFee) : "1499",
+      availability: "https://schema.org/InStock",
+      validFrom: "2026-01-01",
+    },
+    hasCourseInstance: {
+      "@type": "CourseInstance",
+      courseMode: "onsite",
+      courseWorkload: course.duration || "Flexible",
+      location: {
+        "@type": "Place",
+        name: "Rohit Computer Institute Campus",
+        address: {
+          "@type": "PostalAddress",
+          streetAddress: "Sanjay Nagar Cantt",
+          addressLocality: "Kanpur",
+          addressRegion: "Uttar Pradesh",
+          postalCode: "208004",
+          addressCountry: "IN",
+        },
+      },
+    },
+    ...(curriculum.length > 0
+      ? {
+          syllabusSections: curriculum.map((mod: any, idx: number) => ({
+            "@type": "Syllabus",
+            name: mod.title || `Module ${idx + 1}: ${mod.module || "Fundamentals"}`,
+            description: Array.isArray(mod.lessons) ? mod.lessons.join(", ") : mod.title || "",
+          })),
+        }
+      : {}),
+    ...(displayRating
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: String(displayRating),
+            reviewCount: String(displayReviewCount),
+            bestRating: "5",
+            worstRating: "1",
+          },
+        }
+      : {}),
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://rciknp.vercel.app",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Courses",
+        item: "https://rciknp.vercel.app/courses",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: course.course_name,
+        item: courseUrl,
+      },
+    ],
+  };
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([courseSchema, breadcrumbSchema]).replace(/</g, "\\u003c"),
+        }}
+      />
       <Header />
       <main className="bg-slate-50 min-h-screen">
 

@@ -44,12 +44,12 @@ export default function AboutSection() {
             <div className="relative bg-white p-2 sm:p-2.5 rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-sm">
               <div className="relative aspect-[16/10] sm:aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden bg-slate-100">
                 <Image
-                  src={aboutRci.image_url || "/banner.png"}
+                  src={aboutRci.image_url || "/banner.webp"}
                   alt={aboutRci.heading || siteSettings.site_name}
                   fill
                   sizes="(max-width: 768px) 100vw, 420px"
                   className="object-cover"
-                  unoptimized
+                  loading="lazy"
                 />
               </div>
 
@@ -59,9 +59,9 @@ export default function AboutSection() {
                   <Award className="w-4 h-4 text-[#D4A72C]" />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="text-xs sm:text-sm font-extrabold text-[#07152F] truncate">
+                  <p className="text-xs sm:text-sm font-extrabold text-[#07152F] truncate">
                     {siteSettings.site_name}
-                  </h4>
+                  </p>
                   <p className="text-[10.5px] text-blue-600 font-bold truncate">
                     ISO 9001:2015 &amp; MSME Registered
                   </p>

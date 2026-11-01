@@ -116,8 +116,8 @@ export default function HeroSlider() {
       id: "fallback-banner",
       title: "State-of-the-Art Computer Education",
       description: "Join Kanpur's most trusted practical IT institute with modern computer labs and ISO recognized certification.",
-      desktop_image_url: heroSettings.hero_image_url || "/banner.png",
-      mobile_image_url: heroSettings.hero_image_url || "/banner.png",
+      desktop_image_url: heroSettings.hero_image_url || "/banner.webp",
+      mobile_image_url: heroSettings.hero_image_url || "/banner.webp",
       display_order: 1,
       is_active: true,
     } as HomepageBanner
@@ -407,7 +407,7 @@ export default function HeroSlider() {
                   className="relative aspect-[4/3] xs:aspect-[16/10] sm:aspect-[16/10] w-full rounded-2xl overflow-hidden bg-slate-950"
                 >
                   {slideBanners.map((banner, index) => {
-                    const imageUrl = banner.mobile_image_url || banner.desktop_image_url || "/banner.png";
+                    const imageUrl = banner.mobile_image_url || banner.desktop_image_url || "/banner.webp";
                     return (
                       <SwiperSlide key={banner.id || index} className="relative w-full h-full">
                         <Image
@@ -416,8 +416,9 @@ export default function HeroSlider() {
                           fill
                           sizes="(max-width: 768px) 100vw, (max-width: 1280px) 45vw, 550px"
                           priority={index === 0}
+                          fetchPriority={index === 0 ? "high" : "low"}
+                          loading={index === 0 ? "eager" : "lazy"}
                           className="object-cover"
-                          unoptimized
                         />
 
                         {/* Cinematic Multi-Stop Gradient Overlay */}
@@ -427,12 +428,12 @@ export default function HeroSlider() {
                         {(banner.title || banner.description) && (
                           <div className="absolute bottom-3 sm:bottom-4 left-3.5 right-3.5 text-left z-10">
                             {banner.title && (
-                              <h3 className="text-xs sm:text-base font-extrabold text-white mb-0.5 drop-shadow-md flex items-center gap-1.5">
+                              <h2 className="text-xs sm:text-base font-extrabold text-white mb-0.5 drop-shadow-md flex items-center gap-1.5">
                                 <span className="w-4 h-4 rounded-full bg-blue-500/80 text-white flex items-center justify-center text-[9px] shrink-0">
                                   <i className="fa-solid fa-award" />
                                 </span>
                                 <span>{banner.title}</span>
-                              </h3>
+                              </h2>
                             )}
                             {banner.description && (
                               <p className="text-[10.5px] sm:text-xs text-slate-200 line-clamp-1 sm:line-clamp-2 drop-shadow font-normal">
@@ -480,7 +481,7 @@ export default function HeroSlider() {
                 <i className="fa-solid fa-graduation-cap text-base" />
               </div>
               <div>
-                <h4 className="text-sm sm:text-base font-black text-white leading-tight">10,000+</h4>
+                <p className="text-sm sm:text-base font-black text-white leading-tight">10,000+</p>
                 <p className="text-[11px] text-slate-400">Students Certified</p>
               </div>
             </div>
@@ -490,7 +491,7 @@ export default function HeroSlider() {
                 <i className="fa-solid fa-laptop-code text-base" />
               </div>
               <div>
-                <h4 className="text-sm sm:text-base font-black text-white leading-tight">1:1 Practical</h4>
+                <p className="text-sm sm:text-base font-black text-white leading-tight">1:1 Practical</p>
                 <p className="text-[11px] text-slate-400">Individual PC Desks</p>
               </div>
             </div>
@@ -500,7 +501,7 @@ export default function HeroSlider() {
                 <i className="fa-solid fa-stamp text-base" />
               </div>
               <div>
-                <h4 className="text-sm sm:text-base font-black text-white leading-tight">ISO 9001:2015</h4>
+                <p className="text-sm sm:text-base font-black text-white leading-tight">ISO 9001:2015</p>
                 <p className="text-[11px] text-slate-400">Govt. Registered MSME</p>
               </div>
             </div>
@@ -510,7 +511,7 @@ export default function HeroSlider() {
                 <i className="fa-solid fa-qrcode text-base" />
               </div>
               <div>
-                <h4 className="text-sm sm:text-base font-black text-white leading-tight">Online QR</h4>
+                <p className="text-sm sm:text-base font-black text-white leading-tight">Online QR</p>
                 <p className="text-[11px] text-slate-400">Verifiable Diplomas</p>
               </div>
             </div>

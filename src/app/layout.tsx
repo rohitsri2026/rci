@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "animate.css/animate.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -32,39 +32,53 @@ const outfit = Outfit({
   weight: ["500", "600", "700", "800", "900"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#07152F",
+  width: "device-width",
+  initialScale: 1,
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSeoSettings();
   const site = await getSiteSettings();
 
   const defaultTitle = site.browser_title || `${site.site_name} | ${site.tagline}`;
-  const description = seo.meta_description;
+  const description =
+    seo.meta_description ||
+    "Rohit Computer Institute (RCI) Kanpur provides practical computer training, DCA diploma, Tally Prime GST, Web Development, and verifiable certifications.";
   const keywords = seo.keywords
     ? seo.keywords.split(",").map((k) => k.trim())
-    : [site.site_name, site.short_name, "Computer Institute", "DCA Course"];
+    : [site.site_name, site.short_name, "Computer Institute", "DCA Course", "Tally Prime", "Kanpur"];
   const ogImage = seo.og_image_url || site.logo_url || "/banner.png";
   const favicon = site.favicon_url || "/favicon.png";
-  const siteUrl = seo.canonical_url || "https://rciknp.vercel.app";
+  const siteUrl = "https://rciknp.vercel.app";
 
   return {
     metadataBase: new URL(siteUrl),
+    alternates: {
+      canonical: "./",
+    },
     title: {
       default: defaultTitle,
       template: `%s | ${site.site_name}`,
     },
     description,
     keywords,
-    authors: [{ name: site.site_name }],
+    authors: [{ name: site.site_name, url: siteUrl }],
+    creator: site.site_name,
+    publisher: site.site_name,
     openGraph: {
       title: seo.og_title || defaultTitle,
       description: seo.og_description || description,
       url: siteUrl,
-      siteName: site.site_name,
+      siteName: site.site_name || "Rohit Computer Institute (RCI)",
       images: [
         {
           url: ogImage,
           width: 1200,
           height: 630,
-          alt: `${site.site_name} Banner`,
+          alt: `${site.site_name} - Computer Education Institute Kanpur`,
+          type: "image/png",
         },
       ],
       locale: "en_IN",
@@ -74,21 +88,37 @@ export async function generateMetadata(): Promise<Metadata> {
       card: "summary_large_image",
       title: seo.twitter_title || defaultTitle,
       description: seo.twitter_description || description,
-      images: [seo.twitter_image_url || ogImage],
+      creator: "@rciknp",
+      site: "@rciknp",
+      images: [
+        {
+          url: seo.twitter_image_url || ogImage,
+          width: 1200,
+          height: 630,
+          alt: `${site.site_name} - Computer Education Institute Kanpur`,
+        },
+      ],
     },
     robots: {
       index: true,
       follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
     icons: {
       icon: [
         { url: favicon, type: "image/png" },
-        { url: "/icon.png", type: "image/png" },
+        { url: "/icon.png", type: "image/png", sizes: "192x192" },
       ],
       shortcut: favicon,
       apple: [
-        { url: favicon, type: "image/png" },
-        { url: "/apple-icon.png", type: "image/png" },
+        { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+        { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
       ],
     },
   };
@@ -100,9 +130,23 @@ const jsonLd = {
   "name": "Rohit Computer Institute",
   "alternateName": "RCI Kanpur",
   "url": "https://rciknp.vercel.app",
-  "logo": "https://rciknp.vercel.app/logo.png",
+  "logo": {
+    "@type": "ImageObject",
+    "url": "https://rciknp.vercel.app/logo.png",
+    "caption": "Rohit Computer Institute Logo"
+  },
   "image": "https://rciknp.vercel.app/banner.png",
-  "description": "Rohit Computer Institute delivers practical computer education, DCA diploma, Tally accounting, web development, and QR-verifiable certification.",
+  "description": "Rohit Computer Institute delivers practical computer education, DCA diploma, Tally accounting, web development, and QR-verifiable certification in Kanpur.",
+  "telephone": "+91-7376893097",
+  "contactPoint": [
+    {
+      "@type": "ContactPoint",
+      "telephone": "+91-7376893097",
+      "contactType": "admissions",
+      "areaServed": "IN",
+      "availableLanguage": ["English", "Hindi"]
+    }
+  ],
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "Sanjay Nagar Cantt",
@@ -111,7 +155,14 @@ const jsonLd = {
     "postalCode": "208004",
     "addressCountry": "IN"
   },
-  "telephone": "+91-7376893097",
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 26.4499,
+    "longitude": 80.3319
+  },
+  "sameAs": [
+    "https://maps.google.com/?q=Sanjay+Nagar+Cantt+Kanpur"
+  ],
   "priceRange": "₹1499 - ₹9999",
   "hasOfferCatalog": {
     "@type": "OfferCatalog",
@@ -120,17 +171,32 @@ const jsonLd = {
       {
         "@type": "Course",
         "name": "Diploma in Computer Application (DCA)",
-        "description": "Comprehensive 1-year diploma covering MS Office, Windows OS, DTP, and core computing."
+        "description": "Comprehensive 1-year diploma covering MS Office, Windows OS, DTP, and core computing.",
+        "provider": {
+          "@type": "EducationalOrganization",
+          "name": "Rohit Computer Institute",
+          "sameAs": "https://rciknp.vercel.app"
+        }
       },
       {
         "@type": "Course",
         "name": "Tally Prime & GST Accounting",
-        "description": "3-month financial accounting and GST invoicing certification."
+        "description": "3-month financial accounting and GST invoicing certification.",
+        "provider": {
+          "@type": "EducationalOrganization",
+          "name": "Rohit Computer Institute",
+          "sameAs": "https://rciknp.vercel.app"
+        }
       },
       {
         "@type": "Course",
         "name": "Advanced Web Development",
-        "description": "6-month web development program covering HTML, CSS, JS, React, and databases."
+        "description": "6-month web development program covering HTML, CSS, JS, React, and databases.",
+        "provider": {
+          "@type": "EducationalOrganization",
+          "name": "Rohit Computer Institute",
+          "sameAs": "https://rciknp.vercel.app"
+        }
       }
     ]
   }
@@ -150,7 +216,9 @@ export default function RootLayout({
         <meta name="google-site-verification" content="74hTG6vfVhVKfbwSxn36-eezOYlbU7fD2I3PCGmWZCE" />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+          }}
         />
       </head>
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans selection:bg-blue-500/30">

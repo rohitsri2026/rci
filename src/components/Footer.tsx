@@ -98,12 +98,12 @@ export default function Footer() {
           <div className="lg:col-span-2 space-y-3">
             <Link href="/" className="inline-block bg-white p-2 rounded-xl shadow-xs group">
               <Image
-                src={siteSettings.logo_url || "/logo.png"}
+                src={siteSettings.logo_url || "/logo.webp"}
                 alt={siteSettings.site_name}
                 width={140}
                 height={50}
                 className="object-contain h-8 sm:h-9 w-auto"
-                unoptimized
+                loading="lazy"
               />
             </Link>
 

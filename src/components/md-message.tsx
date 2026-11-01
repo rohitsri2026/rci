@@ -37,12 +37,12 @@ export default function MDMessage({ initialDirector }: MDMessageProps) {
           <div className="relative bg-white border border-slate-200/90 rounded-3xl p-3 shadow-xl">
             <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100">
               <Image
-                src={director.photo_url || "/md-photo.png"}
+                src={director.photo_url || "/md-photo.webp"}
                 alt={`${director.name} - ${director.designation}`}
                 fill
                 sizes="(max-width: 768px) 100vw, 400px"
                 className="object-cover"
-                unoptimized
+                loading="lazy"
               />
             </div>
 
@@ -92,7 +92,6 @@ export default function MDMessage({ initialDirector }: MDMessageProps) {
                   alt={`${director.name} Signature`}
                   fill
                   className="object-contain"
-                  unoptimized
                 />
               </div>
             )}

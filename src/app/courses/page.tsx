@@ -16,9 +16,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSeoSettings();
   const site = await getSiteSettings();
 
-  const title = `Courses & Programs | ${site.site_name}`;
-  const description = `Explore computer courses & programs offered by ${site.site_name}, Kanpur including CCC, DCA, Tally Prime, Python, and Typing with practical lab training.`;
+  const title = "Courses & Programs";
+  const fullTitle = `Courses & Programs | ${site.site_name}`;
+  const description =
+    "Explore computer courses at Rohit Computer Institute Kanpur including DCA diploma, Tally Prime GST, Web Development, and Typing with 100% practical lab training.";
   const siteUrl = seo.canonical_url || "https://rciknp.vercel.app";
+  const bannerImage = seo.og_image_url || site.logo_url || `${siteUrl}/banner.png`;
 
   return {
     title,
@@ -27,11 +30,29 @@ export async function generateMetadata(): Promise<Metadata> {
       canonical: `${siteUrl}/courses`,
     },
     openGraph: {
-      title,
+      title: fullTitle,
       description,
       url: `${siteUrl}/courses`,
       siteName: site.site_name,
+      images: [
+        {
+          url: bannerImage,
+          width: 1200,
+          height: 630,
+          alt: `${site.site_name} Computer Courses & Programs`,
+          type: "image/png",
+        },
+      ],
+      locale: "en_IN",
       type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: fullTitle,
+      description,
+      creator: "@rciknp",
+      site: "@rciknp",
+      images: [bannerImage],
     },
   };
 }
@@ -65,9 +86,35 @@ export default async function CoursesPage() {
     .order("course_name");
 
   const coursesList = dbCourses || [];
+  const siteUrl = "https://rciknp.vercel.app";
+
+  const breadcrumbsJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: siteUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Courses",
+        item: `${siteUrl}/courses`,
+      },
+    ],
+  };
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbsJsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <Header />
       <main className="min-h-screen bg-slate-50 pt-28 sm:pt-32 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">

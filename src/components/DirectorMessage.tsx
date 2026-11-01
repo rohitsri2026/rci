@@ -32,12 +32,12 @@ export default function DirectorMessage() {
             {/* Compact Director Portrait */}
             <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-2 border-slate-200 shrink-0 bg-slate-100 shadow-2xs">
               <Image
-                src={director.photo_url || "/md-photo.png"}
+                src={director.photo_url || "/md-photo.webp"}
                 alt={`${director.name} - ${director.designation}`}
                 fill
                 sizes="100px"
                 className="object-cover"
-                unoptimized
+                loading="lazy"
               />
             </div>
 
@@ -49,9 +49,9 @@ export default function DirectorMessage() {
 
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-0.5 mb-1.5">
                 <div>
-                  <h3 id="director-message-title" className="text-base sm:text-lg font-black text-[#07152F] leading-tight">
+                  <h2 id="director-message-title" className="text-base sm:text-lg font-black text-[#07152F] leading-tight">
                     {director.name}
-                  </h3>
+                  </h2>
                   <p className="text-xs font-bold text-[#155EEF]">
                     {director.designation}
                   </p>

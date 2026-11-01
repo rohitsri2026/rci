@@ -71,6 +71,7 @@ export default function BenefitsStrip() {
 
   return (
     <section aria-label="Key Benefits and Features" className="py-6 sm:py-8 lg:py-10 bg-white border-b border-slate-200/80">
+      <h2 className="sr-only">Key Institutional Benefits</h2>
       <div className="container mx-auto px-3.5 sm:px-6 lg:px-8 max-w-7xl">
         {/* Clean 2-column mobile grid, 4-column on desktop */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6">

@@ -53,12 +53,12 @@ export default function AboutMDSection() {
             <div className="relative bg-white p-3 rounded-3xl border border-slate-200/90 shadow-xl">
               <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-slate-100">
                 <Image
-                  src={director.photo_url || "/md-photo.png"}
+                  src={director.photo_url || "/md-photo.webp"}
                   alt={`${director.name} - ${director.designation}`}
                   fill
                   sizes="(max-width: 768px) 100vw, 400px"
                   className="object-cover"
-                  unoptimized
+                  loading="lazy"
                 />
               </div>
 

@@ -12,21 +12,43 @@ export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSeoSettings();
   const site = await getSiteSettings();
 
-  const title = `Contact Us | ${site.site_name}`;
-  const description = `Contact ${site.site_name} for course enquiries, admissions, fees, batch timings and computer training information.`;
+  const title = "Contact Us";
+  const fullTitle = `Contact Us | ${site.site_name}`;
+  const description =
+    "Contact Rohit Computer Institute Kanpur for course enquiries, admissions, fees, batch timings, and campus visit details. Call or WhatsApp our helpdesk.";
+  const siteUrl = seo.canonical_url || "https://rciknp.vercel.app";
+  const bannerImage = seo.og_image_url || site.logo_url || `${siteUrl}/banner.png`;
 
   return {
     title,
     description,
     alternates: {
-      canonical: `${seo.canonical_url || "https://rciknp.vercel.app"}/contact`,
+      canonical: `${siteUrl}/contact`,
     },
     openGraph: {
-      title,
+      title: fullTitle,
       description,
-      url: `${seo.canonical_url || "https://rciknp.vercel.app"}/contact`,
+      url: `${siteUrl}/contact`,
       siteName: site.site_name,
+      images: [
+        {
+          url: bannerImage,
+          width: 1200,
+          height: 630,
+          alt: `Contact ${site.site_name} Kanpur`,
+          type: "image/png",
+        },
+      ],
+      locale: "en_IN",
       type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: fullTitle,
+      description,
+      creator: "@rciknp",
+      site: "@rciknp",
+      images: [bannerImage],
     },
   };
 }
@@ -39,8 +61,64 @@ export default async function ContactPage() {
   const cleanPhone = contact.phone ? contact.phone.replace(/\s+/g, "") : "+917376893097";
   const whatsappUrl = `https://wa.me/${cleanWhatsapp}?text=${encodeURIComponent("Hello RCI, I would like to get more information about your computer courses.")}`;
 
+  const siteUrl = "https://rciknp.vercel.app";
+
+  const contactPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    name: `Contact ${site.site_name}`,
+    description: "Official contact page of Rohit Computer Institute Kanpur for computer course admissions, fees, timings, and campus support.",
+    url: `${siteUrl}/contact`,
+    mainEntity: {
+      "@type": "EducationalOrganization",
+      name: site.site_name,
+      telephone: contact.phone || "+917376893097",
+      email: contact.email || "rciknp01@gmail.com",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: contact.address || "Sanjay Nagar Cantt",
+        addressLocality: "Kanpur",
+        addressRegion: "Uttar Pradesh",
+        postalCode: "208004",
+        addressCountry: "IN",
+      },
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: contact.phone || "+917376893097",
+        contactType: "admissions",
+        areaServed: "IN",
+        availableLanguage: ["English", "Hindi"],
+      },
+    },
+  };
+
+  const breadcrumbsJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: siteUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Contact Us",
+        item: `${siteUrl}/contact`,
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([contactPageSchema, breadcrumbsJsonLd]).replace(/</g, "\\u003c"),
+        }}
+      />
       <Header />
       <main className="min-h-screen bg-slate-50 pt-28 sm:pt-32 pb-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
@@ -93,6 +171,15 @@ export default async function ContactPage() {
           </div>
 
           {/* 3. CONTACT INFORMATION + MAP GRID */}
+          <div className="mb-8 pb-4 border-b border-slate-200/80">
+            <h2 className="text-xl sm:text-2xl font-extrabold tracking-[-0.02em] text-slate-900">
+              Institute Contact Information &amp; Location
+            </h2>
+            <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
+              Reach our admissions desk, direct helpline, or navigate to our central campus in Kanpur.
+            </p>
+          </div>
+
           <div className="grid lg:grid-cols-12 gap-8 items-start mb-12 sm:mb-16">
             
             {/* LEFT COLUMN: Contact Cards (5 cols on lg) */}

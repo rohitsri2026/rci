@@ -411,13 +411,12 @@ export default function Header() {
             >
               <div className="relative p-1 rounded-xl bg-gradient-to-br from-blue-50 to-slate-100 border border-slate-200/80 shadow-2xs group-hover:shadow-md group-hover:border-blue-300 transition-all duration-300">
                 <Image
-                  src={siteSettings.logo_url || "/logo.png"}
+                  src={siteSettings.logo_url || "/logo.webp"}
                   alt={siteSettings.site_name}
                   width={44}
                   height={44}
                   className="object-contain h-8 sm:h-10 w-auto shrink-0 transition-transform duration-300 group-hover:scale-105"
                   priority
-                  unoptimized
                 />
               </div>
               
